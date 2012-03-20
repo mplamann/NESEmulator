@@ -52,25 +52,7 @@ bool CpuArithmetic::RunInstruction()
 	case ADC_Absy:
 		addToAAbs(arg1, arg2, Y);
 		break;
-	case ADC_Indx:
-	        PC += 2;
-		cycles += 6;
-	        int zpAddress = (arg1 + X) % 256; // The address is always on the zero page
-		int indirectAddress = (memory->readByteFrom(zpAddress) + memory->readByteFrom(zpAddress+1)<<2);
-		addToA(memory->readByteFrom(indirectAddress));
-		break;
-	case ADC_Indy:
-	        PC += 2;
-		int indirectAddress = memory->readByteFrom(arg1) + memory->readByteFrom(arg1+1)<<2;
-		cycles += 5;
-		if (pageBoundaryCrossed(indirectAddress,Y))
-		  cycles += 1;
-		addToA(memory->readByteFrom(indirectAddress+Y));
-		break;
-	default:
-	        return false;
 	}
-	return true;
 }
 
 void CpuArithmetic::addToAAbs(byte arg1, byte arg2, byte offset)
