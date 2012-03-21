@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+//#include "StdAfx.h"
 #include "CpuArithmetic.h"
 
 
@@ -23,9 +23,9 @@ bool CpuArithmetic::RunInstruction()
 {
 	if (super::RunInstruction())
 		return true;
-	byte opcode = memory->readByteFrom(PC);
-	byte arg1 = memory->readByteFrom(PC+1);
-	byte arg2 = memory->readByteFrom(PC+2);
+	int opcode = memory->readByteFrom(PC);
+	int arg1 = memory->readByteFrom(PC+1);
+	int arg2 = memory->readByteFrom(PC+2);
 	switch (opcode)
 	{
 	case ADC_Imm:

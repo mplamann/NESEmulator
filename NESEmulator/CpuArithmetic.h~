@@ -5,8 +5,8 @@ class CpuArithmetic : public CpuRegisters
 {
 private:
 	typedef CpuRegisters super;
-	void addToA(int value);
-	void addToAAbs(int arg1, int arg2, int offset);
+	void addToA(byte value);
+	void addToAAbs(byte arg1, byte arg2, byte offset);
 protected:
 	bool pageBoundaryCrossed(int address, int offset);
 public:
