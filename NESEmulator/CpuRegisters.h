@@ -4,13 +4,13 @@
 class CpuRegisters
 {
 private:
-        void setNZ(byte value);
+        void setNZ(int value);
 protected:
-	byte A;
-	byte X;
-	byte Y;
-	byte S;
-	byte PC;
+	int A;
+	int X;
+	int Y;
+	int S;
+	int PC;
 
 	bool N,Z,C,I,D,V,B; // Processor status flags
 

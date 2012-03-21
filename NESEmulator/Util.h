@@ -1,5 +1,5 @@
 #pragma once
-typedef unsigned __int8 byte;
+//typedef unsigned int byte;
 
 const int ADC_Imm = 0x69;
 const int ADC_Zp = 0x65;

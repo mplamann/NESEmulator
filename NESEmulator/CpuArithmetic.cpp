@@ -73,7 +73,7 @@ bool CpuArithmetic::RunInstruction()
 	return true;
 }
 
-void CpuArithmetic::addToAAbs(byte arg1, byte arg2, byte offset)
+void CpuArithmetic::addToAAbs(int arg1, int arg2, int offset)
 {
 	PC += 3;
 	cycles += 4;
@@ -82,12 +82,12 @@ void CpuArithmetic::addToAAbs(byte arg1, byte arg2, byte offset)
 	addToA(memory->readByteFrom(arg1+arg2<<2+offset));
 }
 
-void CpuArithmetic::addToA(byte value)
+void CpuArithmetic::addToA(int value)
 {
 	unsigned int temp = value + A + (C ? 1 : 0);
 	C = (temp > 0xFF);
 	N = (temp < 0);
 	Z = (temp == 0);
 	V = (!((A ^ value) & 0x80) && ((A ^ temp) & 0x80));
-	A = (byte)temp;
+	A = temp;
 }

@@ -74,7 +74,7 @@ bool CpuRegisters::RunInstruction()
 	return true;
 }
 
-void CpuRegisters::setNZ(byte value)
+void CpuRegisters::setNZ(int value)
 {
   N = (((int)value) < 0);
   Z = (value == 0);
