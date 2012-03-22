@@ -26,6 +26,8 @@ bool CpuArithmetic::RunInstruction()
 	int opcode = memory->readByteFrom(PC);
 	int arg1 = memory->readByteFrom(PC+1);
 	int arg2 = memory->readByteFrom(PC+2);
+	int zpAddress = 0;
+	int indirectAddress = 0;
 	switch (opcode)
 	{
 	case ADC_Imm:
@@ -55,13 +57,13 @@ bool CpuArithmetic::RunInstruction()
 	case ADC_Indx:
 	        PC += 2;
 		cycles += 6;
-	        int zpAddress = (arg1 + X) % 256; // The address is always on the zero page
-		int indirectAddress = (memory->readByteFrom(zpAddress) + memory->readByteFrom(zpAddress+1)<<2);
+	        zpAddress = (arg1 + X) % 256; // The address is always on the zero page
+		indirectAddress = (memory->readByteFrom(zpAddress) + memory->readByteFrom(zpAddress+1)<<2);
 		addToA(memory->readByteFrom(indirectAddress));
 		break;
 	case ADC_Indy:
 	        PC += 2;
-		int indirectAddress = memory->readByteFrom(arg1) + memory->readByteFrom(arg1+1)<<2;
+		indirectAddress = memory->readByteFrom(arg1) + memory->readByteFrom(arg1+1)<<2;
 		cycles += 5;
 		if (pageBoundaryCrossed(indirectAddress,Y))
 		  cycles += 1;

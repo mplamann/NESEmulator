@@ -27,9 +27,9 @@ CpuRegisters::~CpuRegisters(void)
 
 bool CpuRegisters::RunInstruction()
 {
-        byte opcode = memory->readByteFrom(PC);
-	byte arg1 = memory->readByteFrom(PC+1);
-	byte arg2 = memory->readByteFrom(PC+2);
+        int opcode = memory->readByteFrom(PC);
+	int arg1 = memory->readByteFrom(PC+1);
+	int arg2 = memory->readByteFrom(PC+2);
 	switch (opcode)
 	{
 	case TAX:

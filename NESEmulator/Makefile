@@ -4,7 +4,7 @@ CFLAGS := -Wall -Wextra -g
 LDFLAGS := 
 
 CFLAGS += -MMD
-CC := gcc
+CC := g++
 
 OBJFILES := $(CFILES:.cpp=.o)
 DEPFILES := $(CFILES:.cpp=.d)

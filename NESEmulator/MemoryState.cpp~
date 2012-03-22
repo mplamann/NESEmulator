@@ -18,12 +18,12 @@ MemoryState::~MemoryState(void)
 {
 }
 
-unsigned __int8 MemoryState::readByteFrom(unsigned __int16 address)
+int MemoryState::readByteFrom(int address)
 {
 	return RAM[address];
 }
 
-void MemoryState::writeByteTo(unsigned __int16 address, byte value)
+void MemoryState::writeByteTo(int address, int value)
 {
 	RAM[address] = value;
 }

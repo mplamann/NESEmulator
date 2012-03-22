@@ -1,4 +1,4 @@
-CFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp stdafx.cpp
+CFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp 
 PROG := nesemulator
 CFLAGS := -Wall -Wextra -g
 LDFLAGS := 

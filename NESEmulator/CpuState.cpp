@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+//#include "StdAfx.h"
 #include "CpuState.h"
 
 
@@ -17,9 +17,9 @@ bool CpuState::RunInstruction()
 {
 	if (super::RunInstruction())
 		return true;
-	byte opcode = memory->readByteFrom(PC);
-	byte arg1 = memory->readByteFrom(PC+1);
-	byte arg2 = memory->readByteFrom(PC+2);
+	int opcode = memory->readByteFrom(PC);
+	int arg1 = memory->readByteFrom(PC+1);
+	int arg2 = memory->readByteFrom(PC+2);
 	switch (opcode)
 	{
 	case ADC_Imm:
