@@ -8,10 +8,11 @@ MemoryState::MemoryState(void)
 {
 	for (int i = 0; i < 2048; i++)
 		RAM[i] = 0;
-	RAM[0] = 0xA9;
+	RAM[0] = 0xA9; // LDA #23
 	RAM[1] = 0x17;
-	RAM[2] = 0x69;
+	RAM[2] = 0x69; // ADC #23
 	RAM[3] = 0x17;
+	RAM[4] = 0xAA; // TAX
 }
 
 MemoryState::~MemoryState(void)

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+//#include "StdAfx.h"
 #include "MemoryState.h"
 #include <iostream>
 #include <fstream>

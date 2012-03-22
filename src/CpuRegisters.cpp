@@ -68,6 +68,13 @@ bool CpuRegisters::RunInstruction()
 	  A = Y;
 	  setNZ(A);
 	  break;
+
+	case LDA_Imm:
+	  PC += 2;
+	  A = arg1;
+	  cycles += 2;
+	  setNZ(A);
+	  break;
 	default:
 	  return false;
 	}

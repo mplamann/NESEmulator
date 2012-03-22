@@ -13,6 +13,6 @@ $(PROG) : $(OBJFILES)
 	$(LINK.o) $(LDFLAGS) -o $@ $^
 
 clean :
-	rm -f $(PROG) $(OBJFILES) $(DEPFILES)
+	rm -f $(PROG) $(PROG).exe $(OBJFILES) $(DEPFILES)
 
 -include $(DEPFILES)
