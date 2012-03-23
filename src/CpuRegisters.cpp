@@ -180,6 +180,48 @@ bool CpuRegisters::RunInstruction()
       Y = memory->readByteFrom(arg1+(arg2<<8)+X);
       setNZ(Y);
       break;
+
+    case CLC:
+      PC += 1;
+      cycles += 2;
+      C = false;
+      break;
+    case CLD:
+      PC += 1;
+      cycles += 2;
+      D = false;
+      break;
+    case CLI:
+      PC += 1;
+      cycles += 2;
+      I = false;
+      break;
+    case CLV:
+      PC += 1;
+      cycles += 2;
+      I = false;
+      break;
+
+    case SEC:
+      PC += 1;
+      cycles += 2;
+      C = true;
+      break;
+    case SED:
+      PC += 1;
+      cycles += 2;
+      D = true;
+      break;
+    case SEI:
+      PC += 1;
+      cycles += 2;
+      I = true;
+      break;
+
+    case NOP:
+      PC += 1;
+      cycles += 2;
+      break;
     default:
       return false;
     }
