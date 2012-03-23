@@ -5,6 +5,7 @@ LDFLAGS := -Wall -Wextra -lstdc++
 
 CXXFLAGS += -MMD
 CXX := g++
+CC = g++
 
 OBJFILES := $(CXXFILES:.cpp=.o)
 DEPFILES := $(CXXFILES:.cpp=.d)

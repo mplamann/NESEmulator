@@ -5,6 +5,7 @@ class CpuRegisters
 {
 private:
         void setNZ(int value);
+	void LDAAbs(int arg1, int arg2, int offset);
 protected:
 	int A;
 	int X;
@@ -16,7 +17,7 @@ protected:
 
 	int cycles;
 	MemoryState* memory;
-
+	bool pageBoundaryCrossed(int address, int offset);
 public:
 	CpuRegisters(void);
 	~CpuRegisters(void);

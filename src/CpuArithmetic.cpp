@@ -11,14 +11,6 @@ CpuArithmetic::~CpuArithmetic(void)
 {
 }
 
-bool CpuArithmetic::pageBoundaryCrossed(int address, int offset)
-{
-	int newAddress = address + offset;
-	if ((newAddress & 0xF0) != (address & 0xF0))
-		return true;
-	return false;
-}
-
 bool CpuArithmetic::RunInstruction()
 {
 	if (super::RunInstruction())
@@ -58,12 +50,12 @@ bool CpuArithmetic::RunInstruction()
 	        PC += 2;
 		cycles += 6;
 	        zpAddress = (arg1 + X) % 256; // The address is always on the zero page
-		indirectAddress = (memory->readByteFrom(zpAddress) + memory->readByteFrom(zpAddress+1)<<2);
+		indirectAddress = (memory->readByteFrom(zpAddress) + (memory->readByteFrom(zpAddress+1)<<8));
 		addToA(memory->readByteFrom(indirectAddress));
 		break;
 	case ADC_Indy:
 	        PC += 2;
-		indirectAddress = memory->readByteFrom(arg1) + memory->readByteFrom(arg1+1)<<2;
+		indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom(arg1+1)<<8);
 		cycles += 5;
 		if (pageBoundaryCrossed(indirectAddress,Y))
 		  cycles += 1;
@@ -79,9 +71,9 @@ void CpuArithmetic::addToAAbs(int arg1, int arg2, int offset)
 {
 	PC += 3;
 	cycles += 4;
-	if (pageBoundaryCrossed(arg1+arg2<<2,offset))
+	if (pageBoundaryCrossed(arg1+(arg2<<8),offset))
 		cycles += 1;
-	addToA(memory->readByteFrom(arg1+arg2<<2+offset));
+	addToA(memory->readByteFrom(arg1+(arg2<<8)+offset));
 }
 
 void CpuArithmetic::addToA(int value)

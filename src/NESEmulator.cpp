@@ -6,9 +6,11 @@
 
 int main(int argc, char* argv[])
 {
-	CpuState* cpu = new CpuState();
-	cpu->RunInstruction();
-	cpu->RunInstruction();
-	return 0;
+  CpuState* cpu = new CpuState();
+  while (true)
+    {
+      cpu->RunInstruction();
+    }
+  return 0;
 }
 

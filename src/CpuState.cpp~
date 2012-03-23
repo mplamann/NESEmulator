@@ -17,9 +17,11 @@ bool CpuState::RunInstruction()
 {
 	if (super::RunInstruction())
 		return true;
+	return false;
+	/*
 	int opcode = memory->readByteFrom(PC);
 	int arg1 = memory->readByteFrom(PC+1);
-	int arg2 = memory->readByteFrom(PC+2);
+	//int arg2 = memory->readByteFrom(PC+2);
 	switch (opcode)
 	{
 	case ADC_Imm:
@@ -38,6 +40,7 @@ bool CpuState::RunInstruction()
 		//updateFlags(A);
 		break;
 	}
+	opcode + arg1;*/
 }
 
 /*void CpuState::updateFlags(byte register) // TODO: specify which flags are modified

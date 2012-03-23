@@ -4,7 +4,7 @@
 class CpuRegisters
 {
 private:
-        void setNZ(byte value);
+        void setNZ(int value);
 protected:
 	int A;
 	int X;

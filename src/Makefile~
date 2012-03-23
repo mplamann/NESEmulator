@@ -1,18 +1,18 @@
-CFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp 
+CXXFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp 
 PROG := nesemulator
-CFLAGS := -Wall -Wextra -g
-LDFLAGS := 
+CXXFLAGS := -g -Wall -Wextra
+LDFLAGS := -Wall -Wextra -lstdc++
 
-CFLAGS += -MMD
-CC := g++
+CXXFLAGS += -MMD
+CXX := g++
 
-OBJFILES := $(CFILES:.cpp=.o)
-DEPFILES := $(CFILES:.cpp=.d)
+OBJFILES := $(CXXFILES:.cpp=.o)
+DEPFILES := $(CXXFILES:.cpp=.d)
 
 $(PROG) : $(OBJFILES)
 	$(LINK.o) $(LDFLAGS) -o $@ $^
 
 clean :
-	rm -f $(PROG) $(OBJFILES) $(DEPFILES)
+	rm -f $(PROG) $(PROG).exe $(OBJFILES) $(DEPFILES)
 
 -include $(DEPFILES)
