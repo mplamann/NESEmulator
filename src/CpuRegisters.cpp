@@ -114,6 +114,72 @@ bool CpuRegisters::RunInstruction()
       A = memory->readByteFrom(indirectAddress+Y);
       setNZ(A);
       break;
+
+    case LDX_Imm:
+      PC += 2;
+      cycles += 2;
+      X = arg1;
+      setNZ(X);
+      break;
+    case LDX_Zp:
+      PC += 2;
+      cycles += 3;
+      X = memory->readByteFrom(arg1);
+      setNZ(X);
+      break;
+    case LDX_Zpy:
+      PC += 2;
+      cycles += 4;
+      X = memory->readByteFrom(arg1 + Y);
+      setNZ(X);
+      break;
+    case LDX_Abs:
+      PC += 3;
+      cycles += 4;
+      X = memory->readByteFrom(arg1 + (arg2 << 8));
+      setNZ(X);
+      break;
+    case LDX_Absy:
+      PC += 3;
+      cycles += 4;
+      if (pageBoundaryCrossed(arg1+(arg2<<8),Y))
+	cycles += 1;
+      X = memory->readByteFrom(arg1+(arg2<<8)+Y);
+      setNZ(X);
+      break;
+
+    case LDY_Imm:
+      PC += 2;
+      cycles += 2;
+      Y = arg1;
+      setNZ(Y);
+      break;
+    case LDY_Zp:
+      PC += 2;
+      cycles += 3;
+      Y = memory->readByteFrom(arg1);
+      setNZ(Y);
+      break;
+    case LDY_Zpx:
+      PC += 2;
+      cycles += 4;
+      Y = memory->readByteFrom(arg1 + X);
+      setNZ(Y);
+      break;
+    case LDY_Abs:
+      PC += 3;
+      cycles += 4;
+      Y = memory->readByteFrom(arg1 + (arg2 << 8));
+      setNZ(Y);
+      break;
+    case LDY_Absx:
+      PC += 3;
+      cycles += 4;
+      if (pageBoundaryCrossed(arg1+(arg2<<8),X))
+	cycles += 1;
+      Y = memory->readByteFrom(arg1+(arg2<<8)+X);
+      setNZ(Y);
+      break;
     default:
       return false;
     }
