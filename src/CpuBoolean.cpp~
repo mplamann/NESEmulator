@@ -1,0 +1,72 @@
+#include "CpuBoolean.h"
+
+CpuBoolean::CpuBoolean(void)
+{
+}
+
+CpuBoolean::~CpuBoolean(void)
+{
+}
+
+bool CpuBoolean::RunInstruction()
+{
+  if (super::RunInstruction())
+    return true;
+  int opcode = memory->readByteFrom(PC);
+  int arg1 = memory->readByteFrom(PC+1);
+  int arg2 = memory->readByteFrom(PC+2);
+  switch (opcode)
+    {
+    case AND_Imm:
+      PC += 2;
+      cycles += 2;
+      A &= arg1;
+      setNZ(A);
+      break;
+    case AND_Zp:
+      PC += 2;
+      cycles += 3;
+      A &= memory->readByteFrom(addrZp(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Zpx:
+      PC += 2;
+      cycles += 4;
+      A &= memory->readByteFrom(addrZpx(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Abs:
+      PC += 3;
+      cycles += 4;
+      A &= memory->readByteFrom(addrAbs(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Absx:
+      PC += 3;
+      cycles += 4;
+      A &= memory->readByteFrom(addrAbsx(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Absy:
+      PC += 3;
+      cycles += 4;
+      A &= memory->readByteFrom(addrAbsy(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Indx:
+      PC += 2;
+      cycles += 6;
+      A &= memory->readByteFrom(addrIndx(arg1,arg2));
+      setNZ(A);
+      break;
+    case AND_Indy:
+      PC += 2;
+      cycles += 5;
+      A &= memory->readByteFrom(addrIndy(arg1,arg2));
+      setNZ(A);
+      break;
+    default:
+      return false;
+    }
+  return true;
+}
