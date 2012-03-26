@@ -10,4 +10,4 @@ class CpuBoolean : public CpuRegisters
   CpuBoolean(void);
   ~CpuBoolean(void);
   bool RunInstruction();
-}
+};
