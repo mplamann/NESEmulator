@@ -1,5 +1,5 @@
-CXXFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp CpuBoolean.cpp CpuBranches.cpp 
-PROG := nesemulator
+CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp
+PROG := test
 CXXFLAGS := -g -Wall -Wextra
 LDFLAGS := -Wall -Wextra -lstdc++
 
@@ -14,6 +14,6 @@ $(PROG) : $(OBJFILES)
 	$(LINK.o) $(LDFLAGS) -o $@ $^
 
 clean :
-	rm -f $(PROG) $(PROG).exe $(OBJFILES) $(DEPFILES)
+	rm -f $(PROG).exe $(PROG) $(OBJFILES) $(DEPFILES)
 
 -include $(DEPFILES)

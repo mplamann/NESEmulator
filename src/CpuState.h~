@@ -2,12 +2,12 @@
 
 #include "Util.h"
 #include "MemoryState.h"
-#include "CpuBranches.h"
+#include "CpuArithmetic.h"
 
-class CpuState : public CpuBranches
+class CpuState : public CpuArithmetic
 {
 private:
-	typedef CpuBranches super;
+	typedef CpuArithmetic super;
 public:
 	CpuState(void);
 	~CpuState(void);
