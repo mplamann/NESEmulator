@@ -17,11 +17,14 @@ CpuRegisters::CpuRegisters(void)
   B = false; // BRK flag
   V = false; // Overflow flag
   S = false; // Sign flag (1 if negative, 0 if positive)
+
+  memory = new MemoryState();
 }
 
 
 CpuRegisters::~CpuRegisters(void)
 {
+  delete memory;
 }
 
 bool CpuRegisters::RunInstruction()
@@ -369,3 +372,8 @@ int CpuRegisters::addrIndy(int arg1, int arg2)
 int CpuRegisters::getA() {return A;}
 int CpuRegisters::getX() {return X;}
 int CpuRegisters::getY() {return Y;}
+MemoryState* CpuRegisters::getMemory() {return memory;}
+
+void CpuRegisters::setX(int value) {X = value;}
+void CpuRegisters::setA(int value) {A = value;}
+void CpuRegisters::setY(int value) {Y = value;}

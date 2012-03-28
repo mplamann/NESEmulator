@@ -357,13 +357,13 @@ int CpuRegisters::addrAbsy(int arg1, int arg2)
 int CpuRegisters::addrIndx(int arg1, int arg2)
 {
   int zpAddress = (arg1 + X) % 256;
-  int indirectAddress = memory->readByteFrom((zpAddress) + ((zpAddress+1)<<8));
+  int indirectAddress = memory->readByteFrom((zpAddress)) + (memory->readByteFrom(zpAddress+1)<<8);
   return indirectAddress;
 }
 
 int CpuRegisters::addrIndy(int arg1, int arg2)
 {
-  int indirectAddress = memory->readByteFrom(arg1) + memory->readByteFrom((arg1 + 1) << 8);
+  int indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom(arg1 + 1) << 8);
   if (pageBoundaryCrossed(indirectAddress,Y))
     cycles += 1;
   return indirectAddress+Y;
@@ -372,8 +372,12 @@ int CpuRegisters::addrIndy(int arg1, int arg2)
 int CpuRegisters::getA() {return A;}
 int CpuRegisters::getX() {return X;}
 int CpuRegisters::getY() {return Y;}
+int CpuRegisters::getS() {return S;}
+bool CpuRegisters::getN() {return N;}
+bool CpuRegisters::getZ() {return Z;}
 MemoryState* CpuRegisters::getMemory() {return memory;}
 
 void CpuRegisters::setX(int value) {X = value;}
 void CpuRegisters::setA(int value) {A = value;}
 void CpuRegisters::setY(int value) {Y = value;}
+void CpuRegisters::setS(int value) {S = value;}
