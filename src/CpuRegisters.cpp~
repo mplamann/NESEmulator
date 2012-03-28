@@ -181,37 +181,69 @@ bool CpuRegisters::RunInstruction()
     case STA_Zp:
       PC += 2;
       cycles += 3;
-      memory->writeByteTo(addrZp(arg1,arg2));
+      memory->writeByteTo(addrZp(arg1,arg2),A);
       break;
     case STA_Zpx:
       PC += 2;
       cycles += 4;
-      memory->writeByteTo(addrZpx(arg1,arg2));
+      memory->writeByteTo(addrZpx(arg1,arg2),A);
       break;
     case STA_Abs:
       PC += 3;
       cycles += 4;
-      memory->writeByteTo(addrAbs(arg1,arg2));
+      memory->writeByteTo(addrAbs(arg1,arg2),A);
       break;
     case STA_Absx:
       PC += 3;
       cycles += 5;
-      memory->writeByteTo(addrAbsx(arg1,arg2));
+      memory->writeByteTo(addrAbsx(arg1,arg2),A);
       break;
     case STA_Absy:
       PC += 3;
       cycles += 5;
-      memory->writeByteTo(addrAbsy(arg1,arg2));
+      memory->writeByteTo(addrAbsy(arg1,arg2),A);
       break;
     case STA_Indx:
       PC += 2;
       cycles += 6;
-      memory->writeByteTo(addrIndx(arg1,arg2));
+      memory->writeByteTo(addrIndx(arg1,arg2),A);
       break;
     case STA_Indy:
       PC += 2;
       cycles += 6;
-      memory->writeByteTo(addrIndy(arg1,arg2));
+      memory->writeByteTo(addrIndy(arg1,arg2),A);
+      break;
+
+    case STX_Zp:
+      PC += 2;
+      cycles += 3;
+      memory->writeByteTo(addrZp(arg1,arg2),X);
+      break;
+    case STX_Zpy:
+      PC += 2;
+      cycles += 4;
+      memory->writeByteTo(addrZpy(arg1,arg2),X);
+      break;
+    case STX_Abs:
+      PC += 3;
+      cycles += 4;
+      memory->writeByteTo(addrAbs(arg1,arg2),X);
+      break;
+
+    case STY_Zp:
+      PC += 2;
+      cycles += 3;
+      memory->writeByteTo(addrZp(arg1,arg2),Y);
+      break;
+    case STY_Zpx:
+      PC += 2;
+      cycles += 4;
+      memory->writeByteTo(addrZpx(arg1,arg2),Y);
+      break;
+    case STY_Abs:
+      PC += 3;
+      cycles += 4;
+      memory->writeByteTo(addrAbs(arg1,arg2),Y);
       break;
 
     case CLC:

@@ -1,0 +1,7 @@
+#include "CppUnitLite/TestHarness.h"
+#include "CpuRegisters.cpp"
+
+TEST(CpuRegisters,LDA)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+}

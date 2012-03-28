@@ -3,13 +3,11 @@
 
 CpuState::CpuState(void)
 {
-  memory = new MemoryState();
 }
 
 
 CpuState::~CpuState(void)
 {
-  delete memory;
 }
 
 bool CpuState::RunInstruction()

@@ -36,5 +36,9 @@ class CpuRegisters
   int getA();
   int getX();
   int getY();
+  void setA(int value); // These setters are for unit tests only
+  void setX(int value);
+  void setY(int value);
+  MemoryState* getMemory();
 };
 

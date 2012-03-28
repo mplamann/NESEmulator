@@ -1,21 +1,20 @@
-//#include "StdAfx.h"
 #include "CpuState.h"
 
 
 CpuState::CpuState(void)
 {
-	memory = new MemoryState();
+  memory = new MemoryState();
 }
 
 
 CpuState::~CpuState(void)
 {
-	delete memory;
+  delete memory;
 }
 
 bool CpuState::RunInstruction()
 {
-	if (super::RunInstruction())
-		return true;
-	return false;
+  if (super::RunInstruction())
+    return true;
+  return false;
 }

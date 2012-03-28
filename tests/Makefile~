@@ -1,9 +1,14 @@
 CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp
 PROG := test
-CXXFLAGS := -g -Wall -Wextra
-LDFLAGS := -Wall -Wextra -lstdc++
 
-CXXFLAGS += -MMD
+INC_PATH = -I. -I../src
+LIB_PATH = -L../src
+LD_PATH = ../src
+
+CXXFLAGS := -g -Wall -Wextra
+LDFLAGS := -Wall -Wextra -lstdc++ $(LIB_PATH) 
+
+CXXFLAGS += -MMD $(INC_PATH)
 CXX := g++
 CC = g++
 
