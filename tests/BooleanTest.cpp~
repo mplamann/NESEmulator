@@ -1,0 +1,8 @@
+#include "CppUnitLite/TestHarness.h"
+#include "CpuBoolean.h"
+#include "Util.h"
+
+TEST (BooleanTest, false)
+{
+  CHECK(0==1);
+}

@@ -1,4 +1,5 @@
-CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp
+CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp RegistersTest.cpp
+CXXFILES += ../src/CpuArithmetic.cpp ../src/CpuBoolean.cpp ../src/CpuBranches.cpp ../src/CpuRegisters.cpp ../src/CpuState.cpp ../src/MemoryState.cpp
 PROG := test
 
 INC_PATH = -I. -I../src
@@ -16,7 +17,7 @@ OBJFILES := $(CXXFILES:.cpp=.o)
 DEPFILES := $(CXXFILES:.cpp=.d)
 
 $(PROG) : $(OBJFILES)
-	$(LINK.o) $(LDFLAGS) -o $@ $^
+	$(LINK.o) -o $@ $^
 
 clean :
 	rm -f $(PROG).exe $(PROG) $(OBJFILES) $(DEPFILES)

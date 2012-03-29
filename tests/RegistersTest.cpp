@@ -159,6 +159,65 @@ TEST(CpuRegisters,LDX_Absy)
   CHECK(cpu->getX() == 99);
 }
 
+// LDX Instructions
+
+TEST(CpuRegisters,LDY_Imm)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,LDY_Imm);
+  cpu->getMemory()->writeByteTo(1,-15);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == -15);
+  CHECK(cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST(CpuRegisters,LDY_Zp)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,LDY_Zp);
+  cpu->getMemory()->writeByteTo(1,42);
+  cpu->getMemory()->writeByteTo(42,17);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 17);
+}
+
+TEST(CpuRegisters,LDY_Zpy)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,LDY_Zpx);
+  cpu->getMemory()->writeByteTo(1,42);
+  cpu->getMemory()->writeByteTo(43,17);
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 17);
+}
+
+TEST(CpuRegisters,LDY_Abs)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,LDY_Abs);
+  cpu->getMemory()->writeByteTo(1,0x39);
+  cpu->getMemory()->writeByteTo(2,0x01);
+  cpu->getMemory()->writeByteTo(0x0139,99);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 99);
+}
+
+TEST(CpuRegisters,LDY_Absy)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LDY_Absx);
+  mem->writeByteTo(1,0x29);
+  mem->writeByteTo(2,0x01);
+  mem->writeByteTo(0x012B,99);
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 99);
+}
+
+
 // Transfer Instructions
 
 TEST (CpuRegisters,TAX)
@@ -218,12 +277,195 @@ TEST (CpuRegisters,TYA)
   CHECK(cpu->getA() == 245);
 }
 
+// STA Instructions
 
+TEST (CpuRegisters,STA_Zp)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Zp);
+  mem->writeByteTo(1,0x47);
+  cpu->setA(95);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x47) == 95);
+}
+
+TEST (CpuRegisters,STA_Zpx)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Zpx);
+  mem->writeByteTo(1,0x47);
+  cpu->setA(95);
+  cpu->setX(0x10);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x57) == 95);
+}
+
+TEST (CpuRegisters,STA_Abs)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Abs);
+  mem->writeByteTo(1,0x47);
+  mem->writeByteTo(2,0x03);
+  cpu->setA(84);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x0347) == 84);
+}
+
+TEST (CpuRegisters,STA_Absx)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Absx);
+  mem->writeByteTo(1,0x47);
+  mem->writeByteTo(2,0x05);
+  cpu->setA(95);
+  cpu->setX(0x03);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x054A) == 95);
+}
+
+TEST (CpuRegisters,STA_Absy)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Absy);
+  mem->writeByteTo(1,0x47);
+  mem->writeByteTo(2,0x15);
+  cpu->setA(42);
+  cpu->setY(12);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1547+12) == 42);
+}
+
+TEST (CpuRegisters,STA_Indx)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Indx);
+  mem->writeByteTo(1,0x47);
+  mem->writeByteTo(0x48,0x12);
+  mem->writeByteTo(0x49,0x09);
+  cpu->setA(95);
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x0912) == 95);
+}
+
+TEST (CpuRegisters,STA_Indy)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STA_Indy);
+  mem->writeByteTo(1,0x47);
+  mem->writeByteTo(0x47,0x15);
+  mem->writeByteTo(0x48,0x03);
+  cpu->setA(95);
+  cpu->setY(12);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x0315+12) == 95);
+}
+
+// STX Instructions
+
+TEST (CpuRegisters,STX_Zp)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STX_Zp);
+  mem->writeByteTo(1,42);
+  cpu->setX(121);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(42) == 121);
+}
+
+TEST (CpuRegisters,STX_Zpy)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STX_Zpy);
+  mem->writeByteTo(1,42);
+  cpu->setX(121);
+  cpu->setY(22);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(64) == 121);
+}
+
+TEST (CpuRegisters,STX_Abs)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,STX_Abs);
+  mem->writeByteTo(1,0x42);
+  mem->writeByteTo(2,0x11);
+  cpu->setX(121);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1142) == 121);
+}
+
+// Flag Instructions
+
+TEST (CpuRegisters,SEC)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SEC);
+  cpu->RunInstruction();
+  CHECK(cpu->getC());
+}
+
+TEST (CpuRegisters,SED)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SED);
+  cpu->RunInstruction();
+  CHECK(cpu->getD());
+}
+
+TEST (CpuRegisters,SEI)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SEI);
+  cpu->RunInstruction();
+  CHECK(cpu->getI());
+}
+
+TEST (CpuRegisters,CLC)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLC);
+  cpu->RunInstruction();
+  CHECK(!cpu->getC());
+}
+
+TEST (CpuRegisters,CLD)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLD);
+  cpu->RunInstruction();
+  CHECK(!cpu->getD());
+}
+
+TEST (CpuRegisters,CLI)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLI);
+  cpu->RunInstruction();
+  CHECK(!cpu->getI());
+}
+
+TEST (CpuRegisters,CLV)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLV);
+  cpu->RunInstruction();
+  CHECK(!cpu->getV());
+}
 
 int main()
 {
   TestResult tr;
   TestRegistry::runAllTests(tr);
-  
   return 0;
 }
