@@ -217,3 +217,112 @@ TEST (BooleanTest,EOR_Indy)
   cpu->RunInstruction();
   CHECK(cpu->getA() == 0x4);
 }
+
+TEST (BooleanTest, ORA_Imm)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Imm);
+  mem->writeByteTo(1,0xD);
+  cpu->setA(3);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xF);
+}
+
+TEST (BooleanTest, ORA_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Zp);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(0xD,0x9);
+  cpu->setA(3);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Zpx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Zpx);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(0xE,0x9);
+  cpu->setA(3);
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Abs);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(2,0x42);
+  mem->writeByteTo(0x420D,0x9);
+  cpu->setA(3);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Absx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Absx);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(2,0x42);
+  mem->writeByteTo(0x420F,0x9);
+  cpu->setA(3);
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Absy)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Absy);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(2,0x42);
+  mem->writeByteTo(0x420E,0x9);
+  cpu->setA(3);
+  cpu->setY(1);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Indx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Indx);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(0xE,0xD);
+  mem->writeByteTo(0xF,0x42);
+  mem->writeByteTo(0x420D,0x9);
+  cpu->setA(3);
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+TEST (BooleanTest, ORA_Indy)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ORA_Indy);
+  mem->writeByteTo(1,0xD);
+  mem->writeByteTo(0xD,0x0C);
+  mem->writeByteTo(0xE,0x42);
+  mem->writeByteTo(0x420D,0x9);
+  cpu->setA(3);
+  cpu->setY(1);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xB);
+}
+
+
