@@ -15,6 +15,7 @@ bool CpuBoolean::RunInstruction()
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
+  int address = 0;
   switch (opcode)
     {
     case AND_Imm:
@@ -163,8 +164,165 @@ bool CpuBoolean::RunInstruction()
       A |= memory->readByteFrom(addrIndy(arg1,arg2));
       setNZ(A);
       break;
+
+    case ASL_A:
+      PC += 1;
+      cycles += 2;
+      A = ASL(A);
+      break;
+    case ASL_Zp:
+      PC += 2;
+      cycles += 5;
+      memory->writeByteTo(addrZp(arg1,arg2),ASL(memory->readByteFrom(addrZp(arg1,arg2))));
+      break;
+    case ASL_Zpx:
+      PC += 2;
+      cycles += 6;
+      memory->writeByteTo(addrZpx(arg1,arg2),ASL(memory->readByteFrom(addrZpx(arg1,arg2))));
+      break;
+    case ASL_Abs:
+      PC += 3;
+      cycles += 6;
+      memory->writeByteTo(addrAbs(arg1,arg2),ASL(memory->readByteFrom(addrAbs(arg1,arg2))));
+      break;
+    case ASL_Absx:
+      PC += 3;
+      cycles += 7;
+      memory->writeByteTo(addrAbsx(arg1,arg2),ASL(memory->readByteFrom(addrAbsx(arg1,arg2))));
+      break;
+
+    case LSR_A:
+      PC += 1;
+      cycles += 2;
+      A = LSR(A);
+      break;
+    case LSR_Zp:
+      PC += 2;
+      cycles += 5;
+      address = addrZp(arg1,arg2);
+      memory->writeByteTo(address,LSR(memory->readByteFrom(address)));
+      break;
+    case LSR_Zpx:
+      PC += 2;
+      cycles += 6;
+      address = addrZpx(arg1,arg2);
+      memory->writeByteTo(address,LSR(memory->readByteFrom(address)));
+      break;
+    case LSR_Abs:
+      PC += 3;
+      cycles += 6;
+      address = addrAbs(arg1,arg2);
+      memory->writeByteTo(address,LSR(memory->readByteFrom(address)));
+      break;
+    case LSR_Absx:
+      PC += 3;
+      cycles += 7;
+      address = addrAbsx(arg1,arg2);
+      memory->writeByteTo(address,LSR(memory->readByteFrom(address)));
+      break;
+
+    case ROL_A:
+      PC += 1;
+      cycles += 2;
+      A = ROL(A);
+      break;
+    case ROL_Zp:
+      PC += 2;
+      cycles += 5;
+      address = addrZp(arg1,arg2);
+      memory->writeByteTo(address,ROL(memory->readByteFrom(address)));
+      break;
+    case ROL_Zpx:
+      PC += 2;
+      cycles += 6;
+      address = addrZpx(arg1,arg2);
+      memory->writeByteTo(address,ROL(memory->readByteFrom(address)));
+      break;
+    case ROL_Abs:
+      PC += 3;
+      cycles += 6;
+      address = addrAbs(arg1,arg2);
+      memory->writeByteTo(address,ROL(memory->readByteFrom(address)));
+      break;
+    case ROL_Absx:
+      PC += 3;
+      cycles += 7;
+      address = addrAbsx(arg1,arg2);
+      memory->writeByteTo(address,ROL(memory->readByteFrom(address)));
+      break;
+
+    case ROR_A:
+      PC += 1;
+      cycles += 2;
+      A = ROR(A);
+      break;
+    case ROR_Zp:
+      PC += 2;
+      cycles += 5;
+      address = addrZp(arg1,arg2);
+      memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
+      break;
+    case ROR_Zpx:
+      PC += 2;
+      cycles += 6;
+      address = addrZpx(arg1,arg2);
+      memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
+      break;
+    case ROR_Abs:
+      PC += 3;
+      cycles += 6;
+      address = addrAbs(arg1,arg2);
+      memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
+      break;
+    case ROR_Absx:
+      PC += 3;
+      cycles += 7;
+      address = addrAbsx(arg1,arg2);
+      memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
+      break;
+      
     default:
       return false;
     }
   return true;
+}
+
+int CpuBoolean::ASL(int arg)
+{
+  int value = arg << 1;
+  if ((value & 0xF) != (value))
+    C = true;
+  else
+    C = false;
+  value = (value & 0xF);
+  setNZ(value);
+  return value;
+}
+
+int CpuBoolean::LSR(int arg)
+{
+  int value = arg>>1;
+  if (arg % 2 == 1)
+    C = true;
+  else
+    C = false;
+  value &= 0x7; // Bit 7 will always be 0 anyways
+  setNZ(value);
+  return value;
+}
+
+int CpuBoolean::ROL(int arg)
+{
+  int value = ASL(arg);
+  value += (int)C;
+  setNZ(value);
+  return value;
+}
+
+int CpuBoolean::ROR(int arg)
+{
+  int value = LSR(arg);
+  value += ((int)C << 7);
+  setNZ(value);
+  return value;
 }

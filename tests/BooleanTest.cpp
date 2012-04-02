@@ -218,6 +218,8 @@ TEST (BooleanTest,EOR_Indy)
   CHECK(cpu->getA() == 0x4);
 }
 
+// ORA Instruction
+
 TEST (BooleanTest, ORA_Imm)
 {
   CpuBoolean* cpu = new CpuBoolean();
@@ -325,4 +327,303 @@ TEST (BooleanTest, ORA_Indy)
   CHECK(cpu->getA() == 0xB);
 }
 
+// ASL Instruction
+
+TEST (BooleanTest, ASL_A)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ASL_A);
+  cpu->setA(0xF0);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xE0);
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ASL_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ASL_Zp);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(0x64,0xFB); // 1111 1011
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0xF6);  // 1111 0110
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ASL_Zpx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ASL_Zpx);
+  mem->writeByteTo(1,0x62);
+  mem->writeByteTo(0x64,0x3B); // 0011 1011
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0x76);  // 0111 0110
+  CHECK(cpu->getC() == false);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ASL_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ASL_Abs);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x11);
+  mem->writeByteTo(0x1164,0x80); // 1000 0000
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1164) == 0x00);  // 0000 0000
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == true);
+}
+
+TEST (BooleanTest, ASL_Absx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ASL_Absx);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x12);
+  mem->writeByteTo(0x1265,0xFB); // 1111 1011
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1265) == 0xF6);  // 1111 0110
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+// LSR Instruction
+
+TEST (BooleanTest, LSR_A)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LSR_A);
+  cpu->setA(0xF0); // 1111 0000
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0x78); // 0111 1000
+  CHECK(cpu->getC() == false);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, LSR_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LSR_Zp);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(0x64,0xFB); // 1111 1011
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0x7D);  // 0111 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, LSR_Zpx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LSR_Zpx);
+  mem->writeByteTo(1,0x62);
+  mem->writeByteTo(0x64,0x3B); // 0011 1011
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0x1D);  // 0001 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, LSR_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LSR_Abs);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x11);
+  mem->writeByteTo(0x1164,0x01); // 0000 0001
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1164) == 0x00);  // 0000 0000
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == true);
+}
+
+TEST (BooleanTest, LSR_Absx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,LSR_Absx);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x12);
+  mem->writeByteTo(0x1265,0xFB); // 1111 1011
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1265) == 0x7D);  // 0111 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+// ROL Instruction
+
+TEST (BooleanTest, ROL_A)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROL_A);
+  cpu->setA(0xF0); // 1111 0000
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0xE1); // 1110 0001
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROL_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROL_Zp);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(0x64,0xFB); // 1111 1011
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0xF7);  // 1111 0111
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROL_Zpx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROL_Zpx);
+  mem->writeByteTo(1,0x62);
+  mem->writeByteTo(0x64,0x3B); // 0011 1011
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0x76);  // 0111 0110
+  CHECK(cpu->getC() == false);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROL_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROL_Abs);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x11);
+  mem->writeByteTo(0x1164,0x00); // 0000 0000
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1164) == 0x00);  // 0000 0000
+  CHECK(cpu->getC() == false);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == true);
+}
+
+TEST (BooleanTest, ROL_Absx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROL_Absx);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x12);
+  mem->writeByteTo(0x1265,0xFB); // 1111 1011
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1265) == 0xF7);  // 1111 0111
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+// ROR Instruction
+
+TEST (BooleanTest, ROR_A)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROR_A);
+  cpu->setA(0xF0); // 1111 0000
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 0x78); // 0111 1000
+  CHECK(cpu->getC() == false);
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROR_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROR_Zp);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(0x64,0xFB); // 1111 1011
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0xFD);  // 1111 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROR_Zpx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROR_Zpx);
+  mem->writeByteTo(1,0x62);
+  mem->writeByteTo(0x64,0x3B); // 0011 1011
+  cpu->setX(2);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x64) == 0x9D);  // 1001 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROR_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROR_Abs);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x11);
+  mem->writeByteTo(0x1164,0x01); // 0000 0001
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1164) == 0x80);  // 1000 0000
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
+
+TEST (BooleanTest, ROR_Absx)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,ROR_Absx);
+  mem->writeByteTo(1,0x64);
+  mem->writeByteTo(2,0x12);
+  mem->writeByteTo(0x1265,0xFB); // 1111 1011
+  cpu->setX(1);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x1265) == 0xFD);  // 1111 1101
+  CHECK(cpu->getC() == true);
+  CHECK(cpu->getN() == true);
+  CHECK(cpu->getZ() == false);
+}
 

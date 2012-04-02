@@ -267,7 +267,7 @@ bool CpuRegisters::RunInstruction()
     case CLV:
       PC += 1;
       cycles += 2;
-      I = false;
+      V = false;
       break;
 
     case SEC:
@@ -375,6 +375,10 @@ int CpuRegisters::getY() {return Y;}
 int CpuRegisters::getS() {return S;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
+bool CpuRegisters::getC() {return C;}
+bool CpuRegisters::getD() {return D;}
+bool CpuRegisters::getI() {return I;}
+bool CpuRegisters::getV() {return V;}
 MemoryState* CpuRegisters::getMemory() {return memory;}
 
 void CpuRegisters::setX(int value) {X = value;}

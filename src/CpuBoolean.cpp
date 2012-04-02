@@ -290,11 +290,11 @@ bool CpuBoolean::RunInstruction()
 int CpuBoolean::ASL(int arg)
 {
   int value = arg << 1;
-  if ((value & 0xF) != (value))
+  if ((value & 0xFF) != (value))
     C = true;
   else
     C = false;
-  value = (value & 0xF);
+  value = (value & 0xFF);
   setNZ(value);
   return value;
 }
@@ -306,7 +306,7 @@ int CpuBoolean::LSR(int arg)
     C = true;
   else
     C = false;
-  value &= 0x7; // Bit 7 will always be 0 anyways
+  value &= 0x7F; // Bit 7 will always be 0 anyways
   setNZ(value);
   return value;
 }
