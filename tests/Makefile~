@@ -1,4 +1,4 @@
-CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp RegistersTest.cpp
+CXXFILES := CppUnitLite/Failure.cpp CppUnitLite/SimpleString.cpp CppUnitLite/Test.cpp CppUnitLite/TestRegistry.cpp CppUnitLite/TestResult.cpp RegistersTest.cpp BooleanTest.cpp
 CXXFILES += ../src/CpuArithmetic.cpp ../src/CpuBoolean.cpp ../src/CpuBranches.cpp ../src/CpuRegisters.cpp ../src/CpuState.cpp ../src/MemoryState.cpp
 PROG := test
 
