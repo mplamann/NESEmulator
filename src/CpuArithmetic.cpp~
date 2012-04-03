@@ -167,7 +167,7 @@ bool CpuArithmetic::RunInstruction()
       cycles += 6;
       value = memory->readByteFrom(addrAbs(arg1,arg2));
       value++;
-      memory->writeByteTo(addrAbs(arg1,arg2));
+      memory->writeByteTo(addrAbs(arg1,arg2),value);
       setNZ(value);
       break;
     case INC_Absx:
@@ -175,7 +175,7 @@ bool CpuArithmetic::RunInstruction()
       cycles += 7;
       value = memory->readByteFrom(addrAbs(arg1,arg2));
       value++;
-      memory->writeByteTo(addrAbsx(arg1,arg2));
+      memory->writeByteTo(addrAbsx(arg1,arg2),value);
       setNZ(value);
       break;
 
