@@ -405,10 +405,67 @@ TEST (CpuRegisters,STX_Abs)
   CHECK(mem->readByteFrom(0x1142) == 121);
 }
 
+// Flag Instructions
+
+TEST (CpuRegisters,SEC)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SEC);
+  cpu->RunInstruction();
+  CHECK(cpu->getC());
+}
+
+TEST (CpuRegisters,SED)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SED);
+  cpu->RunInstruction();
+  CHECK(cpu->getD());
+}
+
+TEST (CpuRegisters,SEI)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,SEI);
+  cpu->RunInstruction();
+  CHECK(cpu->getI());
+}
+
+TEST (CpuRegisters,CLC)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLC);
+  cpu->RunInstruction();
+  CHECK(!cpu->getC());
+}
+
+TEST (CpuRegisters,CLD)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLD);
+  cpu->RunInstruction();
+  CHECK(!cpu->getD());
+}
+
+TEST (CpuRegisters,CLI)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLI);
+  cpu->RunInstruction();
+  CHECK(!cpu->getI());
+}
+
+TEST (CpuRegisters,CLV)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  cpu->getMemory()->writeByteTo(0,CLV);
+  cpu->RunInstruction();
+  CHECK(!cpu->getV());
+}
+
 int main()
 {
   TestResult tr;
   TestRegistry::runAllTests(tr);
-  
   return 0;
 }

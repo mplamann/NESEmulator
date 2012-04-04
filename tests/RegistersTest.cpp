@@ -8,9 +8,9 @@ TEST(CpuRegisters,LDA_Imm)
 {
   CpuRegisters* cpu = new CpuRegisters();
   cpu->getMemory()->writeByteTo(0,LDA_Imm);
-  cpu->getMemory()->writeByteTo(1,-15);
+  cpu->getMemory()->writeByteTo(1,0xF1);
   cpu->RunInstruction();
-  CHECK(cpu->getA() == -15);
+  CHECK(cpu->getA() == 0xF1);
   CHECK(cpu->getN());
   CHECK(!cpu->getZ());
 }
@@ -107,9 +107,9 @@ TEST(CpuRegisters,LDX_Imm)
 {
   CpuRegisters* cpu = new CpuRegisters();
   cpu->getMemory()->writeByteTo(0,LDX_Imm);
-  cpu->getMemory()->writeByteTo(1,-15);
+  cpu->getMemory()->writeByteTo(1,0xF1);
   cpu->RunInstruction();
-  CHECK(cpu->getX() == -15);
+  CHECK(cpu->getX() == 0xF1);
   CHECK(cpu->getN());
   CHECK(!cpu->getZ());
 }
@@ -165,9 +165,9 @@ TEST(CpuRegisters,LDY_Imm)
 {
   CpuRegisters* cpu = new CpuRegisters();
   cpu->getMemory()->writeByteTo(0,LDY_Imm);
-  cpu->getMemory()->writeByteTo(1,-15);
+  cpu->getMemory()->writeByteTo(1,0xF1);
   cpu->RunInstruction();
-  CHECK(cpu->getY() == -15);
+  CHECK(cpu->getY() == 0xF1);
   CHECK(cpu->getN());
   CHECK(!cpu->getZ());
 }

@@ -308,7 +308,7 @@ void CpuRegisters::LDAAbs(int arg1, int arg2, int offset)
 
 void CpuRegisters::setNZ(int value)
 {
-  N = (((int)value) < 0);
+  N = ((value & 0x80) != 0);
   Z = (value == 0);
 }
 

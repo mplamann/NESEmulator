@@ -201,18 +201,18 @@ void CpuArithmetic::addToA(int value)
 {
   unsigned int temp = value + A + (C ? 1 : 0);
   C = (temp > 0xFF);
-  N = (((int)temp) < 0);
-  Z = (temp == 0);
   V = (!((A ^ value) & 0x80) && ((A ^ temp) & 0x80));
-  A = temp;
+  A = (temp & 0xFF);
+  N = ((A & 0x80) != 0);
+  Z = (A == 0);
 }
 
 void CpuArithmetic::subFromA(int value)
 {
   unsigned int temp = A - value - (C ? 0 : 1);
   C = (temp < 0x100);
-  N = (((int)temp) < 0);
-  Z = (temp == 0);
   V = (((A ^ value) & 0x80) && ((A ^ temp) & 0x80));
   A = temp & 0xFF;
+  N = ((A & 0x80) != 0);
+  Z = (A == 0);
 }

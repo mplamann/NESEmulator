@@ -5,7 +5,7 @@ using namespace std;
 
 MemoryState::MemoryState(void)
 {
-  for (int i = 0; i < 2048; i++)
+  for (int i = 0; i < RAM_SIZE; i++)
     RAM[i] = 0;
   RAM[0] = 0xA9; // LDA #23
   RAM[1] = 0x17;
@@ -23,11 +23,19 @@ MemoryState::~MemoryState(void)
 
 int MemoryState::readByteFrom(int address)
 {
+  if (address >= RAM_SIZE || address < 0)
+    {
+      cout << "Invalid memory read at address " << address << endl;
+    }
   return RAM[address];
 }
 
 void MemoryState::writeByteTo(int address, int value)
 {
+  if (address >= RAM_SIZE || address < 0)
+    {
+      cout << "Invalid memory write at address " << address << endl;
+    }
   RAM[address] = value;
 }
 
@@ -39,7 +47,7 @@ void MemoryState::loadFileToRAM(char* filename)
       ifstream::pos_type size = file.tellg();
       if (size > RAM_SIZE)
 	size = RAM_SIZE;
-      cout << "File too large, truncating.";
+      cout << "File (" << filename << ") too large, truncating.";
       file.seekg(0, ios::beg);
       file.read((char*)RAM, size);
       file.close();

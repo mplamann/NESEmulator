@@ -137,12 +137,14 @@ bool CpuArithmetic::RunInstruction()
       PC += 1;
       cycles += 2;
       X--;
+      X &= 0xFF;
       setNZ(X);
       break;
     case DEY:
       PC += 1;
       cycles += 2;
       Y--;
+      Y &= 0xFF;
       setNZ(Y);
       break;
 
@@ -159,7 +161,7 @@ bool CpuArithmetic::RunInstruction()
       cycles += 6;
       value = memory->readByteFrom(addrZpx(arg1,arg2));
       value++;
-      memory->writeByteTo(addrZp(arg1,arg2),value);
+      memory->writeByteTo(addrZpx(arg1,arg2),value);
       setNZ(value);
       break;
     case INC_Abs:
@@ -173,7 +175,7 @@ bool CpuArithmetic::RunInstruction()
     case INC_Absx:
       PC += 3;
       cycles += 7;
-      value = memory->readByteFrom(addrAbs(arg1,arg2));
+      value = memory->readByteFrom(addrAbsx(arg1,arg2));
       value++;
       memory->writeByteTo(addrAbsx(arg1,arg2),value);
       setNZ(value);
@@ -183,12 +185,14 @@ bool CpuArithmetic::RunInstruction()
       PC += 1;
       cycles += 2;
       X++;
+      X &= 0xFF;
       setNZ(X);
       break;
     case INY:
       PC += 1;
       cycles += 2;
       Y++;
+      Y &= 0xFF;
       setNZ(Y);
       break;
     default:

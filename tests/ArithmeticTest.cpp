@@ -299,3 +299,176 @@ TEST (CpuArithmetic, SBC_Indy)
   CHECK(cpu->getC() == true);
   CHECK(cpu->getV() == true);
 }
+
+// DEC Instruction
+
+TEST (CpuArithmetic, DEC_Zp)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEC_Zp);
+  mem->writeByteTo(1,134);
+  mem->writeByteTo(134,30);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(134) == 29);
+  CHECK(!cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, DEC_Zpx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEC_Zpx);
+  mem->writeByteTo(1,134);
+  mem->writeByteTo(343,179);
+  cpu->setX(209);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(343) == 178);
+  CHECK(cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, DEC_Abs)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEC_Abs);
+  mem->writeByteTo(1,0x3B);
+  mem->writeByteTo(2,0xB9);
+  mem->writeByteTo(0xB93B,0x3C);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0xB93B) == 0x3B);
+  CHECK(!cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, DEC_Absx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEC_Absx);
+  mem->writeByteTo(1,0x02);
+  mem->writeByteTo(2,0x20);
+  mem->writeByteTo(0x200B,1);
+  cpu->setX(9);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x200B) == 0);
+  CHECK(!cpu->getN());
+  CHECK(cpu->getZ());
+}
+
+// DEX Instruction
+
+TEST (CpuArithmetic, DEX)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEX);
+  cpu->setX(23);
+  cpu->RunInstruction();
+  CHECK(cpu->getX() == 22);
+  CHECK(!cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+// DEY Instruction
+
+TEST (CpuArithmetic, DEY)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,DEY);
+  cpu->setY(0);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 255);
+  CHECK(cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+// INC Instruction
+
+TEST (CpuArithmetic, INC_Zp)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INC_Zp);
+  mem->writeByteTo(1,134);
+  mem->writeByteTo(134,30);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(134) == 31);
+  CHECK(!cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, INC_Zpx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INC_Zpx);
+  mem->writeByteTo(1,134);
+  mem->writeByteTo(343,179);
+  cpu->setX(209);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(343) == 180);
+  CHECK(cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, INC_Abs)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INC_Abs);
+  mem->writeByteTo(1,0x3B);
+  mem->writeByteTo(2,0xB9);
+  mem->writeByteTo(0xB93B,0x7F);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0xB93B) == 0x80);
+  CHECK(cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+TEST (CpuArithmetic, INC_Absx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INC_Absx);
+  mem->writeByteTo(1,0x02);
+  mem->writeByteTo(2,0x20);
+  mem->writeByteTo(0x2007,255);
+  cpu->setX(5);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x2007) == 0);
+  CHECK(!cpu->getN());
+  CHECK(cpu->getZ());
+}
+
+// INX Instruction
+
+TEST (CpuArithmetic, INX)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INX);
+  cpu->setX(23);
+  cpu->RunInstruction();
+  CHECK(cpu->getX() == 24);
+  CHECK(!cpu->getN());
+  CHECK(!cpu->getZ());
+}
+
+// INY Instruction
+
+TEST (CpuArithmetic, INY)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,INY);
+  cpu->setY(255);
+  cpu->RunInstruction();
+  CHECK(cpu->getY() == 0);
+  CHECK(!cpu->getN());
+  CHECK(cpu->getZ());
+}
+

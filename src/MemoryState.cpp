@@ -36,7 +36,7 @@ void MemoryState::writeByteTo(int address, int value)
     {
       cout << "Invalid memory write at address " << address << endl;
     }
-  RAM[address] = value;
+  RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
 }
 
 void MemoryState::loadFileToRAM(char* filename)
