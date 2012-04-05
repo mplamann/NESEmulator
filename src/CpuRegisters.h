@@ -37,6 +37,7 @@ class CpuRegisters
   int getX();
   int getY();
   int getS();
+  int getPC();
   bool getN();
   bool getZ();
   bool getC();
@@ -47,6 +48,7 @@ class CpuRegisters
   void setX(int value);
   void setY(int value);
   void setS(int value);
+  void setPC(int value);
   MemoryState* getMemory();
 };
 

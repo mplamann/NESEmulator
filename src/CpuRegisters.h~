@@ -39,6 +39,10 @@ class CpuRegisters
   int getS();
   bool getN();
   bool getZ();
+  bool getC();
+  bool getD();
+  bool getI();
+  bool getV();
   void setA(int value); // These setters are for unit tests only
   void setX(int value);
   void setY(int value);

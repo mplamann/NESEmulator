@@ -1,11 +1,10 @@
 #pragma once
-//typedef unsigned int byte;
 
 const int ADC_Imm = 0x69;
 const int ADC_Zp = 0x65;
 const int ADC_Zpx = 0x75;
-const int ADC_Abs = 0x60;
-const int ADC_Absx = 0x70;
+const int ADC_Abs = 0x6D;
+const int ADC_Absx = 0x7D;
 const int ADC_Absy = 0x79;
 const int ADC_Indx = 0x61;
 const int ADC_Indy = 0x71;
@@ -71,8 +70,8 @@ const int DEY = 0x88;
 const int EOR_Imm = 0x49;
 const int EOR_Zp = 0x45;
 const int EOR_Zpx = 0x55;
-const int EOR_Abs = 0x40;
-const int EOR_Absx = 0x50;
+const int EOR_Abs = 0x4D;
+const int EOR_Absx = 0x5D;
 const int EOR_Absy = 0x59;
 const int EOR_Indx = 0x41;
 const int EOR_Indy = 0x51;
@@ -163,8 +162,8 @@ const int SEI = 0x78;
 
 const int STA_Zp = 0x85;
 const int STA_Zpx = 0x95;
-const int STA_Abs = 0x80;
-const int STA_Absx = 0x90;
+const int STA_Abs = 0x8D;
+const int STA_Absx = 0x9D;
 const int STA_Absy = 0x99;
 const int STA_Indx = 0x81;
 const int STA_Indy = 0x91;

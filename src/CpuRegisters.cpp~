@@ -308,6 +308,7 @@ void CpuRegisters::LDAAbs(int arg1, int arg2, int offset)
 
 void CpuRegisters::setNZ(int value)
 {
+  value &= 0xFF; // Make sure it is one byte that we are looking at
   N = ((value & 0x80) != 0);
   Z = (value == 0);
 }

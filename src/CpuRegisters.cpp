@@ -374,6 +374,7 @@ int CpuRegisters::getA() {return A;}
 int CpuRegisters::getX() {return X;}
 int CpuRegisters::getY() {return Y;}
 int CpuRegisters::getS() {return S;}
+int CpuRegisters::getPC() {return PC;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
 bool CpuRegisters::getC() {return C;}
@@ -386,3 +387,4 @@ void CpuRegisters::setX(int value) {X = value;}
 void CpuRegisters::setA(int value) {A = value;}
 void CpuRegisters::setY(int value) {Y = value;}
 void CpuRegisters::setS(int value) {S = value;}
+void CpuRegisters::setPC(int value) {PC = value;}
