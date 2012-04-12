@@ -1,12 +1,13 @@
 #include "CpuRegisters.h"
-
+#include <iostream>
+using namespace std;
 
 CpuRegisters::CpuRegisters(void)
 {
   A=0;
   X=0;
   Y=0;
-  S=0;
+  S=0x01FF;
   PC=0;
   cycles = 0;
 
@@ -16,7 +17,7 @@ CpuRegisters::CpuRegisters(void)
   D = false; // Decimal flag, not used
   B = false; // BRK flag
   V = false; // Overflow flag
-  S = false; // Sign flag (1 if negative, 0 if positive)
+  N = false; // Sign flag (1 if negative, 0 if positive)
 
   memory = new MemoryState();
 }
@@ -290,6 +291,28 @@ bool CpuRegisters::RunInstruction()
       PC += 1;
       cycles += 2;
       break;
+
+    case PHA:
+      pushToStack(A);
+      PC += 1;
+      cycles += 3;
+      break;
+    case PHP:
+      cycles += 3;
+      PC += 1;
+      pushToStack(getP());
+      break;
+
+    case PLA:
+      cycles += 4;
+      PC += 1;
+      A = popFromStack();
+      break;
+    case PLP:
+      cycles += 4;
+      PC += 1;
+      setP(popFromStack());
+      break;
     default:
       return false;
     }
@@ -370,17 +393,56 @@ int CpuRegisters::addrIndy(int arg1, int arg2)
   return indirectAddress+Y;
 }
 
+int CpuRegisters::addrInd(int arg1, int arg2)
+{
+  int absAddr = arg1 + (arg2 << 8);
+  return memory->readByteFrom(absAddr) + (memory->readByteFrom(absAddr + 1) << 8);
+}
+
+void CpuRegisters::pushToStack(int value)
+{
+  memory->writeByteTo(S--,value);
+  if (S <= 0x100)
+    {
+      cout << "Don't know what is happening, stack has grown into the Zero page!\nProceeding anyways";
+      cout << "\nS is now " << S;
+    }
+}
+
+int CpuRegisters::popFromStack()
+{
+  return memory->readByteFrom(++S);
+}
+
 int CpuRegisters::getA() {return A;}
 int CpuRegisters::getX() {return X;}
 int CpuRegisters::getY() {return Y;}
 int CpuRegisters::getS() {return S;}
 int CpuRegisters::getPC() {return PC;}
+int CpuRegisters::getP()
+{
+  int P = 0x20;
+  if (C)
+    P |= 0x01;
+  if (Z)
+    P |= 0x02;
+  if (I)
+    P |= 0x04;
+  if (B)
+    P |= 0x10;
+  if (V)
+    P |= 0x40;
+  if (N)
+    P |= 0x80;
+  return P;
+}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
 bool CpuRegisters::getC() {return C;}
 bool CpuRegisters::getD() {return D;}
 bool CpuRegisters::getI() {return I;}
 bool CpuRegisters::getV() {return V;}
+bool CpuRegisters::getB() {return B;}
 MemoryState* CpuRegisters::getMemory() {return memory;}
 
 void CpuRegisters::setX(int value) {X = value;}
@@ -388,3 +450,12 @@ void CpuRegisters::setA(int value) {A = value;}
 void CpuRegisters::setY(int value) {Y = value;}
 void CpuRegisters::setS(int value) {S = value;}
 void CpuRegisters::setPC(int value) {PC = value;}
+void CpuRegisters::setP(int P)
+{
+  C = ((P & 0x01) != 0);
+  Z = ((P & 0x02) != 0);
+  I = ((P & 0x04) != 0);
+  B = ((P & 0x10) != 0);
+  V = ((P & 0x40) != 0);
+  N = ((P & 0x80) != 0);
+}

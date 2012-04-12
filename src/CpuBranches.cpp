@@ -26,6 +26,39 @@ bool CpuBranches::RunInstruction()
     case BEQ:
       doBranch(Z,arg1);
       break;
+    case BMI:
+      doBranch(N,arg1);
+      break;
+    case BNE:
+      doBranch(!Z,arg1);
+      break;
+    case BPL:
+      doBranch(!N,arg1);
+      break;
+    case BVC:
+      doBranch(!V,arg1);
+      break;
+    case BVS:
+      doBranch(V,arg1);
+      break;
+    case JMP_Abs:
+      doJump(addrAbs(arg1,arg2));
+      break;
+    case JMP_Ind:
+      doJump(addrInd(arg1,arg2));
+      cycles += 2;
+      break;
+    case JSR:
+      pushToStack(((PC+2) >> 8) & 0xFF);
+      pushToStack((PC+2) & 0xFF);
+      cycles += 3;
+      doJump(addrAbs(arg1,arg2));
+      break;
+    case RTS:
+      PC = popFromStack() + (popFromStack() << 8);
+      PC++;
+      cycles += 6;
+      break;
     default:
       return false;
     }
@@ -49,3 +82,10 @@ void CpuBranches::doBranch(bool condition, int offset)
   PC += offset;
 }
 
+void CpuBranches::doJump(int target)
+{
+  cycles += 3;
+  PC = target;
+  // Yay! that was a fun function!
+  // Necessary too!
+}

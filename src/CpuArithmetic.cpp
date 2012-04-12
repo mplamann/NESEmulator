@@ -100,6 +100,80 @@ bool CpuArithmetic::RunInstruction()
       subFromA(memory->readByteFrom(addrIndy(arg1,arg2)));
       break;
 
+    case CMP_Imm:
+      PC += 2;
+      cycles += 2;
+      cmpMReg(arg1,A);
+      break;
+    case CMP_Zp:
+      PC += 2;
+      cycles += 3;
+      cmpMReg(memory->readByteFrom(addrZp(arg1,arg2)),A);
+      break;
+    case CMP_Zpx:
+      PC += 2;
+      cycles += 4;
+      cmpMReg(memory->readByteFrom(addrZpx(arg1,arg2)),A);
+      break;
+    case CMP_Abs:
+      cycles += 4;
+      PC += 3;
+      cmpMReg(memory->readByteFrom(addrAbs(arg1,arg2)),A);
+      break;
+    case CMP_Absx:
+      cycles += 4;
+      PC += 3;
+      cmpMReg(memory->readByteFrom(addrAbsx(arg1,arg2)),A);
+      break;
+    case CMP_Absy:
+      cycles += 4;
+      PC += 3;
+      cmpMReg(memory->readByteFrom(addrAbsy(arg1,arg2)),A);
+      break;
+    case CMP_Indx:
+      PC += 2;
+      cycles += 6;
+      cmpMReg(memory->readByteFrom(addrIndx(arg1,arg2)),A);
+      break;
+    case CMP_Indy:
+      PC += 2;
+      cycles += 5;
+      cmpMReg(memory->readByteFrom(addrIndy(arg1,arg2)),A);
+      break;
+
+    case CPX_Imm:
+      PC += 2;
+      cycles += 2;
+      cmpMReg(arg1,X);
+      break;
+    case CPX_Zp:
+      PC += 2;
+      cycles += 3;
+      cmpMReg(memory->readByteFrom(addrZp(arg1,arg2)),X);
+      break;
+    case CPX_Abs:
+      PC += 3;
+      cycles += 4;
+      cmpMReg(memory->readByteFrom(addrAbs(arg1,arg2)),X);
+      break;
+
+      
+    case CPY_Imm:
+      PC += 2;
+      cycles += 2;
+      cmpMReg(arg1,Y);
+      break;
+    case CPY_Zp:
+      PC += 2;
+      cycles += 3;
+      cmpMReg(memory->readByteFrom(addrZp(arg1,arg2)),Y);
+      break;
+    case CPY_Abs:
+      PC += 3;
+      cycles += 4;
+      cmpMReg(memory->readByteFrom(addrAbs(arg1,arg2)),Y);
+      break;
+
     case DEC_Zp:
       PC += 2;
       cycles += 5;
@@ -219,4 +293,12 @@ void CpuArithmetic::subFromA(int value)
   A = temp & 0xFF;
   N = ((A & 0x80) != 0);
   Z = (A == 0);
+}
+
+void CpuArithmetic::cmpMReg(int value, int reg)
+{
+  unsigned int temp = reg - value - 1;
+  C = (temp < 0x100);
+  N = ((temp & 0x80) != 0);
+  Z = (temp == 0);
 }

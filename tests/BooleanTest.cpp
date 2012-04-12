@@ -627,3 +627,33 @@ TEST (BooleanTest, ROR_Absx)
   CHECK(cpu->getZ() == false);
 }
 
+// BIT Insturction
+
+TEST (CpuBoolean,BIT_Zp)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,BIT_Zp);
+  mem->writeByteTo(1,0x17);
+  mem->writeByteTo(0x17,0x8F);
+  cpu->setA(0x70);
+  cpu->RunInstruction();
+  CHECK(cpu->getN());
+  CHECK(!cpu->getV());
+  CHECK(cpu->getZ());
+}
+
+TEST (CpuBoolean,BIT_Abs)
+{
+  CpuBoolean* cpu = new CpuBoolean();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,BIT_Abs);
+  mem->writeByteTo(1,0x17);
+  mem->writeByteTo(2,0x23);
+  mem->writeByteTo(0x2317,0x7F);
+  cpu->setA(0xFF);
+  cpu->RunInstruction();
+  CHECK(!cpu->getN());
+  CHECK(cpu->getV());
+  CHECK(!cpu->getZ());
+}

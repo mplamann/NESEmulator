@@ -472,3 +472,144 @@ TEST (CpuArithmetic, INY)
   CHECK(cpu->getZ());
 }
 
+// CMP Instruction
+// I'm just going to declare that this works for CPX and CPY since they share the same code
+
+TEST (CpuArithmetic, CMP_Imm)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Imm);
+  mem->writeByteTo(2,0x36);
+  cpu->setA(0x80);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Zp)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Zp);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(0x36,0x36);
+  cpu->setA(0x80);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Zpx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Zpx);
+  mem->writeByteTo(2,0x32);
+  mem->writeByteTo(0x36,0x36);
+  cpu->setA(0x80);
+  cpu->setX(4);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Abs)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Abs);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(3,0x23);
+  mem->writeByteTo(0x2336,0x36);
+  cpu->setA(0x80);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Absx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Absx);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(3,0x23);
+  mem->writeByteTo(0x2338,0x36);
+  cpu->setA(0x80);
+  cpu->setX(0x2);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Absy)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Absy);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(3,0x23);
+  mem->writeByteTo(0x2369,0x36);
+  cpu->setA(0x80);
+  cpu->setY(0x33);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Indx)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Indx);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(0x38,0x36);
+  mem->writeByteTo(0x39,0x23);
+  mem->writeByteTo(0x2336,0x36);
+  cpu->setA(0x80);
+  cpu->setX(0x2);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}
+
+TEST (CpuArithmetic, CMP_Indy)
+{
+  CpuArithmetic* cpu = new CpuArithmetic();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,SEC);
+  cpu->RunInstruction(); // Clear the carry flag
+  mem->writeByteTo(1,CMP_Indy);
+  mem->writeByteTo(2,0x36);
+  mem->writeByteTo(0x36,0x23);
+  mem->writeByteTo(0x37,0x22);
+  mem->writeByteTo(0x2226,0x36);
+  cpu->setA(0x80);
+  cpu->setY(0x3);
+  cpu->RunInstruction();
+  CHECK(cpu->getN() == false);
+  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getC() == true);
+}

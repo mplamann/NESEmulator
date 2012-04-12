@@ -10,6 +10,7 @@ class CpuBoolean : public CpuRegisters
   int LSR(int value);
   int ROL(int value);
   int ROR(int value);
+  void BIT(int value);
  public:
   CpuBoolean(void);
   ~CpuBoolean(void);

@@ -280,7 +280,16 @@ bool CpuBoolean::RunInstruction()
       address = addrAbsx(arg1,arg2);
       memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
       break;
-      
+    case BIT_Zp:
+      PC += 2;
+      cycles += 3;
+      BIT(memory->readByteFrom(addrZp(arg1,arg2)));
+      break;
+    case BIT_Abs:
+      PC += 3;
+      cycles += 4;
+      BIT(memory->readByteFrom(addrAbs(arg1,arg2)));
+      break;
     default:
       return false;
     }
@@ -325,4 +334,11 @@ int CpuBoolean::ROR(int arg)
   value += ((int)C << 7);
   setNZ(value);
   return value;
+}
+
+void CpuBoolean::BIT(int arg)
+{
+  Z = ((A & arg) == 0);
+  V = ((0x40 & arg) != 0);
+  N = ((0x80 & arg) != 0);
 }

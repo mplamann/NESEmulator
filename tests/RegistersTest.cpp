@@ -2,6 +2,9 @@
 #include "CpuRegisters.h"
 #include "Util.h"
 
+#include <iostream>
+using namespace std;
+
 // LDA Instructions
 
 TEST(CpuRegisters,LDA_Imm)
@@ -461,6 +464,49 @@ TEST (CpuRegisters,CLV)
   cpu->getMemory()->writeByteTo(0,CLV);
   cpu->RunInstruction();
   CHECK(!cpu->getV());
+}
+
+TEST (CpuRegisters,PHA)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,PHA);
+  cpu->setA(23);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x01FF) == 23);
+}
+
+TEST (CpuRegisters,PHP)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,PHP);
+  cpu->RunInstruction();
+  CHECK(mem->readByteFrom(0x01FF) == 0x20);
+}
+
+TEST (CpuRegisters,PLA)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,PLA);
+  mem->writeByteTo(0x01FF,23);
+  cpu->setS(0x01FE);
+  cpu->RunInstruction();
+  CHECK(cpu->getA() == 23);
+}
+
+TEST (CpuRegisters,PLP)
+{
+  CpuRegisters* cpu = new CpuRegisters();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,PLP);
+  mem->writeByteTo(0x01FF,0xF0);
+  cpu->setS(0x01FE);
+  cpu->RunInstruction();
+  CHECK(cpu->getN());
+  CHECK(cpu->getV());
+  CHECK(cpu->getB());
 }
 
 int main()

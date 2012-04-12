@@ -265,7 +265,7 @@ the 6510 (the C64 processor).
   |     BMI   Branch on Result Minus
   |     BNE   Branch on Result not Zero
   |     BPL   Branch on Result Plus
-  |     BRK   Force Break
+  |     BRK   Force Break							TODO
   |     BVC   Branch on Overflow Clear
   |     BVS   Branch on Overflow Set
   |
@@ -273,9 +273,9 @@ the 6510 (the C64 processor).
   |     CLD   Clear Decimal Mode
   |     CLI   Clear interrupt Disable Bit
   |     CLV   Clear Overflow Flag
-  |     CMP   Compare Memory and Accumulator
-  |     CPX   Compare Memory and Index X
-  |     CPY   Compare Memory and Index Y
+  |     CMP   Compare Memory and Accumulator					
+  |     CPX   Compare Memory and Index X					
+  |     CPY   Compare Memory and Index Y					
   |
   |     DEC   Decrement Memory by One
   |     DEX   Decrement Index X by One
@@ -287,7 +287,7 @@ the 6510 (the C64 processor).
   |     INX   Increment Index X by One
   |     INY   Increment Index Y by One
   |
-  |     JMP   Jump to New Location
+  |     JMP   Jump to New Location						
   |
   +------------------------------------------------------------------------
 
@@ -309,15 +309,15 @@ the 6510 (the C64 processor).
                                                                           |
         ORA   "OR" Memory with Accumulator                                |
                                                                           |
-        PHA   Push Accumulator on Stack                                   |
-        PHP   Push Processor Status on Stack                              |
+        PHA   Push Accumulator on Stack                                   |	
+        PHP   Push Processor Status on Stack                              |	
         PLA   Pull Accumulator from Stack                                 |
         PLP   Pull Processor Status from Stack                            |
                                                                           |
         ROL   Rotate One Bit Left (Memory or Accumulator)                 |
         ROR   Rotate One Bit Right (Memory or Accumulator)                |
-        RTI   Return from Interrupt                                       |
-        RTS   Return from Subroutine                                      |
+        RTI   Return from Interrupt                                       |	TODO
+        RTS   Return from Subroutine                                      |	
                                                                           |
         SBC   Subtract Memory from Accumulator with Borrow                |
         SEC   Set Carry Flag                                              |
