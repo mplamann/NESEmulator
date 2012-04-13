@@ -284,3 +284,21 @@ TEST (BranchesTest, RTS)
   cpu->RunInstruction();
   CHECK(cpu->getPC() == 0x0724);
 }
+
+// RTI Instruction
+
+TEST (BranchesTest, RTI)
+{
+  CpuBranches* cpu = new CpuBranches();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,RTI);
+  mem->writeByteTo(0x01FF,0x07);
+  mem->writeByteTo(0x01FE,0x23);
+  mem->writeByteTo(0x01FD,0xF0);
+  cpu->setS(0x01FC);
+  cpu->RunInstruction();
+  CHECK(cpu->getPC() == 0x0723);
+  CHECK(cpu->getN());
+  CHECK(cpu->getV());
+  CHECK(cpu->getB());
+}

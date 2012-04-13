@@ -144,7 +144,7 @@ const int ROR_Zpx = 0x76;
 const int ROR_Abs = 0x6E;
 const int ROR_Absx = 0x7E;
 
-const int RTI = 0x4D;
+const int RTI = 0x40;
 const int RTS = 0x60;
 
 const int SBC_Imm = 0xE9;

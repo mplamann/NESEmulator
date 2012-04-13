@@ -59,6 +59,11 @@ bool CpuBranches::RunInstruction()
       PC++;
       cycles += 6;
       break;
+    case RTI:
+      setP(popFromStack());
+      PC = popFromStack() + (popFromStack() << 8);
+      cycles += 6;
+      break;
     default:
       return false;
     }
