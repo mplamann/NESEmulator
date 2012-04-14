@@ -182,3 +182,9 @@ const int TSX = 0xBA;
 const int TXA = 0x8A;
 const int TXS = 0x9A;
 const int TYA = 0x98;
+
+// Interrupt Vectors
+
+const int VECTOR_NMI = 0xFFFA;
+const int VECTOR_RESET = 0xFFFC;
+const int VECTOR_BRK = 0xFFFE;

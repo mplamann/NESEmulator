@@ -915,7 +915,7 @@ the 6510 (the C64 processor).
   +----------------+-----------------------+---------+---------+----------+
 
 
-  PLP               PLP Pull processor status from stack                PLA
+  PLP               PLP Pull processor status from stack                PLP
 
   Operation:  P fromS                                   N Z C I D V
                                                          From Stack

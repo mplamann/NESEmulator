@@ -64,6 +64,11 @@ bool CpuBranches::RunInstruction()
       PC = popFromStack() + (popFromStack() << 8);
       cycles += 6;
       break;
+    case BRK:
+      PC += 2;
+      cycles += 7;
+      doBRK();
+      break;
     default:
       return false;
     }
@@ -93,4 +98,33 @@ void CpuBranches::doJump(int target)
   PC = target;
   // Yay! that was a fun function!
   // Necessary too!
+}
+
+// for NMI or IRQ/BRK
+void CpuBranches::processInterrupt(int vector)
+{
+  pushToStack((PC >> 8) & 0xFF);
+  pushToStack(PC & 0xFF);
+  pushToStack(getP());
+  I = true;
+  PC = vector;
+}
+
+void CpuBranches::doRESET()
+{
+  cycles += 6;
+  I = true;
+  PC = memory->readByteFrom(VECTOR_RESET) + (memory->readByteFrom(VECTOR_RESET+1) << 8);
+}
+
+void CpuBranches::doNMI()
+{
+  int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
+  processInterrupt(vector);
+}
+
+void CpuBranches::doBRK()
+{
+  int vector = memory->readByteFrom(VECTOR_BRK) + (memory->readByteFrom(VECTOR_BRK+1) << 8);
+  processInterrupt(vector);
 }

@@ -302,3 +302,15 @@ TEST (BranchesTest, RTI)
   CHECK(cpu->getV());
   CHECK(cpu->getB());
 }
+
+// BRK Instruction
+TEST (BranchesTest, BRK)
+{
+  CpuBranches* cpu = new CpuBranches();
+  MemoryState* mem = cpu->getMemory();
+  mem->writeByteTo(0,BRK);
+  mem->writeByteTo(0xFFFE,0xA4);
+  mem->writeByteTo(0xFFFF,0x2F);
+  cpu->RunInstruction();
+  CHECK(cpu->getPC() == 0x2FA4);
+}
