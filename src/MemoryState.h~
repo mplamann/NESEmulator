@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Util.h"
-#define RAM_SIZE 2048
+#define RAM_SIZE 64*1024
 
 class MemoryState
 {

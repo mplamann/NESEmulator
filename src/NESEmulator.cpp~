@@ -3,13 +3,15 @@
 
 //#include "stdafx.h"
 #include "CpuState.h"
+#include <iostream>
 
 int main(int argc, char* argv[])
 {
   CpuState* cpu = new CpuState();
-  while (true)
+  for (int i = 0; i < 3; i++)
     {
       cpu->RunInstruction();
+      //      std::cout << cpu->getA();
     }
   return 0;
 }

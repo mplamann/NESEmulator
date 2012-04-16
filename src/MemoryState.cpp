@@ -1,6 +1,7 @@
 #include "MemoryState.h"
 #include <iostream>
-#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 using namespace std;
 
 MemoryState::MemoryState(void)
@@ -33,15 +34,36 @@ void MemoryState::writeByteTo(int address, int value)
 
 void MemoryState::loadFileToRAM(char* filename)
 {
-  ifstream file (filename, ios::in|ios::binary|ios::ate);
-  if (file.is_open())
+  FILE* fileStream;
+  long size;
+  size_t result;
+
+  fileStream = fopen(filename, "rb");
+  if (fileStream == NULL)
     {
-      ifstream::pos_type size = file.tellg();
-      if (size > RAM_SIZE)
-	size = RAM_SIZE;
-      cout << "File (" << filename << ") too large, truncating.";
-      file.seekg(0, ios::beg);
-      file.read((char*)RAM, size);
-      file.close();
+      cout << "Could not read file. ROM not loaded.";
+      return;
     }
+
+  // obtain file size
+  fseek(fileStream, 0, SEEK_END);
+  size = ftell(fileStream);
+  rewind(fileStream);
+
+  if (size > RAM_SIZE)
+    {
+      cout << "File larger than RAM, aborting.";
+      fclose(fileStream);
+      return;
+    }
+
+  result = fread (RAM,1,size,fileStream);
+  if (result != size)
+    {
+      cout << "Reading error. ROM not loaded.";
+      fclose(fileStream);
+      return;
+    }
+  fclose(fileStream);
+  return;
 }
