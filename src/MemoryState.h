@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Util.h"
-#define RAM_SIZE 64*1024
+#define RAM_SIZE 0x800
 
 class MemoryState
 {
 private:
-	char RAM[RAM_SIZE]; // This machine currently has 2kB of RAM
-	                  // I must update this later to reflect the true layout of the NES (http://fms.komkon.org/EMUL8/NES.html)
+	char RAM[RAM_SIZE];
 public:
 	MemoryState(void);
 	~MemoryState(void);

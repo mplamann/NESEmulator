@@ -188,3 +188,6 @@ const int TYA = 0x98;
 const int VECTOR_NMI = 0xFFFA;
 const int VECTOR_RESET = 0xFFFC;
 const int VECTOR_BRK = 0xFFFE;
+
+// Size
+const int KB = 1024;

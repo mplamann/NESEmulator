@@ -16,11 +16,18 @@ MemoryState::~MemoryState(void)
 
 int MemoryState::readByteFrom(int address)
 {
-  if (address >= RAM_SIZE || address < 0)
+  if (address < 0x2000)
     {
-      cout << "Invalid memory read at address " << address << endl;
+      return RAM[address % 0x800];
     }
-  return RAM[address];
+  else if (address < 0x4000)
+    {
+      return -1; // return IORegisters[0x2000 + (address-0x2000)%8];
+    }
+  else
+    {
+      return mapper->readByteFrom(address);
+    }
 }
 
 void MemoryState::writeByteTo(int address, int value)
@@ -37,6 +44,7 @@ void MemoryState::loadFileToRAM(char* filename)
   FILE* fileStream;
   long size;
   size_t result;
+  char* file;
 
   fileStream = fopen(filename, "rb");
   if (fileStream == NULL)
@@ -50,14 +58,15 @@ void MemoryState::loadFileToRAM(char* filename)
   size = ftell(fileStream);
   rewind(fileStream);
 
-  if (size > RAM_SIZE)
+  file = (char*)malloc(sizeof(char)*size);
+  if (file == NULL)
     {
-      cout << "File larger than RAM, aborting.";
+      cout << "Memory error. ROM not loaded.";
       fclose(fileStream);
       return;
     }
 
-  result = fread (RAM,1,size,fileStream);
+  result = fread (file,1,size,fileStream);
   if (result != size)
     {
       cout << "Reading error. ROM not loaded.";
@@ -65,5 +74,19 @@ void MemoryState::loadFileToRAM(char* filename)
       return;
     }
   fclose(fileStream);
+
+  bool isROM = (file[0] == 'N' && file[1] == 'E' && file[2] == 'S' && file[3] == 0x1A);
+  if (!isROM)
+    {
+      cout << "This is not a NES rom.";
+      return;
+    }
+
+  int prgBanks = file[4];
+  int chrBanks = file[5];
+
+  int mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
+  
+  
   return;
 }

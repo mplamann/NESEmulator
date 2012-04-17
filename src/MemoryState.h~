@@ -6,7 +6,7 @@
 class MemoryState
 {
 private:
-	int RAM[RAM_SIZE]; // This machine currently has 2kB of RAM
+	char RAM[RAM_SIZE]; // This machine currently has 2kB of RAM
 	                  // I must update this later to reflect the true layout of the NES (http://fms.komkon.org/EMUL8/NES.html)
 public:
 	MemoryState(void);
