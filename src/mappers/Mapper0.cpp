@@ -1,7 +1,9 @@
 #include "Mapper0.h"
 
-void loadFromFile(char* file)
+Mapper0::Mapper0(char* file) : Mapper(file)
 {
-  memcpy(file+16,prgROM,16*1024);
-  memcpy(file+16+16*1024,chrROM,8*1024);
+}
+
+Mapper0::~Mapper0(void)
+{
 }

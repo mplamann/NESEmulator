@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Util.h"
+#include "Mapper.h"
 #define RAM_SIZE 0x800
 
 class MemoryState
 {
 private:
-	char RAM[RAM_SIZE];
+  Mapper* mapper;
+  char RAM[RAM_SIZE];
 public:
-	MemoryState(void);
-	~MemoryState(void);
-
-	int readByteFrom(int address);
-	void writeByteTo(int address, int value);
-
-	void loadFileToRAM(char* filename);
+  MemoryState(void);
+  ~MemoryState(void);
+  
+  int readByteFrom(int address);
+  void writeByteTo(int address, int value);
+  
+  void loadFileToRAM(char* filename);
 };
 
