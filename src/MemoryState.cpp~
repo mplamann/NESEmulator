@@ -2,6 +2,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "Mapper0.h"
 using namespace std;
 
 MemoryState::MemoryState(void)
@@ -42,7 +44,7 @@ void MemoryState::writeByteTo(int address, int value)
 void MemoryState::loadFileToRAM(char* filename)
 {
   FILE* fileStream;
-  long size;
+  size_t size;
   size_t result;
   char* file;
 
@@ -82,11 +84,13 @@ void MemoryState::loadFileToRAM(char* filename)
       return;
     }
 
-  int prgBanks = file[4];
-  int chrBanks = file[5];
-
   int mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
-  
+
+  switch (mapperNumber)
+    {
+    case 0:
+      mapper = new Mapper0(file);
+    }
   
   return;
 }

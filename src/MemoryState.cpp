@@ -20,7 +20,7 @@ int MemoryState::readByteFrom(int address)
 {
   if (address < 0x2000)
     {
-      return RAM[address % 0x800];
+      return (RAM[address % 0x800]) & 0xFF;
     }
   else if (address < 0x4000)
     {
@@ -28,7 +28,7 @@ int MemoryState::readByteFrom(int address)
     }
   else
     {
-      return mapper->readByteFrom(address);
+      return (mapper->readByteFrom(address)) & 0xFF;
     }
 }
 
