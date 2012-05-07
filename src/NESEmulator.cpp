@@ -1,8 +1,10 @@
+#include <allegro5/allegro.h>
+
 #include "CpuState.h"
 #include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv)
 {
   CpuState* cpu = new CpuState();
   cpu->getMemory()->loadFileToRAM("../ROMs/SMB1.nes");

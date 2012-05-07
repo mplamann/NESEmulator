@@ -1,0 +1,10 @@
+#pragma once
+
+#include "Util.h"
+#include "MemoryState.h"
+
+class PpuState
+{
+ private:
+  MemoryState* memory;  
+}

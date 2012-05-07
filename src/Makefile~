@@ -1,6 +1,6 @@
-CXXFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp CpuBoolean.cpp CpuBranches.cpp 
+CXXFILES := CpuArithmetic.cpp CpuRegisters.cpp CpuState.cpp MemoryState.cpp NESEmulator.cpp CpuBoolean.cpp CpuBranches.cpp mappers/Mapper.cpp mappers/Mapper0.cpp
 PROG := nesemulator
-CXXFLAGS := -g -Wall -Wextra
+CXXFLAGS := -gstabs -Wall -Wextra -Imappers
 LDFLAGS := -Wall -Wextra -lstdc++
 
 CXXFLAGS += -MMD
