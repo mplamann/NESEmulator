@@ -16,6 +16,10 @@ MemoryState::~MemoryState(void)
 {
 }
 
+////////////////////////////////////////////////////////////////////////
+// Read/Write Operations
+////////////////////////////////////////////////////////////////////////
+
 int MemoryState::readByteFrom(int address)
 {
   if (address < 0x2000)
@@ -34,12 +38,103 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
-  if (address >= RAM_SIZE || address < 0)
+  if (address < 0x2000)
+    RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
+  else if (address < 0x4000)
+    return; // Unknown behavior here
+  else
     {
-      cout << "Invalid memory write at address " << address << endl;
+      mapper->writeByteTo(address, value);
     }
-  RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
 }
+
+int MemoryState::ppuReadByteFrom(int address)
+{
+  if (address < 0x2000)
+    return (mapper->ppuReadByteFrom(address)) & 0xFF;
+  else if (address < 0x2400)
+    {
+      return readFromNametable(0,address) & 0xFF;
+    }
+  else if (address < 0x2800)
+    return readFromNametable(1,address) & 0xFF;
+  else if (address < 0x2C00)
+    return readFromNametable(2,address) & 0xFF;
+  else if (address < 0x3000)
+    return readFromNametable(3,address) & 0xFF;
+  else if (address < 0x3F00)
+    return ppuReadByteFrom(address - 0x1000) & 0xFF;
+  else
+    return palette[(address-0x3F20) % 0x20] & 0xFF; // Rest of RAM is just palette mirrored
+}
+
+void MemoryState::ppuWriteByteTo(int address, int value)
+{
+  if (address < 0x2000)
+    mapper->ppuWriteByteTo(address, value & 0xFF);
+  else if (address < 0x2400)
+    writeToNametable(0,address,value & 0xFF);
+  else if (address < 0x2800)
+    writeToNametable(1,address,value & 0xFF);
+  else if (address < 0x2C00)
+    writeToNametable(2,address,value & 0xFF);
+  else if (address < 0x3000)
+    writeToNametable(3,address,value & 0xFF);
+  else if (address < 0x3F00)
+    ppuWriteByteTo(address - 0x1000, value & 0xFF);
+  else
+    palette[(address-0x3F20) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
+}
+
+int MemoryState::readFromNametable(int nametable, int address)
+{
+  int currentNametable = 1;
+  if (mirroring == 0) // Horizontal Mirroring
+    {
+      if (nametable > 1)
+	currentNametable = 2;
+    }
+  else if (mirroring == 1) // Vertical Mirroring
+    {
+      if (nametable == 1 || nametable == 3)
+	currentNametable = 2;
+    }
+  else
+    {
+    } // TODO: Single-Screen Mirroring - needs mapper support
+  int arrayAddress = (address - 0x2400) % 0x400;
+  if (currentNametable == 1)
+    return nametable1[arrayAddress];
+  else
+    return nametable2[arrayAddress];
+}
+
+void MemoryState::writeToNametable(int nametable, int address, int value)
+{
+  int currentNametable = 1;
+  if (mirroring == 0) // Horizontal Mirroring
+    {
+      if (nametable > 1)
+	currentNametable = 2;
+    }
+  else if (mirroring == 1) // Vertical Mirroring
+    {
+      if (nametable == 1 || nametable == 3)
+	currentNametable = 2;
+    }
+  else
+    {
+    } // TODO: Single-Screen Mirroring - needs mapper support
+  int arrayAddress = (address - 0x2400) % 0x400;
+  if (currentNametable == 1)
+    nametable1[arrayAddress] = value;
+  else
+    nametable2[arrayAddress] = value;
+}
+
+////////////////////////////////////////////////////////////////////////
+// File IO
+////////////////////////////////////////////////////////////////////////
 
 void MemoryState::loadFileToRAM(char* filename)
 {
@@ -91,6 +186,8 @@ void MemoryState::loadFileToRAM(char* filename)
     case 0:
       mapper = new Mapper0(file);
     }
+
+  mirroring = file[6] & 0x9;
   
   return;
 }
