@@ -21,8 +21,7 @@ private:
   char OAMADDR;
   char OAMDATA;
   char PPUSCROLL;
-  char PPUADDR;
-  char PPUDATA;
+  int PPUADDR;
 public:
   MemoryState(void);
   ~MemoryState(void);

@@ -14,8 +14,8 @@ class Mapper
  public:
   int readByteFrom(int address);
   void writeByteTo(int address, int value);
-  int ppuReadByteFrom(int address);
-  void ppuWriteByteTo(int address, int value);
+  int readPpuByteFrom(int address);
+  void writePpuByteTo(int address);
 
   Mapper(char* file);
   ~Mapper(void);

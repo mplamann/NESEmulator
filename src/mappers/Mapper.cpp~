@@ -12,23 +12,25 @@ Mapper::Mapper(char* file)
   // Initialize 2D arrays
   prgBanks = new char*[nPrgBanks];
   chrBanks = new char*[nChrBanks];
-  for (int i = 0; i > nPrgBanks; i++)
+  for (int i = 0; i < nPrgBanks; i++)
     prgBanks[i] = new char[16*1024];
-  for (int i = 0; i > nChrBanks; i++)
+  for (int i = 0; i < nChrBanks; i++)
     chrBanks[i] = new char[8*1024];
 
   prgBank1Index = 0;
   prgBank2Index = 0;
+  if (nPrgBanks > 1)
+    prgBank2Index = 1;
 
   int filePointer = 16;
   for (int i = 0; i < nPrgBanks; i++)
     {
-      memcpy(file+filePointer, prgBanks[i], 16*1024);
+      memcpy(prgBanks[i], file+filePointer, 16*1024);
       filePointer += 16*1024;
     }
   for (int i = 0; i < nChrBanks; i++)
     {
-      memcpy(file+filePointer, chrBanks[i], 8*1024);
+      memcpy(chrBanks[i], file+filePointer, 8*1024);
       filePointer += 8*1024;
     }
 }
@@ -58,7 +60,7 @@ int Mapper::readByteFrom(int address)
   else
     {
       int adjustedAddress = address - 0xC000;
-      return prgBanks[prgBank1Index][adjustedAddress];
+      return prgBanks[prgBank2Index][adjustedAddress];
     }
 }
 

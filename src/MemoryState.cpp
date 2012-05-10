@@ -28,7 +28,30 @@ int MemoryState::readByteFrom(int address)
     }
   else if (address < 0x4000)
     {
-      return -1; // return IORegisters[0x2000 + (address-0x2000)%8];
+      switch (address)
+	{
+	case 0x2000:
+	  return PPUCTRL;
+	case 0x2001:
+	  return PPUMASK;
+	case 0x2002:
+	  {
+	    PPUADDR = -1;
+	    return PPUSTATUS;
+	  }
+	case 0x2003:
+	  return OAMADDR;
+	case 0x2004:
+	  return OAMDATA;
+	case 0x2005:
+	  return PPUSCROLL;
+	case 0x2006:
+	  return PPUADDR;
+	case 0x2007:
+	  return ppuReadByteFrom(PPUADDR);
+	default:
+	  return -1;
+	}
     }
   else
     {
@@ -41,7 +64,34 @@ void MemoryState::writeByteTo(int address, int value)
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   else if (address < 0x4000)
-    return; // Unknown behavior here
+    {
+      switch (address)
+	{
+	case 0x2000:
+	  PPUCTRL = (value & 0xFF);
+	case 0x2001:
+	  PPUMASK = (value & 0xFF);
+	case 0x2002:
+	  PPUSTATUS = (value & 0xFF);
+	case 0x2003:
+	  OAMADDR = (value & 0xFF);
+	case 0x2004:
+	  OAMDATA = (value & 0xFF);
+	case 0x2005:
+	  PPUSCROLL = (value & 0xFF);
+	case 0x2006:
+	  {
+	    if (PPUADDR == -1)
+	      PPUADDR = (value & 0xFF) << 8;
+	    else
+	      PPUADDR += (value & 0xFF);
+	  }
+	case 0x2007:
+	  ppuWriteByteTo(PPUADDR,value);
+	default:
+	  return; // Unimplemented behavior
+	}
+    }
   else
     {
       mapper->writeByteTo(address, value);
