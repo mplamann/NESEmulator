@@ -16,10 +16,48 @@ bool PpuState::initializeDisplay()
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
       return false;
     }
+  event_queue = al_create_event_queue();
+  if (!event_queue)
+    {
+      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to create event queue.",NULL,NULL);
+      return false;
+    }
+  al_register_event_source(event_queue, al_get_display_event_source(display));
   return true;
+}
+
+bool PpuState::processEvents()
+{
+  // The return value of this function is whether we should stop running
+  // Will return true if exit button is clicked
+  
+  ALLEGRO_EVENT event;
+  if (al_get_next_event(event_queue, &event))
+    {
+      if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	{
+	  return true;
+	}
+    }
+  return false;
+}
+
+PpuState::PpuState()
+{
+  display = NULL;
 }
 
 PpuState::~PpuState()
 {
-  al_destroy_display(display);
+  if (display != NULL)
+    al_destroy_display(display);
+  if (event_queue != NULL)
+    al_destroy_event_queue(event_queue);
 }
+
+void PpuState::setMemory(MemoryState* mem)
+{
+  memory = mem;
+}
+
+MemoryState* PpuState::getMemory() {return memory;}

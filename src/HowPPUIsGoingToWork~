@@ -1,0 +1,32 @@
+Ppu will work like:
+
+12 PPU cycles = 1 CPU cycle
+
+
+** What is the smallest chunk of PPU time that I wish to work with? **
+ - 1 cycle
+   * Difficult to work with - very little happens per cycle
+   * Most accurate, probs
+ - 1 scanline
+   * Easier to work with - draw one line at a time, VBlank can be measured in scanlines
+   * Does stuff get updated mid-scanline?
+ - 1 frame
+   * Just no.
+
+
+
+NESEmulator.cpp:
+
+while (!done)
+{
+
+cpu->runinstruction();
+
+int targetPpuCycles = 12*cpu->getCycles();
+
+while (ppu->getCycles() < targetPpuCycles)
+{
+ppu->doScanline();
+}
+
+}

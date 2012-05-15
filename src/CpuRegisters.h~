@@ -27,8 +27,13 @@ class CpuRegisters
   int addrAbs(int arg1, int arg2);
   int addrAbsx(int arg1, int arg2);
   int addrAbsy(int arg1, int arg2);
+  int addrInd(int arg1, int arg2);
   int addrIndx(int arg1, int arg2);
   int addrIndy(int arg1, int arg2);
+
+  // Stack operations
+  void pushToStack(int value);
+  int popFromStack();
  public:
   CpuRegisters(void);
   ~CpuRegisters(void);
@@ -37,16 +42,21 @@ class CpuRegisters
   int getX();
   int getY();
   int getS();
+  int getPC();
+  int getP();
   bool getN();
   bool getZ();
   bool getC();
   bool getD();
   bool getI();
   bool getV();
+  bool getB();
   void setA(int value); // These setters are for unit tests only
   void setX(int value);
   void setY(int value);
   void setS(int value);
+  void setPC(int value);
+  void setP(int value);
   MemoryState* getMemory();
 };
 

@@ -1,21 +1,38 @@
+#include <allegro5/allegro.h>
+
 #include "CpuState.h"
+#include "PpuState.h"
+#include "MemoryState.h"
+#include <time.h>
 #include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv)
 {
   CpuState* cpu = new CpuState();
-  cpu->getMemory()->loadFileToRAM("../ROMs/SMB1.nes");
+  MemoryState* memory = new MemoryState();
+  PpuState* ppu = new PpuState();
+  
+  ppu->setMemory(memory);
+  cpu->setMemory(memory);
+
+  ppu->initializeDisplay();
+  
+  memory->loadFileToRAM("../ROMs/SMB1.nes");
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector
   while (true)
     {
       cpu->RunInstruction();
-      cout << "\nPC: " << cpu->getPC();
-      cout << "\nA: " << cpu->getA() << "\nX: " << cpu->getX() << "\nY: " << cpu->getY();
-      char temp;
-      cin >> temp;
+      //cout << "\nPC: " << cpu->getPC();
+      //cout << "\nA: " << cpu->getA() << "\nX: " << cpu->getX() << "\nY: " << cpu->getY();
+      //char temp;
+      //cin >> temp;
     }
+
+  delete cpu;
+  delete memory;
+  delete ppu;
   return 0;
 }
 

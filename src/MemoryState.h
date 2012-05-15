@@ -13,15 +13,17 @@ private:
   char nametable1[0x400];
   char nametable2[0x400];
   int mirroring;
+  char OAM[256];
 
   // PPU Registers
   char PPUCTRL;
   char PPUMASK;
   char PPUSTATUS;
   char OAMADDR;
-  char OAMDATA;
   char PPUSCROLL;
   int PPUADDR;
+
+  void DMA(int address);
 public:
   MemoryState(void);
   ~MemoryState(void);
