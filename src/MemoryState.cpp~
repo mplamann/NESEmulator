@@ -26,7 +26,7 @@ int MemoryState::readByteFrom(int address)
     {
       return (RAM[address % 0x800]) & 0xFF;
     }
-  else if (address < 0x4000)
+  else if (address < 0x5000)
     {
       switch (address)
 	{
@@ -42,7 +42,7 @@ int MemoryState::readByteFrom(int address)
 	case 0x2003:
 	  return OAMADDR;
 	case 0x2004:
-	  return OAMDATA;
+	  return OAM[OAMADDR];
 	case 0x2005:
 	  return PPUSCROLL;
 	case 0x2006:
@@ -63,31 +63,42 @@ void MemoryState::writeByteTo(int address, int value)
 {
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
-  else if (address < 0x4000)
+  else if (address < 0x5000)
     {
       switch (address)
 	{
 	case 0x2000:
 	  PPUCTRL = (value & 0xFF);
+	  break;
 	case 0x2001:
 	  PPUMASK = (value & 0xFF);
+	  break;
 	case 0x2002:
 	  PPUSTATUS = (value & 0xFF);
+	  break;
 	case 0x2003:
 	  OAMADDR = (value & 0xFF);
+	  break;
 	case 0x2004:
-	  OAMDATA = (value & 0xFF);
+	  OAM[OAMADDR] = (value & 0xFF);
+	  OAMADDR++;
+	  cout << "Doing DMA";
+	  break;
 	case 0x2005:
 	  PPUSCROLL = (value & 0xFF);
+	  break;
 	case 0x2006:
-	  {
-	    if (PPUADDR == -1)
-	      PPUADDR = (value & 0xFF) << 8;
-	    else
-	      PPUADDR += (value & 0xFF);
-	  }
+	  if (PPUADDR == -1)
+	    PPUADDR = (value & 0xFF) << 8;
+	  else
+	    PPUADDR += (value & 0xFF);
+	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
+	  break;
+
+	case 0x4014:                   // DMA
+	  DMA(value);
 	default:
 	  return; // Unimplemented behavior
 	}
@@ -157,6 +168,15 @@ int MemoryState::readFromNametable(int nametable, int address)
     return nametable1[arrayAddress];
   else
     return nametable2[arrayAddress];
+}
+
+void MemoryState::DMA(int address)
+{
+  for (int i = 0; i < 0xFF; i++)
+    {
+      int currentAddress = (address << 8) + i;
+      writeByteTo(0x2004,readByteFrom(currentAddress));
+    }
 }
 
 void MemoryState::writeToNametable(int nametable, int address, int value)

@@ -7,7 +7,7 @@ CpuRegisters::CpuRegisters(void)
   A=0;
   X=0;
   Y=0;
-  S=0x01FF;
+  S=0xFF;
   PC=0;
   cycles = 0;
 
@@ -399,11 +399,6 @@ int CpuRegisters::addrInd(int arg1, int arg2)
 void CpuRegisters::pushToStack(int value)
 {
   memory->writeByteTo(S--,value);
-  if (S <= 0x100)
-    {
-      cout << "Don't know what is happening, stack has grown into the Zero page!\nProceeding anyways";
-      cout << "\nS is now " << S;
-    }
 }
 
 int CpuRegisters::popFromStack()
@@ -433,6 +428,7 @@ int CpuRegisters::getP()
     P |= 0x80;
   return P;
 }
+int CpuRegisters::getCycles() {return cycles;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
 bool CpuRegisters::getC() {return C;}

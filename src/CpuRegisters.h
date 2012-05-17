@@ -44,6 +44,7 @@ class CpuRegisters
   int getS();
   int getPC();
   int getP();
+  int getCycles();
   bool getN();
   bool getZ();
   bool getC();
