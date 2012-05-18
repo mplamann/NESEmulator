@@ -82,7 +82,7 @@ void MemoryState::writeByteTo(int address, int value)
 	case 0x2004:
 	  OAM[OAMADDR] = (value & 0xFF);
 	  OAMADDR++;
-	  cout << "Doing DMA";
+	  cout << hex << "OAM[" << OAMADDR << "] = " << value << "\n";
 	  break;
 	case 0x2005:
 	  PPUSCROLL = (value & 0xFF);

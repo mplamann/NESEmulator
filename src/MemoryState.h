@@ -2,6 +2,7 @@
 
 #include "Util.h"
 #include "Mapper.h"
+
 #define RAM_SIZE 0x2000
 
 class MemoryState
@@ -14,14 +15,6 @@ private:
   char nametable2[0x400];
   int mirroring;
   char OAM[256];
-
-  // PPU Registers
-  char PPUCTRL;
-  char PPUMASK;
-  char PPUSTATUS;
-  char OAMADDR;
-  char PPUSCROLL;
-  int PPUADDR;
 
   void DMA(int address);
 public:
@@ -38,5 +31,13 @@ public:
 
   int readFromNametable(int nametable, int address);
   void writeToNametable(int nametable, int address, int value);
+
+  // PPU Registers
+  char PPUCTRL;
+  char PPUMASK;
+  char PPUSTATUS;
+  char OAMADDR;
+  char PPUSCROLL;
+  int PPUADDR;
 };
 

@@ -44,10 +44,14 @@ bool PpuState::processEvents()
 
 void PpuState::renderScanline(int scanline)
 {
+  // Assume VBlank is done
+  memory->PPUSTATUS &= 0x7F;
 }
 
 void PpuState::endFrame()
 {
+  // Assume VBlank is starting
+  memory->PPUSTATUS |= 0x80;
 }
 
 PpuState::PpuState()

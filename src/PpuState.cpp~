@@ -42,6 +42,14 @@ bool PpuState::processEvents()
   return false;
 }
 
+void PpuState::renderScanline(int scanline)
+{
+}
+
+void PpuState::endFrame()
+{
+}
+
 PpuState::PpuState()
 {
   display = NULL;
@@ -60,4 +68,5 @@ void PpuState::setMemory(MemoryState* mem)
   memory = mem;
 }
 
+int PpuState::getCycles() {return cycles;}
 MemoryState* PpuState::getMemory() {return memory;}
