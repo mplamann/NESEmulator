@@ -16,6 +16,7 @@ class PpuState
   bool initializeDisplay();
   bool processEvents();
 
+  void startFrame();
   void renderScanline(int scanline);
   void endFrame();
     

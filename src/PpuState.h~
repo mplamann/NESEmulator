@@ -11,13 +11,18 @@ class PpuState
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
   ALLEGRO_EVENT_QUEUE* event_queue;
+  int cycles;
  public:
   bool initializeDisplay();
   bool processEvents();
+
+  void renderScanline(int scanline);
+  void endFrame();
     
   PpuState();
   ~PpuState();
   
   void setMemory(MemoryState* mem);
   MemoryState* getMemory();
+  int getCycles();
 };

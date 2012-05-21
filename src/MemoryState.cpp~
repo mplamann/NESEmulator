@@ -1,5 +1,6 @@
 #include "MemoryState.h"
 #include <iostream>
+#include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -82,7 +83,11 @@ void MemoryState::writeByteTo(int address, int value)
 	case 0x2004:
 	  OAM[OAMADDR] = (value & 0xFF);
 	  OAMADDR++;
-	  cout << hex << "OAM[" << OAMADDR << "] = " << value << "\n";
+	  /*cout << "OAM[";
+	  cout << hex << ((int)OAMADDR & 0xFF);
+	  cout << "] = ";
+	  cout << hex << value;
+	  cout << "\n";*/
 	  break;
 	case 0x2005:
 	  PPUSCROLL = (value & 0xFF);
