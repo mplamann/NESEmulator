@@ -39,7 +39,7 @@ public:
   char PPUCTRL;
   char PPUMASK;
   char PPUSTATUS;
-  char OAMADDR;
+  unsigned char OAMADDR;
   char PPUSCROLL;
   int PPUADDR;
 };

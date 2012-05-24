@@ -1,4 +1,6 @@
 #import "PpuState.h"
+#import <iostream>
+using namespace std;
 
 bool PpuState::initializeDisplay()
 {
@@ -42,16 +44,51 @@ bool PpuState::processEvents()
   return false;
 }
 
+void PpuState::startFrame()
+{
+  al_clear_to_color(al_map_rgb(0,0,0));
+}
+
 void PpuState::renderScanline(int scanline)
 {
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
+
+  if (memory->PPUMASK & 0x10)
+    {
+      for (int i = 0; i < 64; i++)
+	{
+	  // Check if sprite is visible on this scanline
+	  int yCoord = memory->oamReadByteFrom(i*4);
+	  if ((yCoord > scanline || scanline-yCoord >= 8) && yCoord < 0xEF)
+	    continue;
+	  //	  cout << "Rendering sprite " << i << " at " << yCoord << "\n";
+	  int spriteLine = scanline-yCoord;
+	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
+	  int xOffset = memory->oamReadByteFrom(i*4+3);
+	  for (int x = 0; x < 8; x++)
+	    {
+	      int andOperator = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      if (colorIndex != 0)
+		al_put_pixel(xOffset+x,scanline,al_map_rgb(255,0,255));
+	    }
+        }
+    }
+      else
+	{
+	  cout << "Not Rendering\n";
+	}
 }
 
 void PpuState::endFrame()
 {
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
+  al_flip_display();
 }
 
 PpuState::PpuState()

@@ -60,12 +60,13 @@ void PpuState::renderScanline(int scanline)
 	{
 	  // Check if sprite is visible on this scanline
 	  int yCoord = memory->oamReadByteFrom(i*4);
-	  if ((yCoord > scanline || scanline-yCoord >= 8) && yCoord < 0xEF)
+	  if ((yCoord > scanline || scanline-yCoord >= 8) || yCoord > 0xEF)
 	    continue;
 	  //	  cout << "Rendering sprite " << i << " at " << yCoord << "\n";
 	  int spriteLine = scanline-yCoord;
 	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
-	  int patternTableIndex = patternTableTile*16;
+	  //  int patternTableIndex = patternTableTile*16;
+	  int patternTableIndex = 0;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
@@ -74,7 +75,7 @@ void PpuState::renderScanline(int scanline)
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      if (colorIndex != 0)
-		al_put_pixel(xOffset+x,scanline,al_map_rgb(255,0,255));
+		al_put_pixel(xOffset+x,scanline,al_map_rgb(0,255,255));
 	    }
         }
     }

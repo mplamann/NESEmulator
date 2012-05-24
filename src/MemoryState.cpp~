@@ -207,6 +207,16 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
     nametable2[arrayAddress] = value;
 }
 
+int MemoryState::oamReadByteFrom(int address)
+{
+  return OAM[address] & 0xFF;
+}
+
+void MemoryState::oamWriteByteTo(int address, int value)
+{
+  OAM[address] = (value & 0xFF);
+}
+
 ////////////////////////////////////////////////////////////////////////
 // File IO
 ////////////////////////////////////////////////////////////////////////
