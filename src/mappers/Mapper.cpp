@@ -33,6 +33,7 @@ Mapper::Mapper(char* file)
       memcpy(chrBanks[i], file+filePointer, 8*1024);
       filePointer += 8*1024;
     }
+  return;
 }
 
 Mapper::~Mapper(void)
@@ -87,7 +88,7 @@ int Mapper::ppuReadByteFrom(int address)
   char* bank = chrBanks[0];
   if (address >= 8*1024 && nChrBanks > 1)
     bank = chrBanks[1];
-  return bank[address % 8*1024];
+  return bank[address % (8*1024)];
 }
 
 void Mapper::ppuWriteByteTo(int address, int value)
@@ -95,5 +96,5 @@ void Mapper::ppuWriteByteTo(int address, int value)
   char* bank = chrBanks[0];
   if (address >= 8*1024 && nChrBanks > 1)
     bank = chrBanks[1];
-  bank[address % 8*1024] = (value & 0xFF);
+  bank[address % (8*1024)] = (value & 0xFF);
 }

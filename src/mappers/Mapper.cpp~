@@ -81,3 +81,19 @@ void Mapper::writeByteTo(int address, int value)
       prgBanks[prgBank1Index][adjustedAddress] = value;
     }
 }
+
+int Mapper::ppuReadByteFrom(int address)
+{
+  char* bank = chrBanks[0];
+  if (address >= 8*1024 && nChrBanks > 1)
+    bank = chrBanks[1];
+  return bank[address % 8*1024];
+}
+
+void Mapper::ppuWriteByteTo(int address, int value)
+{
+  char* bank = chrBanks[0];
+  if (address >= 8*1024 && nChrBanks > 1)
+    bank = chrBanks[1];
+  bank[address % 8*1024] = (value & 0xFF);
+}
