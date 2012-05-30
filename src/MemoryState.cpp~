@@ -182,6 +182,7 @@ void MemoryState::DMA(int address)
       int currentAddress = (address << 8) + i;
       writeByteTo(0x2004,readByteFrom(currentAddress));
     }
+  return;
 }
 
 void MemoryState::writeToNametable(int nametable, int address, int value)
