@@ -1,4 +1,5 @@
 #import "PpuState.h"
+#import "PpuColors.h"
 #import <iostream>
 using namespace std;
 
@@ -68,12 +69,19 @@ void PpuState::renderScanline(int scanline)
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
+	  int paletteIndex = memory->oamReadByteFrom(i*4+2) & 0x3;
 	  for (int x = 0; x < 8; x++)
 	    {
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      colorIndex = colorIndex >> (7-x);
 	      if (colorIndex != 0)
-		al_put_pixel(xOffset+x,scanline,al_map_rgb(0,255,255));
+		{
+		  char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
+		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
+		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+		  al_put_pixel(xOffset+x,scanline,color);
+		}
 	    }
         }
     }

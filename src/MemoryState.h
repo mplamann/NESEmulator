@@ -35,7 +35,7 @@ public:
   int readFromNametable(int nametable, int address);
   void writeToNametable(int nametable, int address, int value);
 
-  int colorForPaletteIndex(bool isSprite, int palette, int index);
+  char colorForPaletteIndex(bool isSprite, int palette, int index);
 
   // PPU Registers
   char PPUCTRL;

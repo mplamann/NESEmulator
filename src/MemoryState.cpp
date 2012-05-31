@@ -218,12 +218,12 @@ void MemoryState::oamWriteByteTo(int address, int value)
   OAM[address] = (value & 0xFF);
 }
 
-int colorForPaletteIndex(bool isSprite, int palette, int index)
+char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex, int index)
 {
   int baseAddress = 0;
   if (isSprite)
     baseAddress += 0x10;
-  baseAddress += palette*4;
+  baseAddress += paletteIndex*4;
   return palette[baseAddress+index];
 }
 

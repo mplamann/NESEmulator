@@ -62,11 +62,9 @@ void PpuState::renderScanline(int scanline)
 	  int yCoord = memory->oamReadByteFrom(i*4);
 	  if ((yCoord > scanline || scanline-yCoord >= 8) || yCoord > 0xEF)
 	    continue;
-	  //	  cout << "Rendering sprite " << i << " at " << yCoord << "\n";
 	  int spriteLine = scanline-yCoord;
 	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
 	  int patternTableIndex = patternTableTile*16;
-	  //int patternTableIndex = 4;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
