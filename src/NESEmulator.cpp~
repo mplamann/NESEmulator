@@ -34,6 +34,7 @@ int main(int argc, char **argv)
       while (cpu->getCycles() < targetCpuCycle)
 	cpu->RunInstruction();
 
+      ppu->startFrame();
       for (int scanline = 0; scanline < 240; scanline++)
 	{
 	  targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;

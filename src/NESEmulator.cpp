@@ -21,7 +21,8 @@ int main(int argc, char **argv)
 
   ppu->initializeDisplay();
   
-  memory->loadFileToRAM("../ROMs/sprites.nes");
+  //  memory->loadFileToRAM("../ROMs/sprites.nes");
+  memory->loadFileToRAM("../ROMs/SMB1.nes");
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
