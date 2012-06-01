@@ -83,11 +83,6 @@ void MemoryState::writeByteTo(int address, int value)
 	case 0x2004:
 	  OAM[OAMADDR] = (value & 0xFF);
 	  OAMADDR++;
-	  /*cout << "OAM[";
-	  cout << hex << ((int)OAMADDR & 0xFF);
-	  cout << "] = ";
-	  cout << hex << value;
-	  cout << "\n";*/
 	  break;
 	case 0x2005:
 	  PPUSCROLL = (value & 0xFF);
@@ -100,8 +95,8 @@ void MemoryState::writeByteTo(int address, int value)
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
+	  PPUADDR++;
 	  break;
-
 	case 0x4014:                   // DMA
 	  DMA(value);
 	default:
@@ -149,7 +144,7 @@ void MemoryState::ppuWriteByteTo(int address, int value)
   else if (address < 0x3F00)
     ppuWriteByteTo(address - 0x1000, value & 0xFF);
   else
-    palette[(address-0x3F20) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
+    palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
 int MemoryState::readFromNametable(int nametable, int address)
