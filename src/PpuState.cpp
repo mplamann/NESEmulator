@@ -87,7 +87,7 @@ void PpuState::renderScanline(int scanline)
     }
       else
 	{
-	  cout << "Not Rendering\n";
+	  //cout << "Not Rendering\n";
 	}
 }
 
