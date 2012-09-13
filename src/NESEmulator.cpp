@@ -1,4 +1,5 @@
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_native_dialog.h>
 
 #include "CpuState.h"
 #include "PpuState.h"
@@ -10,6 +11,11 @@ using namespace std;
 const int PPU_CYCLES_PER_SCANLINE = 1364;
 const int CPU_CYCLES_PER_PPU_CYCLE = 12;
 
+ALLEGRO_EVENT_QUEUE* event_queue;
+
+bool setupAllegroEvents();
+bool processEvents();
+
 int main(int argc, char **argv)
 {
   CpuState* cpu = new CpuState();
@@ -19,10 +25,16 @@ int main(int argc, char **argv)
   ppu->setMemory(memory);
   cpu->setMemory(memory);
 
-  ppu->initializeDisplay();
+  if (!setupAllegroEvents())
+    {
+      delete cpu;
+      delete memory;
+      delete ppu;
+      return -1;
+    }
+  ppu->initializeDisplay(event_queue);
   
-  memory->loadFileToRAM("../ROMs/sprites.nes");
-  //  memory->loadFileToRAM("../ROMs/SMB1.nes");
+  memory->loadFileToRAM("../ROMs/twosprites.nes");
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
@@ -44,12 +56,35 @@ int main(int argc, char **argv)
 	  ppu->renderScanline(scanline);
 	}
       ppu->endFrame(); // Flip back buffer to screen
-      done = ppu->processEvents();
+      done = processEvents();
     }
 
+  if (event_queue != NULL)
+    al_destroy_event_queue(event_queue);
   delete cpu;
   delete memory;
   delete ppu;
   return 0;
 }
 
+bool setupAllegroEvents()
+{
+  event_queue = al_create_event_queue();
+  if (!event_queue)
+    {
+      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to create event queue.",NULL,NULL);
+      return false;
+    }
+}
+
+bool processEvents()
+{
+  ALLEGRO_EVENT event;
+  if (al_get_next_event(event_queue, &event))
+    {
+      if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	{
+	  return true;
+	}
+    }
+}

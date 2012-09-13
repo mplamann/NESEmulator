@@ -1,13 +1,12 @@
-  .inesprg 1   ; 1x 16KB PRG code
-  .ineschr 1   ; 1x  8KB CHR data
-  .inesmap 0   ; mapper 0 = NROM, no bank swapping
-  .inesmir 1   ; background mirroring
-  
+	.byte "NES",$1A
+	.byte $01
+	.byte $01
+	.byte $00
+	.byte $00
+	.byte 0,0,0,0,0,0,0,0 	; pad header to 16 bytes
 
 ;;;;;;;;;;;;;;;
 
-    
-  .bank 0
   .org $C000 
 RESET:
   SEI          ; disable IRQs
@@ -65,10 +64,15 @@ DoneLoadingPalettes:
   LDA #$80
   STA $0200        ; put sprite 0 in center ($80) of screen vert
   STA $0203        ; put sprite 0 in center ($80) of screen horiz
+  LDA #$60
+  STA $0204
+  STA $0207
   LDA #$11
   STA $0201        ; tile number = 0
+  STA $0205
   LDA #$00
   STA $0202        ; color = 0, no flipping
+  STA $0206
 
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 0
   STA $2000
@@ -93,7 +97,6 @@ NMI:
   
   
   
-  .bank 1
   .org $E000
 palette:
   .db $0F,$31,$32,$33,$0F,$35,$36,$37,$0F,$39,$3A,$3B,$0F,$3D,$3E,$0F
@@ -111,6 +114,4 @@ palette:
 ;;;;;;;;;;;;;;  
   
   
-  .bank 2
-  .org $0000
   .incbin "mario.chr"   ;includes 8KB graphics file from SMB1

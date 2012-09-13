@@ -10,11 +10,9 @@ class PpuState
  private:
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
-  ALLEGRO_EVENT_QUEUE* event_queue;
   int cycles;
  public:
-  bool initializeDisplay();
-  bool processEvents();
+  bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
 
   void startFrame();
   void renderScanline(int scanline);
