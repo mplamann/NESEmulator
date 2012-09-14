@@ -18,6 +18,7 @@ bool processEvents();
 
 int main(int argc, char **argv)
 {
+  cout << "Starting...\n";
   CpuState* cpu = new CpuState();
   MemoryState* memory = new MemoryState();
   PpuState* ppu = new PpuState();
@@ -33,8 +34,9 @@ int main(int argc, char **argv)
       return -1;
     }
   ppu->initializeDisplay(event_queue);
-  
+  cout << "Initialized subsystems...\n";
   memory->loadFileToRAM("../ROMs/twosprites.nes");
+  cout << "ROM Loaded\n";
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
@@ -69,12 +71,15 @@ int main(int argc, char **argv)
 
 bool setupAllegroEvents()
 {
+  cout << "Initializing event queue...";
   event_queue = al_create_event_queue();
   if (!event_queue)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to create event queue.",NULL,NULL);
       return false;
     }
+  cout << "Done\n";
+  return true;
 }
 
 bool processEvents()
@@ -87,4 +92,5 @@ bool processEvents()
 	  return true;
 	}
     }
+  return false;
 }

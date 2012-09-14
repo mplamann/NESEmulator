@@ -85,6 +85,7 @@ PpuState::~PpuState()
 {
   if (display != NULL)
     al_destroy_display(display);
+  
 }
 
 void PpuState::setMemory(MemoryState* mem)
