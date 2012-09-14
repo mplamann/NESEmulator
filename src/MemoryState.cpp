@@ -55,6 +55,10 @@ int MemoryState::readByteFrom(int address)
 	  return PPUADDR;
 	case 0x2007:
 	  return ppuReadByteFrom(PPUADDR);
+	case 0x4016:
+	  return gamepad->readPlayer1();
+	case 0x4017:
+	  return gamepad->readPlayer2();
 	default:
 	  return -1;
 	}
@@ -104,6 +108,11 @@ void MemoryState::writeByteTo(int address, int value)
 	  break;
 	case 0x4014:                   // DMA
 	  DMA(value);
+	case 0x4016:
+	  if (JOYSTROBE == 1 && value == 0)
+	    gamepad->strobe();
+	  JOYSTROBE=value;
+	  break;
 	default:
 	  return; // Unimplemented behavior
 	}

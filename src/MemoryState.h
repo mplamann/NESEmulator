@@ -17,6 +17,7 @@ private:
   char nametable2[0x400];
   int mirroring;
   char OAM[256];
+  char JOYSTROBE;
 
   void DMA(int address);
 public:
