@@ -17,6 +17,11 @@ MemoryState::~MemoryState(void)
 {
 }
 
+void MemoryState::setGamepad(GamepadState* gpad)
+{
+  gamepad = gpad;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // Read/Write Operations
 ////////////////////////////////////////////////////////////////////////
@@ -233,6 +238,8 @@ void MemoryState::loadFileToRAM(char* filename)
   size_t result;
   char* file;
 
+  cout << "Loading ROM ";
+
   fileStream = fopen(filename, "rb");
   if (fileStream == NULL)
     {
@@ -278,6 +285,8 @@ void MemoryState::loadFileToRAM(char* filename)
     }
 
   mirroring = file[6] & 0x9;
+
+  cout << "Done.\n";
   
   return;
 }

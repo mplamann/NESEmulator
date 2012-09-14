@@ -37,3 +37,7 @@ Thumbs.db
 # ROMs #
 ########
 ROMs/SMB*
+
+# Binaries #
+############
+src/nesemulator
