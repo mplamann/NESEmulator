@@ -4,6 +4,7 @@
 #include "CpuState.h"
 #include "PpuState.h"
 #include "MemoryState.h"
+#include "GamepadState.h"
 #include <time.h>
 #include <iostream>
 using namespace std;
@@ -12,18 +13,24 @@ const int PPU_CYCLES_PER_SCANLINE = 1364;
 const int CPU_CYCLES_PER_PPU_CYCLE = 12;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
+CpuState* cpu;
+MemoryState* memory;
+PpuState* ppu;
+GamepadState* gamepad;
 
 bool setupAllegroEvents();
 bool processEvents();
 
 int main(int argc, char **argv)
 {
-  CpuState* cpu = new CpuState();
-  MemoryState* memory = new MemoryState();
-  PpuState* ppu = new PpuState();
+  cpu = new CpuState();
+  memory = new MemoryState();
+  ppu = new PpuState();
+  gamepad = new GamepadState();
   
   ppu->setMemory(memory);
   cpu->setMemory(memory);
+  memory->setGamepad(gamepad);
 
   if (!setupAllegroEvents())
     {
@@ -33,6 +40,7 @@ int main(int argc, char **argv)
       return -1;
     }
   ppu->initializeDisplay(event_queue);
+  gamepad->initializeKeyboard(event_queue);
   
   memory->loadFileToRAM("../ROMs/twosprites.nes");
   cpu->doRESET();
@@ -59,32 +67,55 @@ int main(int argc, char **argv)
       done = processEvents();
     }
 
+  cout << "Cleaning up...";
   if (event_queue != NULL)
     al_destroy_event_queue(event_queue);
   delete cpu;
   delete memory;
   delete ppu;
+  cout << "Goodbye.\n";
   return 0;
 }
 
 bool setupAllegroEvents()
 {
+  cout << "Initializing Allegro...";
+  if (!al_init())
+    {
+      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to initialize allegro!", NULL, NULL);
+      cout << "Error!\n";
+      return false;
+    }
+  cout << "Done.\n";
+  cout << "Initializing event queue...";
   event_queue = al_create_event_queue();
   if (!event_queue)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to create event queue.",NULL,NULL);
+      cout << "Error!\n";
       return false;
     }
+  cout << "Done.\n";
+  return true;
 }
 
 bool processEvents()
 {
   ALLEGRO_EVENT event;
-  if (al_get_next_event(event_queue, &event))
+  while (al_get_next_event(event_queue, &event))
     {
       if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 	{
 	  return true;
 	}
+      if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+	{
+	  cout << "Key down!\n" << flush;
+	}
+      if (event.type == ALLEGRO_EVENT_KEY_UP)
+	{
+	  cout << "Key up!\n" << flush;
+	}
     }
+  return false;
 }

@@ -2,6 +2,7 @@
 
 #include "Util.h"
 #include "Mapper.h"
+#include "GamepadState.h"
 
 #define RAM_SIZE 0x2000
 
@@ -9,6 +10,7 @@ class MemoryState
 {
 private:
   Mapper* mapper;
+  GamepadState* gamepad;
   char RAM[RAM_SIZE];
   char palette[0x20];
   char nametable1[0x400];
@@ -20,6 +22,7 @@ private:
 public:
   MemoryState(void);
   ~MemoryState(void);
+  void setGamepad(GamepadState* gpad);
   
   int readByteFrom(int address);
   void writeByteTo(int address, int value);

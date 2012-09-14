@@ -7,18 +7,15 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
   int height = 640;
   int width = 480;
-  display = NULL;
-  if (!al_init())
-    {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to initialize allegro!", NULL, NULL);
-      return false;
-    }
+  cout << "Initializing display...";
   display = al_create_display(width, height);
   if (!display)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
+      cout << "Error!\n";
       return false;
     }
+  cout << "Done.\n";
   al_register_event_source(event_queue, al_get_display_event_source(display));
   return true;
 }

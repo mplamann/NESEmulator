@@ -33,7 +33,6 @@ Mapper::Mapper(char* file)
       memcpy(chrBanks[i], file+filePointer, 8*1024);
       filePointer += 8*1024;
     }
-  cout << "Mapper initialized\n";
   return;
 }
 
