@@ -115,6 +115,14 @@ ReadA:
 	CLC
 	ADC #$01
 	STA $0207
+	LDA $020B
+	CLC
+	ADC #$01
+	STA $020B
+	LDA $020F
+	CLC
+	ADC #$01
+	STA $020F
 	
 ReadADone:        ; handling this button is done
   
@@ -128,6 +136,18 @@ ReadB:
   SEC             ; make sure carry flag is set
   SBC #$01        ; A = A - 1
   STA $0203       ; save sprite X position
+	LDA $0207
+	SEC
+	SBC #$01
+	STA $0207
+	LDA $020B
+	SEC
+	SBC #$01
+	STA $020B
+	LDA $020F
+	SEC
+	SBC #$01
+	STA $020F
 ReadBDone:        ; handling this button is done
 
 

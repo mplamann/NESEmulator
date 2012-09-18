@@ -1,10 +1,12 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_audio.h>
 
 #include "CpuState.h"
 #include "PpuState.h"
 #include "MemoryState.h"
 #include "GamepadState.h"
+#include "ApuState.h"
 #include <time.h>
 #include <iostream>
 using namespace std;
@@ -17,9 +19,11 @@ CpuState* cpu;
 MemoryState* memory;
 PpuState* ppu;
 GamepadState* gamepad;
+ApuState* apu;
 
 bool setupAllegroEvents();
 bool processEvents();
+void cleanup();
 
 int main(int argc, char **argv)
 {
@@ -27,20 +31,20 @@ int main(int argc, char **argv)
   memory = new MemoryState();
   ppu = new PpuState();
   gamepad = new GamepadState();
+  apu = new ApuState();
   
   ppu->setMemory(memory);
   cpu->setMemory(memory);
   memory->setGamepad(gamepad);
 
   if (!setupAllegroEvents())
-    {
-      delete cpu;
-      delete memory;
-      delete ppu;
-      return -1;
-    }
-  ppu->initializeDisplay(event_queue);
-  gamepad->initializeKeyboard(event_queue);
+    { cleanup(); return -1; }
+  if (!ppu->initializeDisplay(event_queue))
+    { cleanup(); return -1; }
+  if (!gamepad->initializeKeyboard(event_queue))
+    { cleanup(); return -1; }
+  if (!apu->initializeAudio(event_queue))
+    { cleanup(); return -1; }
   
   memory->loadFileToRAM("../ROMs/controller.nes");
   cout << "ROM Loaded\n";
@@ -76,6 +80,8 @@ int main(int argc, char **argv)
   delete cpu;
   delete memory;
   delete ppu;
+  delete gamepad;
+  delete apu;
   cout << "Goodbye.\n";
   return 0;
 }
@@ -119,6 +125,19 @@ bool processEvents()
 	{
 	  gamepad->keyUp(event);
 	}
+      if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
+	{
+	  apu->audioStreamFragment();
+	}
     }
   return false;
+}
+
+void cleanup()
+{
+  delete cpu;
+  delete memory;
+  delete ppu;
+  delete gamepad;
+  delete apu;
 }
