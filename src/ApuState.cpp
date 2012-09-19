@@ -7,8 +7,7 @@ using namespace std;
 
 ApuState::ApuState(void)
 {
-  pitch = 0x10000;
-  val = 0;
+
 }
 
 ApuState::~ApuState(void)
@@ -50,18 +49,18 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
 
 void ApuState::audioStreamFragment()
 {
-  buf = (char*)al_get_audio_stream_fragment(stream);
+  /*buf = (char*)al_get_audio_stream_fragment(stream);
   if (!buf)
     return;
-  for (i = 0; i < SAMPLES_PER_BUFFER; i++)
+  /*for (i = 0; i < SAMPLES_PER_BUFFER; i++)
     {
       // Create saw waves
       buf[i] = ((val >> 16) & 0xFF);
       val += pitch;
       pitch++;
-    }
-  if (!al_set_audio_stream_fragment(stream, buf))
+      }*/
+  /*if (!al_set_audio_stream_fragment(stream, buf))
     {
       cout << "Error setting stream fragment.\n";
-    }
+      }*/
 }

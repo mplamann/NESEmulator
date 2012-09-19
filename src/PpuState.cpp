@@ -5,8 +5,8 @@ using namespace std;
 
 bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
-  int height = 640;
-  int width = 480;
+  int height = 240;
+  int width = 256;
   cout << "Initializing display...";
   display = al_create_display(width, height);
   if (!display)
