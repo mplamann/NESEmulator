@@ -25,6 +25,10 @@ bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
 
+double fps = 0;
+int frames_done = 0;
+double old_time = al_get_time();
+
 int main(int argc, char **argv)
 {
   cpu = new CpuState();
@@ -53,6 +57,7 @@ int main(int argc, char **argv)
   bool done = false;
   while (!done)
     {
+      double game_time = al_get_time();
       cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
@@ -72,6 +77,18 @@ int main(int argc, char **argv)
 	}
       ppu->endFrame(); // Flip back buffer to screen
       done = processEvents();
+
+      if (game_time - old_time >= 1.0)
+	{
+	  fps = frames_done / (game_time - old_time);
+	  frames_done = 0;
+	  old_time = game_time;
+	  char windowTitle[50];
+	  sprintf(windowTitle, "nesemulator - %f FPS", fps);
+	  //	  al_set_window_title(disp TODO: Set window title appropriately
+	}
+
+      frames_done++;
     }
 
   cout << "Cleaning up...";
