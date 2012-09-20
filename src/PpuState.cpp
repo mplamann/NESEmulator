@@ -5,8 +5,8 @@ using namespace std;
 
 bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
-  int height = 640;
-  int width = 480;
+  int height = 240;
+  int width = 256;
   cout << "Initializing display...";
   display = al_create_display(width, height);
   if (!display)
@@ -72,6 +72,8 @@ void PpuState::renderScanline(int scanline)
 	  int yCoord = memory->oamReadByteFrom(i*4);
 	  if ((yCoord > scanline || scanline-yCoord >= 8) || yCoord > 0xEF)
 	    continue;
+	  if (scanline == 0)
+	    cout << "What?\n";
 	  int spriteLine = scanline-yCoord;
 	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
 	  int patternTableIndex = patternTableTile*16;

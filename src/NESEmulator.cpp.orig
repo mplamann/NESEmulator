@@ -1,12 +1,10 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
-#include <allegro5/allegro_audio.h>
 
 #include "CpuState.h"
 #include "PpuState.h"
 #include "MemoryState.h"
 #include "GamepadState.h"
-#include "ApuState.h"
 #include <time.h>
 #include <iostream>
 using namespace std;
@@ -19,45 +17,49 @@ CpuState* cpu;
 MemoryState* memory;
 PpuState* ppu;
 GamepadState* gamepad;
-ApuState* apu;
 
 bool setupAllegroEvents();
 bool processEvents();
-void cleanup();
-
-double fps = 0;
-int frames_done = 0;
-double old_time = al_get_time();
 
 int main(int argc, char **argv)
 {
+<<<<<<< HEAD
+  cout << "Starting...\n";
+  CpuState* cpu = new CpuState();
+  MemoryState* memory = new MemoryState();
+  PpuState* ppu = new PpuState();
+=======
   cpu = new CpuState();
   memory = new MemoryState();
   ppu = new PpuState();
   gamepad = new GamepadState();
-  apu = new ApuState();
+>>>>>>> fd2fd9b738cc47cd334d3d7f86ac770458b1b1d2
   
   ppu->setMemory(memory);
   cpu->setMemory(memory);
   memory->setGamepad(gamepad);
 
   if (!setupAllegroEvents())
-    { cleanup(); return -1; }
-  if (!ppu->initializeDisplay(event_queue))
-    { cleanup(); return -1; }
-  if (!gamepad->initializeKeyboard(event_queue))
-    { cleanup(); return -1; }
-  if (!apu->initializeAudio(event_queue))
-    { cleanup(); return -1; }
+    {
+      delete cpu;
+      delete memory;
+      delete ppu;
+      return -1;
+    }
+  ppu->initializeDisplay(event_queue);
+<<<<<<< HEAD
+  cout << "Initialized subsystems...\n";
+=======
+  gamepad->initializeKeyboard(event_queue);
   
-  memory->loadFileToRAM("../ROMs/controller.nes");
+>>>>>>> fd2fd9b738cc47cd334d3d7f86ac770458b1b1d2
+  memory->loadFileToRAM("../ROMs/twosprites.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
   while (!done)
     {
-      double game_time = al_get_time();
       cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
@@ -67,28 +69,14 @@ int main(int argc, char **argv)
 
       ppu->startFrame();
       for (int scanline = 0; scanline < 240; scanline++)
-	//for (int scanline = 8; scanline < 232; scanline++)
 	{
 	  targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
 	  while (cpu->getCycles() < targetCpuCycle)
 	    cpu->RunInstruction();
-	  if (scanline >= 8 && scanline <= 232)
-	    ppu->renderScanline(scanline);
+	  ppu->renderScanline(scanline);
 	}
       ppu->endFrame(); // Flip back buffer to screen
       done = processEvents();
-
-      if (game_time - old_time >= 1.0)
-	{
-	  fps = frames_done / (game_time - old_time);
-	  frames_done = 0;
-	  old_time = game_time;
-	  char windowTitle[50];
-	  sprintf(windowTitle, "nesemulator - %f FPS", fps);
-	  //	  al_set_window_title(disp TODO: Set window title appropriately
-	}
-
-      frames_done++;
     }
 
   cout << "Cleaning up...";
@@ -97,14 +85,14 @@ int main(int argc, char **argv)
   delete cpu;
   delete memory;
   delete ppu;
-  delete gamepad;
-  delete apu;
   cout << "Goodbye.\n";
   return 0;
 }
 
 bool setupAllegroEvents()
 {
+<<<<<<< HEAD
+=======
   cout << "Initializing Allegro...";
   if (!al_init())
     {
@@ -113,6 +101,7 @@ bool setupAllegroEvents()
       return false;
     }
   cout << "Done.\n";
+>>>>>>> fd2fd9b738cc47cd334d3d7f86ac770458b1b1d2
   cout << "Initializing event queue...";
   event_queue = al_create_event_queue();
   if (!event_queue)
@@ -121,7 +110,11 @@ bool setupAllegroEvents()
       cout << "Error!\n";
       return false;
     }
+<<<<<<< HEAD
+  cout << "Done\n";
+=======
   cout << "Done.\n";
+>>>>>>> fd2fd9b738cc47cd334d3d7f86ac770458b1b1d2
   return true;
 }
 
@@ -136,25 +129,12 @@ bool processEvents()
 	}
       if (event.type == ALLEGRO_EVENT_KEY_DOWN)
 	{
-	  gamepad->keyDown(event);
+	  cout << "Key down!\n" << flush;
 	}
       if (event.type == ALLEGRO_EVENT_KEY_UP)
 	{
-	  gamepad->keyUp(event);
-	}
-      if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
-	{
-	  apu->audioStreamFragment();
+	  cout << "Key up!\n" << flush;
 	}
     }
   return false;
-}
-
-void cleanup()
-{
-  delete cpu;
-  delete memory;
-  delete ppu;
-  delete gamepad;
-  delete apu;
 }
