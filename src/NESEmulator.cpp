@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   ppu->initializeDisplay(event_queue);
   gamepad->initializeKeyboard(event_queue);
   
-  memory->loadFileToRAM("../ROMs/twosprites.nes");
+  memory->loadFileToRAM("../ROMs/background/background.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
   // NOTE: Execution starts at address pointed to by RESET vector

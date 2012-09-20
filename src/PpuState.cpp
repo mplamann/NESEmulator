@@ -30,7 +30,41 @@ void PpuState::renderScanline(int scanline)
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
 
-  if (memory->PPUMASK & 0x10)
+  if (memory->PPUMASK & 0x08) // If background enabled
+    {
+      // Screen is 32x30 tiles
+      int tileY = scanline / 8;
+      int firstTile = tileY*32;
+      int tileLine = scanline - (tileY * 8);
+      int attributeY = tileY / 4;
+      int attrShift = 2*(tileY%4 < 2);
+      int firstAttribute = attributeY * 8;
+      for (int i = firstTile; i < firstTile + 32; i++)
+	{
+	  int nameTableAddress = 0x2000 + i;
+	  cout << "Reading tile " << i << " from nametable\n";
+	  int attributeAddress = 0x23C0 + firstAttribute + (firstTile / 4);
+
+	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + tileLine);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + tileLine + 8);
+	  int xOffset = (i-firstTile)*8;
+	  for (int x = 0; x < 8; x++)
+	    {
+	      int andOperator = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      colorIndex = colorIndex >> (7-x);
+
+	      int paletteIndex = 0x01; // TODO: obtain from attribute table
+	      char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
+	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
+	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      al_put_pixel(xOffset+x,scanline,color);
+	    }
+	}
+    } // End if background enabled
+  if (memory->PPUMASK & 0x10) // If sprites enabled
     {
       for (int i = 0; i < 64; i++)
 	{
@@ -59,11 +93,7 @@ void PpuState::renderScanline(int scanline)
 		}
 	    }
         }
-    }
-      else
-	{
-	  //cout << "Not Rendering\n";
-	}
+    } // End if sprites enabled
 }
 
 void PpuState::endFrame()
