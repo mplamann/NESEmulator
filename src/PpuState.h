@@ -13,6 +13,7 @@ class PpuState
   int cycles;
  public:
   bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
+  void setDisplayTitle(const char* title);
 
   void startFrame();
   void renderScanline(int scanline);

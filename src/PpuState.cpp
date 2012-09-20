@@ -20,8 +20,15 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
   return true;
 }
 
+void PpuState::setDisplayTitle(const char* title)
+{
+  al_set_window_title(display, title);
+}
+
 void PpuState::startFrame()
 {
+  ALLEGRO_BITMAP* bitmap = al_get_target_bitmap();
+  al_lock_bitmap(bitmap, al_get_bitmap_format(bitmap), ALLEGRO_LOCK_WRITEONLY);
   al_clear_to_color(al_map_rgb(0,0,0));
 }
 
@@ -39,10 +46,11 @@ void PpuState::renderScanline(int scanline)
       int attributeY = tileY / 4;
       int attrShift = 2*(tileY%4 < 2);
       int firstAttribute = attributeY * 8;
+      double totalTimeSpentPuttingPixels = 0;
       for (int i = firstTile; i < firstTile + 32; i++)
 	{
+	  double start_time = al_get_time();
 	  int nameTableAddress = 0x2000 + i;
-	  cout << "Reading tile " << i << " from nametable\n";
 	  int attributeAddress = 0x23C0 + firstAttribute + (firstTile / 4);
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
@@ -61,8 +69,10 @@ void PpuState::renderScanline(int scanline)
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      al_put_pixel(xOffset+x,scanline,color);
+	      totalTimeSpentPuttingPixels += al_get_time()-start_time;
 	    }
 	}
+      cout << "Spent " << totalTimeSpentPuttingPixels << " seconds on scanline " << scanline << "\n";
     } // End if background enabled
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
@@ -102,6 +112,7 @@ void PpuState::endFrame()
 {
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
+  al_unlock_bitmap(al_get_target_bitmap());
   al_flip_display();
 }
 
