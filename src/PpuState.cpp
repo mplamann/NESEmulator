@@ -15,8 +15,16 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error!\n";
       return false;
     }
-  cout << "Done.\n";
   al_register_event_source(event_queue, al_get_display_event_source(display));
+
+  if (!al_init_primitives_addon())
+    {
+      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize primitives!", NULL,NULL);
+      cout << "Error!\n";
+      return false;
+    }
+  
+  cout << "Done.\n";
   return true;
 }
 
@@ -27,15 +35,28 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
+  //al_clear_to_color(al_map_rgb(0,0,0));
   ALLEGRO_BITMAP* bitmap = al_get_target_bitmap();
-  al_lock_bitmap(bitmap, al_get_bitmap_format(bitmap), ALLEGRO_LOCK_WRITEONLY);
-  al_clear_to_color(al_map_rgb(0,0,0));
+  //  al_lock_bitmap(bitmap, al_get_bitmap_format(bitmap), ALLEGRO_LOCK_WRITEONLY);
+  /*ALLEGRO_COLOR black = al_map_rgb(0,0,0);
+  for (int x = 0; x < al_get_bitmap_width(bitmap); x++)
+    for (int y = 0; y < al_get_bitmap_height(bitmap); y++)
+    al_put_pixel(x,y,black);*/
 }
 
 void PpuState::renderScanline(int scanline)
 {
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
+
+  ALLEGRO_VERTEX scanlinePoints[256];
+  for (int i = 0; i < 256; i++)
+    {
+      scanlinePoints[i].x = i;
+      scanlinePoints[i].y = scanline;
+      scanlinePoints[i].z = 0;
+      scanlinePoints[i].color = al_map_rgb(0,0,0);
+    }
 
   if (memory->PPUMASK & 0x08) // If background enabled
     {
@@ -68,7 +89,8 @@ void PpuState::renderScanline(int scanline)
 	      char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-	      al_put_pixel(xOffset+x,scanline,color);
+	      //al_put_pixel(xOffset+x,scanline,color);
+	      scanlinePoints[(xOffset+x)&0xFF].color=color;
 	      totalTimeSpentPuttingPixels += al_get_time()-start_time;
 	    }
 	}
@@ -101,18 +123,21 @@ void PpuState::renderScanline(int scanline)
 		  char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-		  al_put_pixel(xOffset+x,scanline,color);
+		  //al_put_pixel(xOffset+x,scanline,color);
+		  scanlinePoints[(xOffset+x)&0xFF].color=color;
 		}
 	    }
         }
     } // End if sprites enabled
+
+  al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
 }
 
 void PpuState::endFrame()
 {
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
-  al_unlock_bitmap(al_get_target_bitmap());
+  //al_unlock_bitmap(al_get_target_bitmap());
   al_flip_display();
 }
 
@@ -125,7 +150,6 @@ PpuState::~PpuState()
 {
   if (display != NULL)
     al_destroy_display(display);
-  
 }
 
 void PpuState::setMemory(MemoryState* mem)
