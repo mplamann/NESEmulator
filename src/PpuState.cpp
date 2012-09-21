@@ -5,7 +5,7 @@ using namespace std;
 
 bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
-  int height = 240;
+  int height = 224;
   int width = 256;
   cout << "Initializing display...";
   display = al_create_display(width, height);
@@ -36,10 +36,10 @@ void PpuState::setDisplayTitle(const char* title)
 void PpuState::startFrame()
 {
   //al_clear_to_color(al_map_rgb(0,0,0));
-  ALLEGRO_BITMAP* bitmap = al_get_target_bitmap();
+  //  ALLEGRO_BITMAP* bitmap = al_get_target_bitmap();
   //  al_lock_bitmap(bitmap, al_get_bitmap_format(bitmap), ALLEGRO_LOCK_WRITEONLY);
-  /*ALLEGRO_COLOR black = al_map_rgb(0,0,0);
-  for (int x = 0; x < al_get_bitmap_width(bitmap); x++)
+  //  ALLEGRO_COLOR black = al_map_rgb(0,0,0);
+  /*for (int x = 0; x < al_get_bitmap_width(bitmap); x++)
     for (int y = 0; y < al_get_bitmap_height(bitmap); y++)
     al_put_pixel(x,y,black);*/
 }
@@ -53,7 +53,7 @@ void PpuState::renderScanline(int scanline)
   for (int i = 0; i < 256; i++)
     {
       scanlinePoints[i].x = i;
-      scanlinePoints[i].y = scanline;
+      scanlinePoints[i].y = scanline-8;
       scanlinePoints[i].z = 0;
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
@@ -94,7 +94,7 @@ void PpuState::renderScanline(int scanline)
 	      totalTimeSpentPuttingPixels += al_get_time()-start_time;
 	    }
 	}
-      cout << "Spent " << totalTimeSpentPuttingPixels << " seconds on scanline " << scanline << "\n";
+      //      cout << "Spent " << totalTimeSpentPuttingPixels << " seconds on scanline " << scanline << "\n";
     } // End if background enabled
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
@@ -135,6 +135,7 @@ void PpuState::renderScanline(int scanline)
 
 void PpuState::endFrame()
 {
+  //al_draw_prim(pointList, NULL, 0, 0, 256*224, ALLEGRO_PRIM_POINT_LIST);
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
   //al_unlock_bitmap(al_get_target_bitmap());
