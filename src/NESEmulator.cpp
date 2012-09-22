@@ -27,7 +27,6 @@ void cleanup();
 
 double fps = 0;
 int frames_done = 0;
-double old_time = al_get_time();
 
 int main(int argc, char **argv)
 {
@@ -50,9 +49,13 @@ int main(int argc, char **argv)
   if (!apu->initializeAudio(event_queue))
     { cleanup(); return -1; }
   
-  memory->loadFileToRAM("../ROMs/controller.nes");
+  //memory->loadFileToRAM("../ROMs/controller.nes");
+  memory->loadFileToRAM("../ROMs/background/background.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
+
+  double old_time = al_get_time();
+  
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
   while (!done)
@@ -84,8 +87,9 @@ int main(int argc, char **argv)
 	  frames_done = 0;
 	  old_time = game_time;
 	  char windowTitle[50];
-	  sprintf(windowTitle, "nesemulator - %f FPS", fps);
-	  //	  al_set_window_title(disp TODO: Set window title appropriately
+	  sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
+	  ppu->setDisplayTitle(windowTitle);
+	  cout << fps << " FPS\n";
 	}
 
       frames_done++;
