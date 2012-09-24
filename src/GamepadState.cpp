@@ -40,9 +40,11 @@ void GamepadState::setValueForKey(ALLEGRO_EVENT event, bool value)
   switch (event.keyboard.keycode)
     {
     case ALLEGRO_KEY_X:
+    case ALLEGRO_KEY_A:
       player1.A = value;
       break;
     case ALLEGRO_KEY_Z:
+    case ALLEGRO_KEY_D:
       player1.B = value;
       break;
     case ALLEGRO_KEY_UP:

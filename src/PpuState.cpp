@@ -75,9 +75,10 @@ void PpuState::renderScanline(int scanline)
 	  int attributeAddress = 0x23C0 + firstAttribute + (firstTile / 4);
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
+	  cout << patternTableTile << "\n";
 	  int patternTableIndex = patternTableTile*16;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + tileLine);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + tileLine + 8);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex +  tileLine + 8);
 	  int xOffset = (i-firstTile)*8;
 	  for (int x = 0; x < 8; x++)
 	    {

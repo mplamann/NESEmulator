@@ -51,6 +51,7 @@ int main(int argc, char **argv)
   
   //memory->loadFileToRAM("../ROMs/controller.nes");
   memory->loadFileToRAM("../ROMs/background/background.nes");
+  //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
 
