@@ -73,10 +73,10 @@ void PpuState::renderScanline(int scanline)
 	  double start_time = al_get_time();
 	  int nameTableAddress = 0x2000 + i;
 	  int attributeAddress = 0x23C0 + firstAttribute + (firstTile / 4);
+	  //int paletteIndex = 
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
-	  cout << patternTableTile << "\n";
-	  int patternTableIndex = patternTableTile*16;
+	  int patternTableIndex = patternTableTile*16+0x1000;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + tileLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex +  tileLine + 8);
 	  int xOffset = (i-firstTile)*8;
@@ -90,7 +90,6 @@ void PpuState::renderScanline(int scanline)
 	      char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-	      //al_put_pixel(xOffset+x,scanline,color);
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
 	      totalTimeSpentPuttingPixels += al_get_time()-start_time;
 	    }

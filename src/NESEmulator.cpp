@@ -62,6 +62,9 @@ int main(int argc, char **argv)
   while (!done)
     {
       double game_time = al_get_time();
+
+      gamepad->readFromArduino();
+      
       cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
@@ -90,7 +93,7 @@ int main(int argc, char **argv)
 	  char windowTitle[50];
 	  sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
 	  ppu->setDisplayTitle(windowTitle);
-	  cout << fps << " FPS\n";
+	  //cout << fps << " FPS\n";
 	}
 
       frames_done++;

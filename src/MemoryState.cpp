@@ -247,7 +247,7 @@ void MemoryState::loadFileToRAM(char* filename)
   size_t result;
   char* file;
 
-  cout << "Loading ROM...";
+  cout << "Loading ROM ";
 
   fileStream = fopen(filename, "rb");
   if (fileStream == NULL)
@@ -286,7 +286,6 @@ void MemoryState::loadFileToRAM(char* filename)
     }
 
   int mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
-  cout << "Using mapper " << mapperNumber << "\n";
 
   switch (mapperNumber)
     {

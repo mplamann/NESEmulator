@@ -25,6 +25,8 @@ class GamepadState
   void strobe();
   bool readPlayer1();
   bool readPlayer2();
+
+  void readFromArduino();
  private:
   gamepad player1;
   gamepad player2;
