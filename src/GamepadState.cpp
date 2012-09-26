@@ -2,6 +2,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <iostream>
+#include "serial.h"
 using namespace std;
 
 GamepadState::GamepadState(void)
@@ -25,6 +26,13 @@ bool GamepadState::initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue)
   return true;
 }
 
+bool GamepadState::initializeArduino()
+{
+  serial = new Serial();
+  serial->Set_baud(9600);
+  serial->Open("/dev/tty.usbmodemfd141");
+}
+
 void GamepadState::keyDown(ALLEGRO_EVENT event)
 {
   setValueForKey(event, true);
@@ -40,9 +48,11 @@ void GamepadState::setValueForKey(ALLEGRO_EVENT event, bool value)
   switch (event.keyboard.keycode)
     {
     case ALLEGRO_KEY_X:
+    case ALLEGRO_KEY_A:
       player1.A = value;
       break;
     case ALLEGRO_KEY_Z:
+    case ALLEGRO_KEY_D:
       player1.B = value;
       break;
     case ALLEGRO_KEY_UP:
@@ -107,4 +117,36 @@ bool GamepadState::readPlayer1()
 bool GamepadState::readPlayer2()
 {
   return gamepadValueForIndex(latchedP2,p2Index++);
+}
+
+/*void GamepadState::runArduinoTest()
+{
+  Serial* serial = new Serial();
+  serial->Set_baud(9600);
+  serial->Open("/dev/tty.usbmodemfd141");
+  int data;
+  while (true)
+    {
+      if (serial->Read(&data, 1))
+	cout << (data & 0xFF) << "\n";
+	}
+	}*/
+
+void GamepadState::readFromArduino()
+{
+  int data;
+  if (serial->Read(&data, 1))
+    setStateArduino(data);
+}
+
+void GamepadState::setStateArduino(int arduinoState)
+{
+  player1.R = arduinoState & (1 << 0);
+  player1.L = arduinoState & (1 << 1);
+  player1.D = arduinoState & (1 << 2);
+  player1.U = arduinoState & (1 << 3);
+  player1.ST = arduinoState & (1 << 4);
+  player1.SEL = arduinoState & (1 << 5);
+  player1.A = arduinoState & (1 << 6);
+  player1.B = arduinoState & (1 << 7);
 }
