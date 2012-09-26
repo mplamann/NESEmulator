@@ -11,6 +11,8 @@ MemoryState::MemoryState(void)
 {
   for (int i = 0; i < RAM_SIZE; i++)
     RAM[i] = 0;
+  for (int i = 0; i < 0x20; i++)
+    palette[i] = 0;
 }
 
 MemoryState::~MemoryState(void)

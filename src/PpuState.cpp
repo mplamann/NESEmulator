@@ -44,6 +44,25 @@ void PpuState::startFrame()
     al_put_pixel(x,y,black);*/
 }
 
+inline int attributeOffsetForTile(int x, int y)
+{
+  int first = (y >> 2)*8;
+  return first + (x >> 2);
+}
+
+inline int attributeValueFromByteXY(int byte, int x, int y)
+{
+  bool xMod = (x%4)<2;
+  bool yMod = (y%4)<2;
+  if (xMod && yMod)
+    return byte & 0x03;
+  if (xMod)
+    return (byte & 0x30) >> 4;
+  if (yMod)
+    return (byte & 0x0C) >> 2;
+  return (byte & 0xC0) >> 6;
+}
+
 void PpuState::renderScanline(int scanline)
 {
   // Assume VBlank is done
@@ -72,8 +91,8 @@ void PpuState::renderScanline(int scanline)
 	{
 	  double start_time = al_get_time();
 	  int nameTableAddress = 0x2000 + i;
-	  int attributeAddress = 0x23C0 + firstAttribute + (firstTile / 4);
-	  //int paletteIndex = 
+	  int attributeAddress = 0x23C0 + attributeOffsetForTile(i-firstTile, tileY);
+	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attributeAddress),i-firstTile,tileY);
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
 	  int patternTableIndex = patternTableTile*16+0x1000;
@@ -86,8 +105,7 @@ void PpuState::renderScanline(int scanline)
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      colorIndex = colorIndex >> (7-x);
 
-	      int paletteIndex = 0x01; // TODO: obtain from attribute table
-	      char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
+	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
