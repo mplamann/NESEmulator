@@ -21,6 +21,8 @@ PpuState* ppu;
 GamepadState* gamepad;
 ApuState* apu;
 
+bool usingArduino;
+
 bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
@@ -46,15 +48,15 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   if (!gamepad->initializeKeyboard(event_queue))
     { cleanup(); return -1; }
-  if (!gamepad->initializeArduino())
+  if ((usingArduino = gamepad->initializeArduino()))
     {} // Then we don't use the arduino. Live with it.
   if (!apu->initializeAudio(event_queue))
     { cleanup(); return -1; }
   
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  //memory->loadFileToRAM("../ROMs/background/background.nes");
+  memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  memory->loadFileToRAM("../ROMs/SMB1.nes");
+  //memory->loadFileToRAM("../ROMs/SMB1.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
 
@@ -66,8 +68,9 @@ int main(int argc, char **argv)
     {
       double game_time = al_get_time();
 
-      gamepad->readFromArduino();
-      
+      if (usingArduino)
+	gamepad->readFromArduino();
+
       cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
