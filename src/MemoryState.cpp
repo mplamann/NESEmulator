@@ -115,6 +115,8 @@ void MemoryState::writeByteTo(int address, int value)
 	    gamepad->strobe();
 	  JOYSTROBE=value;
 	  break;
+	case 0x6004:
+	  cout << value;
 	default:
 	  return; // Unimplemented behavior
 	}
