@@ -103,6 +103,7 @@ void MemoryState::writeByteTo(int address, int value)
 	    PPUADDR = (value & 0xFF) << 8;
 	  else
 	    PPUADDR += (value & 0xFF);
+	  cout << "PPUADDR is " << PPUADDR << "\n";
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
