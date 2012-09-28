@@ -297,7 +297,7 @@ void CpuArithmetic::subFromA(int value)
 
 void CpuArithmetic::cmpMReg(int value, int reg)
 {
-  unsigned int temp = reg - value - 1;
+  unsigned int temp = reg - value;// - 1;
   C = (temp < 0x100);
   N = ((temp & 0x80) != 0);
   Z = (temp == 0);

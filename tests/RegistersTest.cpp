@@ -2,6 +2,8 @@
 #include "CpuRegisters.h"
 #include "Util.h"
 
+#include <allegro5/allegro.h>
+
 #include <iostream>
 using namespace std;
 
@@ -509,7 +511,7 @@ TEST (CpuRegisters,PLP)
   CHECK(cpu->getB());
 }
 
-int main()
+int main(int argc, char** argv)
 {
   TestResult tr;
   TestRegistry::runAllTests(tr);
