@@ -13,6 +13,8 @@ MemoryState::MemoryState(void)
     RAM[i] = 0;
   for (int i = 0; i < 0x20; i++)
     palette[i] = 0;
+  for (int i = 0; i < 0x400; i++)
+    nametable1[i] = nametable2[i] = 0;
 }
 
 MemoryState::~MemoryState(void)
@@ -132,9 +134,7 @@ int MemoryState::ppuReadByteFrom(int address)
   if (address < 0x2000)
     return (mapper->ppuReadByteFrom(address)) & 0xFF;
   else if (address < 0x2400)
-    {
-      return readFromNametable(0,address) & 0xFF;
-    }
+    return readFromNametable(0,address) & 0xFF;
   else if (address < 0x2800)
     return readFromNametable(1,address) & 0xFF;
   else if (address < 0x2C00)
@@ -163,12 +163,12 @@ void MemoryState::ppuWriteByteTo(int address, int value)
     ppuWriteByteTo(address - 0x1000, value & 0xFF);
   else
       palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
-  if (address == 16160)
-    cout << "This ain't good!\n";
 }
 
 int MemoryState::readFromNametable(int nametable, int address)
 {
+  if (address > 0x23C8)
+    return 0;
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
     {
@@ -202,6 +202,7 @@ void MemoryState::DMA(int address)
 
 void MemoryState::writeToNametable(int nametable, int address, int value)
 {
+  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
     {

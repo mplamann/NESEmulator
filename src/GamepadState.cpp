@@ -29,16 +29,11 @@ bool GamepadState::initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue)
 bool GamepadState::initializeArduino()
 {
   serial = new Serial();
-<<<<<<< HEAD
-  serial->Set_baud(9600);
-  serial->Open("/dev/tty.usbmodem621");
-=======
   if (serial->Set_baud(9600))
     return false;
   if (serial->Open("/dev/tty.usbmodemfd141"))
     return false;
   return true;
->>>>>>> c1ab0325afc6e4430029d271e6907cc84f09f73f
 }
 
 void GamepadState::keyDown(ALLEGRO_EVENT event)

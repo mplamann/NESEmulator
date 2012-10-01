@@ -279,7 +279,7 @@ bool CpuState::RunInstruction()
       PC++; // Roll with it
     }
   cout << setw(3) << nameForOpcode(opcode) << " " << setw(3) << arg1 << " " << setw(3) << arg2;
-  cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(6) << PC << " S: " << setw(3) << S << "\n";
+  cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(4) << PC << " S: " << setw(3) << S << "\n";
 #endif
   return success;
 }

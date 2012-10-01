@@ -1,5 +1,8 @@
 #include "CpuBranches.h"
 
+#include <iostream>
+using namespace std;
+
 CpuBranches::CpuBranches(void)
 {
 }
@@ -119,6 +122,7 @@ void CpuBranches::doRESET()
 
 void CpuBranches::doNMI()
 {
+  //  cout << "NMI!\n";
   int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
   processInterrupt(vector);
 }

@@ -9,6 +9,7 @@
 #include "ApuState.h"
 #include <time.h>
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 const int PPU_CYCLES_PER_SCANLINE = 1364;
@@ -32,6 +33,7 @@ int frames_done = 0;
 
 int main(int argc, char **argv)
 {
+  cout << hex << uppercase;
   cpu = new CpuState();
   memory = new MemoryState();
   ppu = new PpuState();
@@ -54,10 +56,11 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  //memory->loadFileToRAM("../ROMs/background/background.nes");
+  memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
-  memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
+  //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
+  //memory->loadFileToRAM("../ROMs/pong1.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
 
