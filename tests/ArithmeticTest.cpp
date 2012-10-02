@@ -533,10 +533,10 @@ TEST (CpuArithmetic, CMP_Abs)
   mem->writeByteTo(2,0x36);
   mem->writeByteTo(3,0x23);
   mem->writeByteTo(0x2336,0x36);
-  cpu->setA(0x80);
+  cpu->setA(0x36);
   cpu->RunInstruction();
   CHECK(cpu->getN() == false);
-  CHECK(cpu->getZ() == false);
+  CHECK(cpu->getZ() == true);
   CHECK(cpu->getC() == true);
 }
 

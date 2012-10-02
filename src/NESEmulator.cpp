@@ -54,9 +54,10 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  memory->loadFileToRAM("../ROMs/background/background.nes");
+  //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
+  memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   cout << "ROM Loaded\n";
   cpu->doRESET();
 
