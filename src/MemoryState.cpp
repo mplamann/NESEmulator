@@ -13,6 +13,8 @@ MemoryState::MemoryState(void)
     RAM[i] = 0;
   for (int i = 0; i < 0x20; i++)
     palette[i] = 0;
+  for (int i = 0; i < 0x400; i++)
+    nametable1[i] = nametable2[i] = 0;
 }
 
 MemoryState::~MemoryState(void)
