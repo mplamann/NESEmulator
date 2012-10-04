@@ -56,14 +56,20 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  memory->loadFileToRAM("../ROMs/background/background.nes");
+  //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
+  memory->loadFileToRAM("../ROMs/nestest.nes");
   cout << "ROM Loaded\n";
-  cpu->doRESET();
+  //cpu->doRESET();
+  cpu->setPC(0xC000);
+  cpu->setS(0xFD);
 
+  while (true)
+    cpu->RunInstruction();
+  
   double old_time = al_get_time();
   
   // NOTE: Execution starts at address pointed to by RESET vector

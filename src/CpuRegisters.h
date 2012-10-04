@@ -30,7 +30,7 @@ class CpuRegisters
   int addrInd(int arg1, int arg2);
   int addrIndx(int arg1, int arg2);
   int addrIndy(int arg1, int arg2);
-
+  
   // Stack operations
   void pushToStack(int value);
   int popFromStack();

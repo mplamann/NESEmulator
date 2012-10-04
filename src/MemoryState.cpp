@@ -167,8 +167,8 @@ void MemoryState::ppuWriteByteTo(int address, int value)
 
 int MemoryState::readFromNametable(int nametable, int address)
 {
-  if (address > 0x23C8)
-    return 0;
+  //  if (address > 0x23C8)
+  //return 0;
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
     {
@@ -202,7 +202,7 @@ void MemoryState::DMA(int address)
 
 void MemoryState::writeToNametable(int nametable, int address, int value)
 {
-  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
+  //  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
     {

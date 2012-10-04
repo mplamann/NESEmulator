@@ -13,7 +13,7 @@ CpuRegisters::CpuRegisters(void)
 
   C = false; // Carry flag
   Z = false; // Zero flag
-  I = false; // Interrupt flag
+  I = true; // Interrupt flag
   D = false; // Decimal flag, not used
   B = false; // BRK flag
   V = false; // Overflow flag
@@ -304,6 +304,7 @@ bool CpuRegisters::RunInstruction()
       cycles += 4;
       PC += 1;
       A = popFromStack();
+      setNZ(A);
       break;
     case PLP:
       cycles += 4;
@@ -426,6 +427,8 @@ int CpuRegisters::getP()
     P |= 0x40;
   if (N)
     P |= 0x80;
+  if (D)
+    P |= 0x08;
   return P;
 }
 int CpuRegisters::getCycles() {return cycles;}

@@ -269,6 +269,11 @@ bool CpuState::RunInstruction()
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
+
+  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
+  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " CYC:" << setw(3) << cycles << "\n";
+  //  cout << setw(3) << nameForOpcode(opcode) << " " << setw(3) << arg1 << " " << setw(3) << arg2;
+  //cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(4) << PC << " S: " << setw(3) << S << "\n";
 #endif
   if (super::RunInstruction())
     success = true;
@@ -278,8 +283,6 @@ bool CpuState::RunInstruction()
       cout << "Opcode " << opcode << " unimplemented.";
       PC++; // Roll with it
     }
-  cout << setw(3) << nameForOpcode(opcode) << " " << setw(3) << arg1 << " " << setw(3) << arg2;
-  cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(4) << PC << " S: " << setw(3) << S << "\n";
 #endif
   return success;
 }
