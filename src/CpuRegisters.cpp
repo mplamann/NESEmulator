@@ -60,7 +60,6 @@ bool CpuRegisters::RunInstruction()
       PC += 1;
       cycles += 2;
       S = X;
-      setNZ(S);
       break;
     case TYA:
       PC += 1;
