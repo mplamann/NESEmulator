@@ -12,6 +12,8 @@
 #include <iomanip>
 using namespace std;
 
+//#define RUN_TEST
+
 const int PPU_CYCLES_PER_SCANLINE = 1364;
 const int CPU_CYCLES_PER_PPU_CYCLE = 12;
 
@@ -54,21 +56,26 @@ int main(int argc, char **argv)
     {} // Then we don't use the arduino. Live with it.
   if (!apu->initializeAudio(event_queue))
     { cleanup(); return -1; }
-  
+
+#ifndef RUN_TEST
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  //memory->loadFileToRAM("../ROMs/background/background.nes");
+  memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
+  cpu->doRESET();
+  #endif
+
+#ifdef RUN_TEST
   memory->loadFileToRAM("../ROMs/nestest.nes");
   cout << "ROM Loaded\n";
-  //cpu->doRESET();
   cpu->setPC(0xC000);
   cpu->setS(0xFD);
 
   while (true)
-    cpu->RunInstruction();
+  cpu->RunInstruction();
+#endif
   
   double old_time = al_get_time();
   

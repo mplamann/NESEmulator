@@ -398,12 +398,12 @@ int CpuRegisters::addrInd(int arg1, int arg2)
 
 void CpuRegisters::pushToStack(int value)
 {
-  memory->writeByteTo(S--,value);
+  memory->writeByteTo(0x100|(S--&0xFF),value);
 }
 
 int CpuRegisters::popFromStack()
 {
-  return memory->readByteFrom(++S);
+  return memory->readByteFrom(0x100|(++S&0xFF));
 }
 
 int CpuRegisters::getA() {return A;}

@@ -75,6 +75,7 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
+  //  cout << "CPU Write $" << address << " = " << value << "\n";
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   else if (address < 0x5000)
