@@ -385,7 +385,7 @@ int CpuRegisters::addrIndx(int arg1, int arg2)
 
 int CpuRegisters::addrIndy(int arg1, int arg2)
 {
-  int indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom(arg1 + 1) << 8);
+  int indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom((arg1 + 1) & 0xFF) << 8);
   if (pageBoundaryCrossed(indirectAddress,Y))
     cycles += 1;
   return (indirectAddress+Y) & 0xFFFF;
