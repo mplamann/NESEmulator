@@ -280,6 +280,7 @@ bool CpuBoolean::RunInstruction()
       address = addrAbsx(arg1,arg2);
       memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
       break;
+      
     case BIT_Zp:
       PC += 2;
       cycles += 3;
@@ -299,10 +300,11 @@ bool CpuBoolean::RunInstruction()
 int CpuBoolean::ASL(int arg)
 {
   int value = arg << 1;
-  if ((value & 0xFF) != (value))
+  /*if ((value & 0xFF) != (value))
     C = true;
   else
-    C = false;
+  C = false;*/
+  C = (arg&0x80);
   value = (value & 0xFF);
   setNZ(value);
   return value;
@@ -311,10 +313,11 @@ int CpuBoolean::ASL(int arg)
 int CpuBoolean::LSR(int arg)
 {
   int value = arg>>1;
-  if (arg % 2 == 1)
+  /*if (arg % 2 == 1)
     C = true;
   else
-    C = false;
+  C = false;*/
+  C = arg&0x01;
   value &= 0x7F; // Bit 7 will always be 0 anyways
   setNZ(value);
   return value;
@@ -322,16 +325,21 @@ int CpuBoolean::LSR(int arg)
 
 int CpuBoolean::ROL(int arg)
 {
-  int value = ASL(arg);
+  int value = (arg << 1);
   value += (int)C;
+  C = (value > 0xFF);
+  value &= 0xFF;
   setNZ(value);
   return value;
 }
 
 int CpuBoolean::ROR(int arg)
 {
-  int value = LSR(arg);
-  value += ((int)C << 7);
+  if (C)
+    arg |= 0x100;
+  C = (arg & 0x1);
+  int value = (arg >> 1);
+  value &= 0xFF;
   setNZ(value);
   return value;
 }

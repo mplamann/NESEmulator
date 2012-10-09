@@ -12,7 +12,7 @@
 #include <iomanip>
 using namespace std;
 
-//#define RUN_TEST
+#define RUN_TEST
 
 const int PPU_CYCLES_PER_SCANLINE = 1364;
 const int CPU_CYCLES_PER_PPU_CYCLE = 12;

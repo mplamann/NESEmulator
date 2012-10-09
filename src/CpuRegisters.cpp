@@ -90,6 +90,7 @@ bool CpuRegisters::RunInstruction()
       PC += 3;
       cycles += 4;
       A = memory->readByteFrom(addrAbs(arg1,arg2));
+      setNZ(A);
       break;
     case LDA_Absx:
       PC += 3;
@@ -378,7 +379,7 @@ int CpuRegisters::addrAbsy(int arg1, int arg2)
 int CpuRegisters::addrIndx(int arg1, int arg2)
 {
   int zpAddress = (arg1 + X) % 256;
-  int indirectAddress = memory->readByteFrom((zpAddress)) + (memory->readByteFrom(zpAddress+1)<<8);
+  int indirectAddress = memory->readByteFrom((zpAddress)) + (memory->readByteFrom((zpAddress+1)%0x100)<<8);
   return indirectAddress;
 }
 
@@ -387,7 +388,7 @@ int CpuRegisters::addrIndy(int arg1, int arg2)
   int indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom(arg1 + 1) << 8);
   if (pageBoundaryCrossed(indirectAddress,Y))
     cycles += 1;
-  return indirectAddress+Y;
+  return (indirectAddress+Y) & 0xFFFF;
 }
 
 int CpuRegisters::addrInd(int arg1, int arg2)
