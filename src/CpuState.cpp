@@ -262,6 +262,11 @@ const char* nameForOpcode(int opcode)
   return "UNKNOWN";
 }
 
+void printVariable(char* text, int value)
+{
+  cout << " " << text << ": " << setw(2) << value;
+}
+
 bool CpuState::RunInstruction()
 {
   bool success = false;
@@ -271,7 +276,9 @@ bool CpuState::RunInstruction()
   int arg2 = memory->readByteFrom(PC+2);
 
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
-  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " $97:" << setw(3) << memory->readByteFrom(0x97) << " $98:" << setw(3) << memory->readByteFrom(0x98) << "\n";
+  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
+
+cout << "\n";
   //  cout << setw(3) << nameForOpcode(opcode) << " " << setw(3) << arg1 << " " << setw(3) << arg2;
   //cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(4) << PC << " S: " << setw(3) << S << "\n";
 #endif

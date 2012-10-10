@@ -349,12 +349,12 @@ int CpuRegisters::addrZp(int arg1, int arg2)
 
 int CpuRegisters::addrZpx(int arg1, int arg2)
 {
-  return arg1 + X;
+  return (arg1 + X) & 0xFF;
 }
 
 int CpuRegisters::addrZpy(int arg1, int arg2)
 {
-  return arg1 + Y;
+  return (arg1 + Y) & 0xFF;
 }
 
 int CpuRegisters::addrAbs(int arg1, int arg2)
@@ -366,14 +366,14 @@ int CpuRegisters::addrAbsx(int arg1, int arg2)
 {
   if (pageBoundaryCrossed(arg1 + (arg2<<8), X))
     cycles += 1;
-  return arg1 + (arg2<<8) + X;
+  return (arg1 + (arg2<<8) + X) & 0xFFFF;
 }
 
 int CpuRegisters::addrAbsy(int arg1, int arg2)
 {
   if (pageBoundaryCrossed(arg1 + (arg2<<8), X))
     cycles += 1;
-  return arg1 + (arg2<<8) + Y;
+  return (arg1 + (arg2<<8) + Y) & 0xFFFF;
 }
 
 int CpuRegisters::addrIndx(int arg1, int arg2)
@@ -393,8 +393,10 @@ int CpuRegisters::addrIndy(int arg1, int arg2)
 
 int CpuRegisters::addrInd(int arg1, int arg2)
 {
-  int absAddr = arg1 + (arg2 << 8);
-  return memory->readByteFrom(absAddr) + (memory->readByteFrom(absAddr + 1) << 8);
+  // Indirect addressing, used only in JMP, does not cross page boundaries
+  int addrLSB = arg1 + (arg2 << 8);
+  int addrMSB = ((arg1 + 1) & 0xFF) + (arg2 << 8);
+  return memory->readByteFrom(addrLSB) + (memory->readByteFrom(addrMSB) << 8);
 }
 
 void CpuRegisters::pushToStack(int value)
