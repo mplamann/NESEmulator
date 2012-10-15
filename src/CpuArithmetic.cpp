@@ -60,6 +60,7 @@ bool CpuArithmetic::RunInstruction()
       break;
 
     case SBC_Imm:
+    case SBC_Imm2:
       PC += 2;
       cycles += 2;
       subFromA(arg1);
@@ -174,37 +175,61 @@ bool CpuArithmetic::RunInstruction()
       cmpMReg(memory->readByteFrom(addrAbs(arg1,arg2)),Y);
       break;
 
+    case DCP_Zp:
+      PC += 2;
+      cycles += 5;
+      dcp(addrZp(arg1,arg2));
+      break;
+    case DCP_Zpx:
+      PC += 2;
+      cycles += 6;
+      dcp(addrZpx(arg1,arg2));
+      break;
+    case DCP_Abs:
+      PC += 3;
+      cycles += 6;
+      dcp(addrAbs(arg1,arg2));
+      break;
+    case DCP_Absx:
+      PC += 3;
+      cycles += 7;
+      dcp(addrAbs(arg1,arg2));
+      break;
+    case DCP_Absy:
+      PC += 3;
+      cycles += 7;
+      dcp(addrAbsy(arg1,arg2));
+      break;
+    case DCP_Indx:
+      PC += 2;
+      cycles += 8;
+      dcp(addrIndx(arg1,arg2));
+      break;
+    case DCP_Indy:
+      PC += 2;
+      cycles += 8;
+      dcp(addrIndy(arg1,arg2));
+      break;
+
     case DEC_Zp:
       PC += 2;
       cycles += 5;
-      value = memory->readByteFrom(addrZp(arg1,arg2));
-      value--;
-      memory->writeByteTo(addrZp(arg1,arg2), value);
-      setNZ(value);
+      decMemory(addrZp(arg1,arg2));
       break;
     case DEC_Zpx:
       PC += 2;
       cycles += 6;
-      value = memory->readByteFrom(addrZpx(arg1,arg2));
-      value--;
-      memory->writeByteTo(addrZpx(arg1,arg2), value);
-      setNZ(value);
+      decMemory(addrZpx(arg1,arg2));
       break;
     case DEC_Abs:
       PC += 3;
       cycles += 6;
-      value = memory->readByteFrom(addrAbs(arg1,arg2));
-      value--;
-      memory->writeByteTo(addrAbs(arg1,arg2), value);
-      setNZ(value);
+      decMemory(addrAbs(arg1,arg2));
       break;
     case DEC_Absx:
       PC += 3;
       cycles += 7;
-      value = memory->readByteFrom(addrAbsx(arg1,arg2));
-      value--;
-      memory->writeByteTo(addrAbsx(arg1,arg2), value);
-      setNZ(value);
+      decMemory(addrAbsx(arg1,arg2));
       break;
 
     case DEX:
@@ -297,8 +322,22 @@ void CpuArithmetic::subFromA(int value)
 
 void CpuArithmetic::cmpMReg(int value, int reg)
 {
-  unsigned int temp = reg - value;// - 1;
+  unsigned int temp = reg - value;
   C = (temp < 0x100);
   N = ((temp & 0x80) != 0);
   Z = (temp == 0);
+}
+
+void CpuArithmetic::decMemory(int address)
+{
+  int value = memory->readByteFrom(address);
+  value--;
+  memory->writeByteTo(address, value);
+  setNZ(value);
+}
+
+void CpuArithmetic::dcp(int address)
+{
+  decMemory(address);
+  cmpMReg(memory->readByteFrom(address),A);
 }

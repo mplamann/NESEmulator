@@ -20,7 +20,6 @@ CpuRegisters::CpuRegisters(void)
   N = false; // Sign flag (1 if negative, 0 if positive)
 }
 
-
 CpuRegisters::~CpuRegisters(void)
 {
 }
@@ -30,6 +29,36 @@ bool CpuRegisters::RunInstruction()
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
+
+  // Check for NOP among all the NOP codes
+  for (int i = 0; i < nNOP_TWO_BYTES; i++)
+    {
+      if (i < nNOP_ONE_BYTE)
+	{
+	  if (NOP_ONE_BYTE[i] == opcode)
+	    {
+	      PC += 1;
+	      cycles += 2;
+	      return true;
+	    }
+	}
+      if (NOP_TWO_BYTES[i] == opcode)
+	{
+	  PC += 2;
+	  cycles += 2;
+	  return true;
+	}
+      if (i < nNOP_THREE_BYTES)
+	{
+	  if (NOP_THREE_BYTES[i] == opcode)
+	    {
+	      PC += 3;
+	      cycles += 2;
+	      return true;
+	    }
+	}
+    }
+  
   switch (opcode)
     {
     case TAX:
@@ -68,6 +97,49 @@ bool CpuRegisters::RunInstruction()
       setNZ(A);
       break;
 
+    case LAX_Zp:
+      PC += 2;
+      cycles += 3;
+      A = memory->readByteFrom(addrZp(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+    case LAX_Zpy:
+      PC += 2;
+      cycles += 4;
+      A = memory->readByteFrom(addrZpy(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+    case LAX_Abs:
+      PC += 3;
+      cycles += 4;
+      A = memory->readByteFrom(addrAbs(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+    case LAX_Absy:
+      PC += 3;
+      cycles += 4;
+      A = memory->readByteFrom(addrAbsy(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+    case LAX_Indx:
+      PC += 2;
+      cycles += 6;
+      A = memory->readByteFrom(addrIndx(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+    case LAX_Indy:
+      PC += 2;
+      cycles += 5;
+      A = memory->readByteFrom(addrIndy(arg1,arg2));
+      X = A;
+      setNZ(A);
+      break;
+      
     case LDA_Imm:
       PC += 2;
       A = arg1;
@@ -284,10 +356,10 @@ bool CpuRegisters::RunInstruction()
       I = true;
       break;
 
-    case NOP:
+      /*    case NOP:
       PC += 1;
       cycles += 2;
-      break;
+      break;*/
 
     case PHA:
       pushToStack(A);
@@ -297,9 +369,13 @@ bool CpuRegisters::RunInstruction()
     case PHP:
       cycles += 3;
       PC += 1;
-      pushToStack(getP());
+      pushToStack(getP() | (1<<4));
       break;
 
+      // http://wiki.nesdev.com/w/index.php/CPU_status_flag_behavior
+      // PHP pushes a 1 for the B flag - always
+      // PLP ignores B and unused bit
+      
     case PLA:
       cycles += 4;
       PC += 1;
@@ -454,7 +530,8 @@ void CpuRegisters::setP(int P)
   C = ((P & 0x01) != 0);
   Z = ((P & 0x02) != 0);
   I = ((P & 0x04) != 0);
-  B = ((P & 0x10) != 0);
+  D = ((P & 0x08) != 0);
+  //B = ((P & 0x10) != 0);
   V = ((P & 0x40) != 0);
   N = ((P & 0x80) != 0);
 }

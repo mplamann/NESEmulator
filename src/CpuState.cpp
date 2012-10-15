@@ -99,6 +99,15 @@ const char* nameForOpcode(int opcode)
     case CPY_Abs:
       return "CPY";
 
+    case DCP_Zp:
+    case DCP_Zpx:
+    case DCP_Abs:
+    case DCP_Absx:
+    case DCP_Absy:
+    case DCP_Indx:
+    case DCP_Indy:
+      return "DCP";
+      
     case DEC_Zp:
     case DEC_Zpx:
     case DEC_Abs:
@@ -138,6 +147,14 @@ const char* nameForOpcode(int opcode)
     case JSR:
       return "JSR";
 
+    case LAX_Zp:
+    case LAX_Zpy:
+    case LAX_Abs:
+    case LAX_Absy:
+    case LAX_Indx:
+    case LAX_Indy:
+      return "LAX";
+      
     case LDA_Imm:
     case LDA_Zp:
     case LDA_Zpx:
@@ -210,7 +227,14 @@ const char* nameForOpcode(int opcode)
     case RTS:
       return "RTS";
 
+    case SAX_Zp:
+    case SAX_Zpy:
+    case SAX_Indx:
+    case SAX_Abs:
+      return "SAX";
+
     case SBC_Imm:
+    case SBC_Imm2:
     case SBC_Zp:
     case SBC_Zpx:
     case SBC_Abs:
@@ -259,7 +283,7 @@ const char* nameForOpcode(int opcode)
     case TYA:
       return "TYA";
     }
-  return "UNKNOWN";
+  return "???";
 }
 
 void printVariable(char* text, int value)
@@ -278,16 +302,16 @@ bool CpuState::RunInstruction()
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
   cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
 
-cout << "\n";
-  //  cout << setw(3) << nameForOpcode(opcode) << " " << setw(3) << arg1 << " " << setw(3) << arg2;
-  //cout << " A: " << setw(3) << A << " X: " << setw(3) << X << " Y: " << setw(3) << Y << " PC: " << setw(4) << PC << " S: " << setw(3) << S << "\n";
+  printVariable("$0647",memory->readByteFrom(0x0647));
+  
+  cout << "\n";
 #endif
   if (super::RunInstruction())
     success = true;
 #ifdef CPU_DEBUG
   if (success == false)
     {
-      cout << "Opcode " << opcode << " unimplemented.";
+      //      cout << "Opcode " << opcode << " unimplemented.";
       PC++; // Roll with it
     }
 #endif

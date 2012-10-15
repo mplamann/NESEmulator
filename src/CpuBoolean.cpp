@@ -67,6 +67,27 @@ bool CpuBoolean::RunInstruction()
       setNZ(A);
       break;
 
+    case SAX_Zp:
+      PC += 2;
+      cycles += 3;
+      memory->writeByteTo(addrZp(arg1,arg2),A&X);
+      break;
+    case SAX_Zpy:
+      PC += 2;
+      cycles += 4;
+      memory->writeByteTo(addrZpy(arg1,arg2),A&X);
+      break;
+    case SAX_Indx:
+      PC += 2;
+      cycles += 6;
+      memory->writeByteTo(addrIndx(arg1,arg2),A&X);
+      break;
+    case SAX_Abs:
+      PC += 3;
+      cycles += 4;
+      memory->writeByteTo(addrAbs(arg1,arg2),A&X);
+      break;
+
     case EOR_Imm:
       PC += 2;
       cycles += 2;

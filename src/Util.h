@@ -59,6 +59,14 @@ const int CPY_Imm = 0xC0;
 const int CPY_Zp = 0xC4;
 const int CPY_Abs = 0xCC;
 
+const int DCP_Zp = 0xC7;
+const int DCP_Zpx = 0xD7;
+const int DCP_Abs = 0xCF;
+const int DCP_Absx = 0xDF;
+const int DCP_Absy = 0xDB;
+const int DCP_Indx = 0xC3;
+const int DCP_Indy = 0xD3;
+
 const int DEC_Zp = 0xC6;
 const int DEC_Zpx = 0xD6;
 const int DEC_Abs = 0xCE;
@@ -89,6 +97,13 @@ const int JMP_Ind = 0x6C;
 
 const int JSR = 0x20;
 
+const int LAX_Zp = 0xA7;
+const int LAX_Zpy = 0xB7;
+const int LAX_Abs = 0xAF;
+const int LAX_Absy = 0xBF;
+const int LAX_Indx = 0xA3;
+const int LAX_Indy = 0xB3;
+
 const int LDA_Imm = 0xA9;
 const int LDA_Zp = 0xA5;
 const int LDA_Zpx = 0xB5;
@@ -117,6 +132,40 @@ const int LSR_Abs = 0x4E;
 const int LSR_Absx = 0x5E;
 
 const int NOP = 0xEA;
+const int nNOP_ONE_BYTE = 7;
+const int NOP_ONE_BYTE[nNOP_ONE_BYTE] =
+                             {0x1A,
+			      0x3A,
+			      0x5A,
+			      0x7A,
+			      0xDA,
+			      0xEA,
+			      0xFA};
+const int nNOP_TWO_BYTES = 14;
+const int NOP_TWO_BYTES[nNOP_TWO_BYTES] =
+                             {0x04,
+			      0x14,
+			      0x34,
+			      0x44,
+			      0x54,
+			      0x64,
+			      0x74,
+			      0x80,
+			      0x82,
+			      0x89,
+			      0xC2,
+			      0xD4,
+			      0xE2,
+			      0xF4};
+const int nNOP_THREE_BYTES = 7;
+const int NOP_THREE_BYTES[nNOP_THREE_BYTES] =
+                             {0x0C,
+			      0x1C,
+			      0x3C,
+			      0x5C,
+			      0x7C,
+			      0xDC,
+			      0xFC};
 
 const int ORA_Imm = 0x09;
 const int ORA_Zp = 0x05;
@@ -147,7 +196,13 @@ const int ROR_Absx = 0x7E;
 const int RTI = 0x40;
 const int RTS = 0x60;
 
+const int SAX_Zp = 0x87;
+const int SAX_Zpy = 0x97;
+const int SAX_Indx = 0x83;
+const int SAX_Abs = 0x8F;
+
 const int SBC_Imm = 0xE9;
+const int SBC_Imm2 = 0xEB;
 const int SBC_Zp = 0xE5;
 const int SBC_Zpx = 0xF5;
 const int SBC_Abs = 0xED;
