@@ -140,6 +140,15 @@ const char* nameForOpcode(int opcode)
     case INY:
       return "INY";
 
+    case ISB_Zp:
+    case ISB_Zpx:
+    case ISB_Abs:
+    case ISB_Absx:
+    case ISB_Absy:
+    case ISB_Indx:
+    case ISB_Indy:
+      return "ISB";
+      
     case JMP_Abs:
     case JMP_Ind:
       return "JMP";
@@ -227,6 +236,24 @@ const char* nameForOpcode(int opcode)
     case RTS:
       return "RTS";
 
+    case RLA_Zp:
+    case RLA_Zpx:
+    case RLA_Abs:
+    case RLA_Absx:
+    case RLA_Absy:
+    case RLA_Indx:
+    case RLA_Indy:
+      return "RLA";
+
+    case RRA_Zp:
+    case RRA_Zpx:
+    case RRA_Abs:
+    case RRA_Absx:
+    case RRA_Absy:
+    case RRA_Indx:
+    case RRA_Indy:
+      return "RRA";
+
     case SAX_Zp:
     case SAX_Zpy:
     case SAX_Indx:
@@ -251,6 +278,24 @@ const char* nameForOpcode(int opcode)
     case SEI:
       return "SEI";
 
+    case SLO_Zp:
+    case SLO_Zpx:
+    case SLO_Abs:
+    case SLO_Absx:
+    case SLO_Absy:
+    case SLO_Indx:
+    case SLO_Indy:
+      return "SLO";
+
+    case SRE_Zp:
+    case SRE_Zpx:
+    case SRE_Abs:
+    case SRE_Absx:
+    case SRE_Absy:
+    case SRE_Indx:
+    case SRE_Indy:
+      return "SRE";
+      
     case STA_Zp:
     case STA_Zpx:
     case STA_Abs:
@@ -303,6 +348,7 @@ bool CpuState::RunInstruction()
   cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
 
   printVariable("$0647",memory->readByteFrom(0x0647));
+  printVariable("$0548",memory->readByteFrom(0x0548));
   
   cout << "\n";
 #endif

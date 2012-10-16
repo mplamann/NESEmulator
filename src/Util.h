@@ -92,6 +92,14 @@ const int INC_Absx = 0xFE;
 const int INX = 0xE8;
 const int INY = 0xC8;
 
+const int ISB_Zp = 0xE7;
+const int ISB_Zpx = 0xF7;
+const int ISB_Abs = 0xEF;
+const int ISB_Absx = 0xFF;
+const int ISB_Absy = 0xFB;
+const int ISB_Indx = 0xE3;
+const int ISB_Indy = 0xF3;
+
 const int JMP_Abs = 0x4C;
 const int JMP_Ind = 0x6C;
 
@@ -196,6 +204,22 @@ const int ROR_Absx = 0x7E;
 const int RTI = 0x40;
 const int RTS = 0x60;
 
+const int RLA_Zp = 0x27;
+const int RLA_Zpx = 0x37;
+const int RLA_Abs = 0x2F;
+const int RLA_Absx = 0x3F;
+const int RLA_Absy = 0x3B;
+const int RLA_Indx = 0x23;
+const int RLA_Indy = 0x33;
+
+const int RRA_Zp = 0x67;
+const int RRA_Zpx = 0x77;
+const int RRA_Abs = 0x6F;
+const int RRA_Absx = 0x7F;
+const int RRA_Absy = 0x7B;
+const int RRA_Indx = 0x63;
+const int RRA_Indy = 0x73;
+
 const int SAX_Zp = 0x87;
 const int SAX_Zpy = 0x97;
 const int SAX_Indx = 0x83;
@@ -214,6 +238,22 @@ const int SBC_Indy = 0xF1;
 const int SEC = 0x38;
 const int SED = 0xF8;
 const int SEI = 0x78;
+
+const int SLO_Zp = 0x07;
+const int SLO_Zpx = 0x17;
+const int SLO_Abs = 0x0F;
+const int SLO_Absx = 0x1F;
+const int SLO_Absy = 0x1B;
+const int SLO_Indx = 0x03;
+const int SLO_Indy = 0x13;
+
+const int SRE_Zp = 0x47;
+const int SRE_Zpx = 0x57;
+const int SRE_Abs = 0x4F;
+const int SRE_Absx = 0x5F;
+const int SRE_Absy = 0x5B;
+const int SRE_Indx = 0x43;
+const int SRE_Indy = 0x53;
 
 const int STA_Zp = 0x85;
 const int STA_Zpx = 0x95;

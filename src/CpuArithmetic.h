@@ -9,7 +9,10 @@ class CpuArithmetic : public CpuBoolean
   void subFromA(int value);
   void cmpMReg(int memory, int reg);
   void decMemory(int address);
-  void dcp(int address);
+  void incMemory(int address);
+  void DCP(int address);
+  void ISB(int address);
+  void RRA(int address);
  public:
   CpuArithmetic(void);
   ~CpuArithmetic(void);

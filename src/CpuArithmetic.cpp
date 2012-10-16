@@ -178,37 +178,37 @@ bool CpuArithmetic::RunInstruction()
     case DCP_Zp:
       PC += 2;
       cycles += 5;
-      dcp(addrZp(arg1,arg2));
+      DCP(addrZp(arg1,arg2));
       break;
     case DCP_Zpx:
       PC += 2;
       cycles += 6;
-      dcp(addrZpx(arg1,arg2));
+      DCP(addrZpx(arg1,arg2));
       break;
     case DCP_Abs:
       PC += 3;
       cycles += 6;
-      dcp(addrAbs(arg1,arg2));
+      DCP(addrAbs(arg1,arg2));
       break;
     case DCP_Absx:
       PC += 3;
       cycles += 7;
-      dcp(addrAbs(arg1,arg2));
+      DCP(addrAbsx(arg1,arg2));
       break;
     case DCP_Absy:
       PC += 3;
       cycles += 7;
-      dcp(addrAbsy(arg1,arg2));
+      DCP(addrAbsy(arg1,arg2));
       break;
     case DCP_Indx:
       PC += 2;
       cycles += 8;
-      dcp(addrIndx(arg1,arg2));
+      DCP(addrIndx(arg1,arg2));
       break;
     case DCP_Indy:
       PC += 2;
       cycles += 8;
-      dcp(addrIndy(arg1,arg2));
+      DCP(addrIndy(arg1,arg2));
       break;
 
     case DEC_Zp:
@@ -250,34 +250,22 @@ bool CpuArithmetic::RunInstruction()
     case INC_Zp:
       PC += 2;
       cycles += 5;
-      value = memory->readByteFrom(addrZp(arg1,arg2));
-      value++;
-      memory->writeByteTo(addrZp(arg1,arg2),value);
-      setNZ(value);
+      incMemory(addrZp(arg1,arg2));
       break;
     case INC_Zpx:
       PC += 2;
       cycles += 6;
-      value = memory->readByteFrom(addrZpx(arg1,arg2));
-      value++;
-      memory->writeByteTo(addrZpx(arg1,arg2),value);
-      setNZ(value);
+      incMemory(addrZpx(arg1,arg2));
       break;
     case INC_Abs:
       PC += 3;
       cycles += 6;
-      value = memory->readByteFrom(addrAbs(arg1,arg2));
-      value++;
-      memory->writeByteTo(addrAbs(arg1,arg2),value);
-      setNZ(value);
+      incMemory(addrAbs(arg1,arg2));
       break;
     case INC_Absx:
       PC += 3;
       cycles += 7;
-      value = memory->readByteFrom(addrAbsx(arg1,arg2));
-      value++;
-      memory->writeByteTo(addrAbsx(arg1,arg2),value);
-      setNZ(value);
+      incMemory(addrAbsx(arg1,arg2));
       break;
 
     case INX:
@@ -294,6 +282,79 @@ bool CpuArithmetic::RunInstruction()
       Y &= 0xFF;
       setNZ(Y);
       break;
+
+    case ISB_Zp:
+      PC += 2;
+      cycles += 5;
+      ISB(addrZp(arg1,arg2));
+      break;
+    case ISB_Zpx:
+      PC += 2;
+      cycles += 6;
+      ISB(addrZpx(arg1,arg2));
+      break;
+    case ISB_Abs:
+      PC += 3;
+      cycles += 6;
+      ISB(addrAbs(arg1,arg2));
+      break;
+    case ISB_Absx:
+      PC += 3;
+      cycles += 7;
+      ISB(addrAbsx(arg1,arg2));
+      break;
+    case ISB_Absy:
+      PC += 3;
+      cycles += 7;
+      ISB(addrAbsy(arg1,arg2));
+      break;
+    case ISB_Indx:
+      PC += 2;
+      cycles += 8;
+      ISB(addrIndx(arg1,arg2));
+      break;
+    case ISB_Indy:
+      PC += 2;
+      cycles += 8;
+      ISB(addrIndy(arg1,arg2));
+      break;
+
+    case RRA_Zp:
+      PC += 2;
+      cycles += 5;
+      RRA(addrZp(arg1,arg2));
+      break;
+    case RRA_Zpx:
+      PC += 2;
+      cycles += 6;
+      RRA(addrZpx(arg1,arg2));
+      break;
+    case RRA_Abs:
+      PC += 3;
+      cycles += 6;
+      RRA(addrAbs(arg1,arg2));
+      break;
+    case RRA_Absx:
+      PC += 3;
+      cycles += 7;
+      RRA(addrAbsx(arg1,arg2));
+      break;
+    case RRA_Absy:
+      PC += 3;
+      cycles += 7;
+      RRA(addrAbsy(arg1,arg2));
+      break;
+    case RRA_Indx:
+      PC += 2;
+      cycles += 8;
+      RRA(addrIndx(arg1,arg2));
+      break;
+    case RRA_Indy:
+      PC += 2;
+      cycles += 8;
+      RRA(addrIndy(arg1,arg2));
+      break;
+      
     default:
       return false;
     }
@@ -336,8 +397,29 @@ void CpuArithmetic::decMemory(int address)
   setNZ(value);
 }
 
-void CpuArithmetic::dcp(int address)
+void CpuArithmetic::incMemory(int address)
+{
+  int value = memory->readByteFrom(address);
+  value++;
+  memory->writeByteTo(address,value);
+  setNZ(value);
+}
+
+void CpuArithmetic::DCP(int address)
 {
   decMemory(address);
   cmpMReg(memory->readByteFrom(address),A);
+}
+
+void CpuArithmetic::ISB(int address)
+{
+  incMemory(address);
+  subFromA(memory->readByteFrom(address));
+}
+
+void CpuArithmetic::RRA(int address)
+{
+  int value = ROR(memory->readByteFrom(address));
+  memory->writeByteTo(address, value);
+  addToA(value);
 }

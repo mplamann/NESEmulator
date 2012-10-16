@@ -301,6 +301,114 @@ bool CpuBoolean::RunInstruction()
       address = addrAbsx(arg1,arg2);
       memory->writeByteTo(address,ROR(memory->readByteFrom(address)));
       break;
+
+    case SLO_Zp:
+      PC += 2;
+      cycles += 5;
+      SLO(addrZp(arg1,arg2));
+      break;
+    case SLO_Zpx:
+      PC += 2;
+      cycles += 6;
+      SLO(addrZpx(arg1,arg2));
+      break;
+    case SLO_Abs:
+      PC += 3;
+      cycles += 6;
+      SLO(addrAbs(arg1,arg2));
+      break;
+    case SLO_Absx:
+      PC += 3;
+      cycles += 7;
+      SLO(addrAbsx(arg1,arg2));
+      break;
+    case SLO_Absy:
+      PC += 3;
+      cycles += 7;
+      SLO(addrAbsy(arg1,arg2));
+      break;
+    case SLO_Indx:
+      PC += 2;
+      cycles += 8;
+      SLO(addrIndx(arg1,arg2));
+      break;
+    case SLO_Indy:
+      PC += 2;
+      cycles += 8;
+      SLO(addrIndy(arg1,arg2));
+      break;
+
+    case RLA_Zp:
+      PC += 2;
+      cycles += 5;
+      RLA(addrZp(arg1,arg2));
+      break;
+    case RLA_Zpx:
+      PC += 2;
+      cycles += 6;
+      RLA(addrZpx(arg1,arg2));
+      break;
+    case RLA_Abs:
+      PC += 3;
+      cycles += 6;
+      RLA(addrAbs(arg1,arg2));
+      break;
+    case RLA_Absx:
+      PC += 3;
+      cycles += 7;
+      RLA(addrAbsx(arg1,arg2));
+      break;
+    case RLA_Absy:
+      PC += 3;
+      cycles += 7;
+      RLA(addrAbsy(arg1,arg2));
+      break;
+    case RLA_Indx:
+      PC += 2;
+      cycles += 8;
+      RLA(addrIndx(arg1,arg2));
+      break;
+    case RLA_Indy:
+      PC += 2;
+      cycles += 8;
+      RLA(addrIndy(arg1,arg2));
+      break;
+
+    case SRE_Zp:
+      PC += 2;
+      cycles += 5;
+      SRE(addrZp(arg1,arg2));
+      break;
+    case SRE_Zpx:
+      PC += 2;
+      cycles += 6;
+      SRE(addrZpx(arg1,arg2));
+      break;
+    case SRE_Abs:
+      PC += 3;
+      cycles += 6;
+      SRE(addrAbs(arg1,arg2));
+      break;
+    case SRE_Absx:
+      PC += 3;
+      cycles += 7;
+      SRE(addrAbsx(arg1,arg2));
+      break;
+    case SRE_Absy:
+      PC += 3;
+      cycles += 7;
+      SRE(addrAbsy(arg1,arg2));
+      break;
+    case SRE_Indx:
+      PC += 2;
+      cycles += 8;
+      SRE(addrIndx(arg1,arg2));
+      break;
+    case SRE_Indy:
+      PC += 2;
+      cycles += 8;
+      SRE(addrIndy(arg1,arg2));
+      break;
       
     case BIT_Zp:
       PC += 2;
@@ -370,4 +478,29 @@ void CpuBoolean::BIT(int arg)
   Z = ((A & arg) == 0);
   V = ((0x40 & arg) != 0);
   N = ((0x80 & arg) != 0);
+}
+
+void CpuBoolean::SLO(int address)
+{
+  // Combines ASL and ORA
+  int value = ASL(memory->readByteFrom(address));
+  memory->writeByteTo(address, value);
+  A |= value;
+  setNZ(A);
+}
+
+void CpuBoolean::RLA(int address)
+{
+  int value = ROL(memory->readByteFrom(address));
+  memory->writeByteTo(address, value);
+  A &= value;
+  setNZ(A);
+}
+
+void CpuBoolean::SRE(int address)
+{
+  int value = LSR(memory->readByteFrom(address));
+  memory->writeByteTo(address, value);
+  A ^= value;
+  setNZ(A);
 }
