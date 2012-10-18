@@ -26,6 +26,8 @@ CpuRegisters::~CpuRegisters(void)
 
 bool CpuRegisters::RunInstruction()
 {
+  PC &= 0xFFFF;
+  
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);

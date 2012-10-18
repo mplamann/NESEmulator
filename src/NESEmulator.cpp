@@ -59,11 +59,11 @@ int main(int argc, char **argv)
 
 #ifndef RUN_TEST
   //memory->loadFileToRAM("../ROMs/controller.nes");
-  memory->loadFileToRAM("../ROMs/background/background.nes");
+  //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
-  //memory->loadFileToRAM("../ROMs/pong1.nes");
+  memory->loadFileToRAM("../ROMs/pong1.nes");
   cpu->doRESET();
   #endif
 

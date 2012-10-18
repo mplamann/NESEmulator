@@ -99,9 +99,6 @@ void PpuState::renderScanline(int scanline)
 	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + tileLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex +  tileLine + 8);
 	  int xOffset = (i-firstTile)*8;
-
-	  if (tileY == 1 && i == firstTile)
-	    cout << "PaletteIndex: " << paletteIndex << "\n";
 	  
 	  for (int x = 0; x < 8; x++)
 	    {

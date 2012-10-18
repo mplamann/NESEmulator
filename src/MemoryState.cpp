@@ -168,7 +168,7 @@ void MemoryState::ppuWriteByteTo(int address, int value)
 
 int MemoryState::readFromNametable(int nametable, int address)
 {
-  //  if (address > 0x23C8)
+  //if (address > 0x23C8)
   //return 0;
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
@@ -184,7 +184,9 @@ int MemoryState::readFromNametable(int nametable, int address)
   else
     {
     } // TODO: Single-Screen Mirroring - needs mapper support
-  int arrayAddress = (address - 0x2400) % 0x400;
+  int arrayAddress = (address - 0x2000) % 0x400;
+  if (address > 0x23C8 && (int)(currentNametable==1?nametable1:nametable2)[arrayAddress])
+    cout << "\nMessed up stuff coming through. Nametable: " << currentNametable << " reads " << (int)(currentNametable==1?nametable1:nametable2)[arrayAddress] << " at address " << address;
   if (currentNametable == 1)
     return nametable1[arrayAddress];
   else

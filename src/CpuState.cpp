@@ -1,6 +1,6 @@
 #include "CpuState.h"
 
-#define CPU_DEBUG
+//#define CPU_DEBUG
 
 #ifdef CPU_DEBUG
 #include <iostream>
@@ -331,10 +331,12 @@ const char* nameForOpcode(int opcode)
   return "???";
 }
 
+#ifdef CPU_DEBUG
 void printVariable(char* text, int value)
 {
   cout << " " << text << ": " << setw(2) << value;
 }
+#endif
 
 bool CpuState::RunInstruction()
 {
