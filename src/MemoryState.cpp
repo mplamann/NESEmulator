@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "Mapper0.h"
+#include "Mapper2.h"
 using namespace std;
 
 MemoryState::MemoryState(void)
@@ -301,6 +302,8 @@ void MemoryState::loadFileToRAM(char* filename)
     {
     case 0:
       mapper = new Mapper0(file);
+    case 2:
+      mapper = new Mapper2(file);
     default:
       mapper = new Mapper(file);
     }

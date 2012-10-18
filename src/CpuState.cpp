@@ -1,6 +1,6 @@
 #include "CpuState.h"
 
-//#define CPU_DEBUG
+#define CPU_DEBUG
 
 #ifdef CPU_DEBUG
 #include <iostream>
