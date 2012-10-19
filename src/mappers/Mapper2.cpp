@@ -5,6 +5,7 @@ using namespace std;
 Mapper2::Mapper2(char* file) : Mapper(file)
 {
   cout << "using mapper 2...";
+  prgBank1Index = 5;
   prgBank2Index = nPrgBanks-1;
 }
 
@@ -17,7 +18,8 @@ void Mapper2::writeByteTo(int address, int value)
   if (address < 0x8000)
     {
       cout << "Mapper2 cannot write to addresses < 0x8000.\n";
+      return;
     }
-  else
-    prgBank1Index = value;
+  prgBank1Index = value;
+  cout << "Switching PRG Bank 1 to bank index " << value << "\n";
 }

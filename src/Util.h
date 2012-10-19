@@ -271,6 +271,8 @@ const int STY_Zp = 0x84;
 const int STY_Zpx = 0x94;
 const int STY_Abs = 0x8C;
 
+const int SYA = 0x9C;
+
 const int TAX = 0xAA;
 const int TAY = 0xA8;
 const int TSX = 0xBA;

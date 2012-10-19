@@ -315,6 +315,9 @@ const char* nameForOpcode(int opcode)
     case STY_Abs:
       return "STY";
 
+      //    case SYA:
+      //      return "SYA";  Turns out that I don't need to implement this to get Megaman running
+      
     case TAX:
       return "TAX";
     case TAY:

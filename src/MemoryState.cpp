@@ -297,15 +297,19 @@ void MemoryState::loadFileToRAM(char* filename)
     }
 
   int mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
+  cout << "With mapper #" << mapperNumber << " ";
 
   switch (mapperNumber)
     {
     case 0:
       mapper = new Mapper0(file);
+      break;
     case 2:
       mapper = new Mapper2(file);
+      break;
     default:
       mapper = new Mapper(file);
+      break;
     }
 
   mirroring = file[6] & 0x9;

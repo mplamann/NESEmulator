@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
-  memory->loadFileToRAM("../ROMs/Mega Man (U).nes");
+  memory->loadFileToRAM("../ROMs/Mega Man (USA).nes");
   cpu->doRESET();
   #endif
 
