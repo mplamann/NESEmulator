@@ -35,13 +35,6 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
-  //al_clear_to_color(al_map_rgb(0,0,0));
-  //  ALLEGRO_BITMAP* bitmap = al_get_target_bitmap();
-  //  al_lock_bitmap(bitmap, al_get_bitmap_format(bitmap), ALLEGRO_LOCK_WRITEONLY);
-  //  ALLEGRO_COLOR black = al_map_rgb(0,0,0);
-  /*for (int x = 0; x < al_get_bitmap_width(bitmap); x++)
-    for (int y = 0; y < al_get_bitmap_height(bitmap); y++)
-    al_put_pixel(x,y,black);*/
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -87,17 +80,23 @@ void PpuState::renderScanline(int scanline)
       int attrShift = 2*(tileY%4 < 2);
       int firstAttribute = attributeY * 8;
       double totalTimeSpentPuttingPixels = 0;
+
+      int baseNametableAddress = 0x2000; // If a game changes this mid-scanline, it won't take effect until the next scanline.
+      baseNametableAddress += (memory->PPUCTRL & 0x3) * 0x400;
+
+      int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
+      
       for (int i = firstTile; i < firstTile + 32; i++)
 	{
 	  double start_time = al_get_time();
-	  int nameTableAddress = 0x2000 + i;
+	  int nameTableAddress = baseNametableAddress + i;
 	  int attributeAddress = 0x23C0 + attributeOffsetForTile(i-firstTile, tileY);
 	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attributeAddress),i-firstTile,tileY);
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
-	  int patternTableIndex = patternTableTile*16+0x1000;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + tileLine);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex +  tileLine + 8);
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + tileLine);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  tileLine + 8);
 	  int xOffset = (i-firstTile)*8;
 	  
 	  for (int x = 0; x < 8; x++)
@@ -117,6 +116,7 @@ void PpuState::renderScanline(int scanline)
     } // End if background enabled
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
+      int basePatternTable = (memory->PPUCTRL & 0x08) ? 0x1000 : 0x0000;
       for (int i = 0; i < 64; i++)
 	{
 	  // Check if sprite is visible on this scanline
@@ -128,8 +128,8 @@ void PpuState::renderScanline(int scanline)
 	  int spriteLine = scanline-yCoord;
 	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
 	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine + 8);
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
 	  int paletteIndex = memory->oamReadByteFrom(i*4+2) & 0x3;
 	  for (int x = 0; x < 8; x++)
@@ -142,7 +142,6 @@ void PpuState::renderScanline(int scanline)
 		  char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-		  //al_put_pixel(xOffset+x,scanline,color);
 		  scanlinePoints[(xOffset+x)&0xFF].color=color;
 		}
 	    }

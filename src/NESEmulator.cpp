@@ -89,7 +89,8 @@ int main(int argc, char **argv)
       if (usingArduino)
 	gamepad->readFromArduino();
 
-      cpu->doNMI();
+      if (memory->PPUCTRL & 0x80)
+	cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
       int targetCpuCycle = cpu->getCycles() + 22*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;

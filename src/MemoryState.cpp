@@ -42,28 +42,28 @@ int MemoryState::readByteFrom(int address)
       switch (address)
 	{
 	case 0x2000:
-	  return PPUCTRL;
+	  return PPUCTRL & 0xFF;
 	case 0x2001:
-	  return PPUMASK;
+	  return PPUMASK & 0xFF;
 	case 0x2002:
 	  {
 	    PPUADDR = -1;
-	    return PPUSTATUS;
+	    return PPUSTATUS & 0xFF;
 	  }
 	case 0x2003:
-	  return OAMADDR;
+	  return OAMADDR & 0xFF;
 	case 0x2004:
-	  return OAM[OAMADDR];
+	  return OAM[OAMADDR] & 0xFF;
 	case 0x2005:
-	  return PPUSCROLL;
+	  return PPUSCROLL & 0xFF;
 	case 0x2006:
-	  return PPUADDR;
+	  return PPUADDR & 0xFF;
 	case 0x2007:
-	  return ppuReadByteFrom(PPUADDR);
+	  return ppuReadByteFrom(PPUADDR) & 0xFF;
 	case 0x4016:
-	  return gamepad->readPlayer1();
+	  return gamepad->readPlayer1() & 0xFF;
 	case 0x4017:
-	  return gamepad->readPlayer2();
+	  return gamepad->readPlayer2() & 0xFF;
 	default:
 	  return -1;
 	}
@@ -110,7 +110,10 @@ void MemoryState::writeByteTo(int address, int value)
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
-	  PPUADDR++;
+	  if (!(PPUCTRL & 0x04))
+	    PPUADDR++;
+	  else
+	    PPUADDR += 32;
 	  break;
 	case 0x4014:                   // DMA
 	  DMA(value);
