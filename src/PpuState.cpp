@@ -35,6 +35,7 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
+  vScroll = memory->PPUSCROLLY;
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -72,10 +73,11 @@ void PpuState::renderScanline(int scanline)
 
   if (memory->PPUMASK & 0x08) // If background enabled
     {
+      int scrolledScanline = scanline+vScroll;
       // Screen is 32x30 tiles
-      int tileY = scanline / 8;
+      int tileY = scrolledScanline / 8;
       int firstTile = tileY*32;
-      int tileLine = scanline - (tileY * 8);
+      int tileLine = scrolledScanline - (tileY * 8);
       int attributeY = tileY / 4;
       int attrShift = 2*(tileY%4 < 2);
       int firstAttribute = attributeY * 8;
@@ -83,6 +85,8 @@ void PpuState::renderScanline(int scanline)
 
       int baseNametableAddress = 0x2000; // If a game changes this mid-scanline, it won't take effect until the next scanline.
       baseNametableAddress += (memory->PPUCTRL & 0x3) * 0x400;
+      baseNametableAddress += memory->PPUSCROLLX;
+      cout << "\nxSCROLL: " << (memory->PPUSCROLLX & 0xFF);
 
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
       

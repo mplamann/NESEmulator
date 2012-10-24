@@ -18,6 +18,7 @@ private:
   int mirroring;
   char OAM[256];
   char JOYSTROBE;
+  bool isPpuScrollOnX;
 
   void DMA(int address);
 public:
@@ -46,7 +47,8 @@ public:
   char PPUMASK;
   char PPUSTATUS;
   unsigned char OAMADDR;
-  char PPUSCROLL;
+  char PPUSCROLLX;
+  char PPUSCROLLY;
   int PPUADDR;
 };
 

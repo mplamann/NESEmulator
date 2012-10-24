@@ -10,6 +10,9 @@ using namespace std;
 
 MemoryState::MemoryState(void)
 {
+  isPpuScrollOnX = true;
+  PPUSCROLLX = 0;
+  PPUSCROLLY = 0;
   for (int i = 0; i < RAM_SIZE; i++)
     RAM[i] = 0;
   for (int i = 0; i < 0x20; i++)
@@ -41,23 +44,13 @@ int MemoryState::readByteFrom(int address)
     {
       switch (address)
 	{
-	case 0x2000:
-	  return PPUCTRL & 0xFF;
-	case 0x2001:
-	  return PPUMASK & 0xFF;
 	case 0x2002:
 	  {
 	    PPUADDR = -1;
 	    return PPUSTATUS & 0xFF;
 	  }
-	case 0x2003:
-	  return OAMADDR & 0xFF;
 	case 0x2004:
 	  return OAM[OAMADDR] & 0xFF;
-	case 0x2005:
-	  return PPUSCROLL & 0xFF;
-	case 0x2006:
-	  return PPUADDR & 0xFF;
 	case 0x2007:
 	  return ppuReadByteFrom(PPUADDR) & 0xFF;
 	case 0x4016:
@@ -85,6 +78,8 @@ void MemoryState::writeByteTo(int address, int value)
 	{
 	case 0x2000:
 	  PPUCTRL = (value & 0xFF);
+	  /*if (PPUCTRL & 0x04)
+	    cout << "WARNING: VW Bit set. PPU probably won't work right.\n";*/
 	  break;
 	case 0x2001:
 	  PPUMASK = (value & 0xFF);
@@ -100,7 +95,11 @@ void MemoryState::writeByteTo(int address, int value)
 	  OAMADDR++;
 	  break;
 	case 0x2005:
-	  PPUSCROLL = (value & 0xFF);
+	  if (isPpuScrollOnX)
+	    PPUSCROLLX = (value & 0xFF);
+	  else
+	    PPUSCROLLY = (value & 0xFF);
+	  isPpuScrollOnX = !isPpuScrollOnX;
 	  break;
 	case 0x2006:
 	  if (PPUADDR == -1)
@@ -189,12 +188,10 @@ int MemoryState::readFromNametable(int nametable, int address)
     {
     } // TODO: Single-Screen Mirroring - needs mapper support
   int arrayAddress = (address - 0x2000) % 0x400;
-  if (address > 0x23C8 && (int)(currentNametable==1?nametable1:nametable2)[arrayAddress])
-    cout << "\nMessed up stuff coming through. Nametable: " << currentNametable << " reads " << (int)(currentNametable==1?nametable1:nametable2)[arrayAddress] << " at address " << address;
   if (currentNametable == 1)
-    return nametable1[arrayAddress];
+    return nametable1[arrayAddress] & 0xFF;
   else
-    return nametable2[arrayAddress];
+    return nametable2[arrayAddress] & 0xFF;
 }
 
 void MemoryState::DMA(int address)

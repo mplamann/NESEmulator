@@ -13,6 +13,8 @@ class PpuState
   ALLEGRO_DISPLAY* display;
   int cycles;
   ALLEGRO_VERTEX pointList[256*224];
+  int vScroll; // Vertical scroll is preserved during the entire frame.
+               // Keep a local copy so that changes to PPUSCROLLY doesn't affect mid-frame.
  public:
   bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
   void setDisplayTitle(const char* title);
