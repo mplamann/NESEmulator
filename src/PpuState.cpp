@@ -59,6 +59,7 @@ inline int attributeValueFromByteXY(int byte, int x, int y)
 
 void PpuState::renderScanline(int scanline)
 {
+  scanline += vScroll;
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
 
@@ -76,35 +77,52 @@ void PpuState::renderScanline(int scanline)
       int scrolledScanline = scanline+vScroll;
       // Screen is 32x30 tiles
       int tileY = scrolledScanline / 8;
-      int firstTile = tileY*32;
-      int tileLine = scrolledScanline - (tileY * 8);
+      int firstTileWithoutScroll = tileY*32;
+      int firstTileToRender = firstTileWithoutScroll + (memory->PPUSCROLLX/8);
+      int lineInTile = scrolledScanline - (tileY * 8);
       int attributeY = tileY / 4;
-      int attrShift = 2*(tileY%4 < 2);
-      int firstAttribute = attributeY * 8;
-      double totalTimeSpentPuttingPixels = 0;
-
-      int baseNametableAddress = 0x2000; // If a game changes this mid-scanline, it won't take effect until the next scanline.
-      baseNametableAddress += (memory->PPUCTRL & 0x3) * 0x400;
-      baseNametableAddress += memory->PPUSCROLLX;
-      cout << "\nxSCROLL: " << (memory->PPUSCROLLX & 0xFF);
 
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
-      
-      for (int i = firstTile; i < firstTile + 32; i++)
+      int baseNametable;
+      switch (memory->PPUCTRL&0x3)
 	{
-	  double start_time = al_get_time();
-	  int nameTableAddress = baseNametableAddress + i;
-	  int attributeAddress = 0x23C0 + attributeOffsetForTile(i-firstTile, tileY);
-	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attributeAddress),i-firstTile,tileY);
+	case 0:
+	  baseNametable = 0x2000;
+	  break;
+	case 1:
+	  baseNametable = 0x2400;
+	  break;
+	case 2:
+	  baseNametable = 0x2800;
+	  break;
+	case 3:
+	  baseNametable = 0x2C00;
+	  break;
+	}
+      
+      for (int i = firstTileToRender; i < firstTileToRender + 32; i++)
+	{
+	  if ((i - firstTileWithoutScroll) == 32)
+	    {
+	      baseNametable = (baseNametable == 0x2000 ? 0x2400 : 0x2000);
+	    }
+	  int tileIndexInNametable = ((i - firstTileWithoutScroll) % 32) + firstTileWithoutScroll;
+	  int nameTableAddress = baseNametable + tileIndexInNametable;
+	  int attributeAddress = baseNametable + 0x3C0 + attributeOffsetForTile(tileIndexInNametable-firstTileToRender, tileY);
+	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attributeAddress),tileIndexInNametable-firstTileToRender,tileY);
 
 	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
 	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + tileLine);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  tileLine + 8);
-	  int xOffset = (i-firstTile)*8;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
+	  int xOffset = (i-firstTileToRender)*8;
+
+	  int scrollOffsetPixels = memory->PPUSCROLLX&0x03;
 	  
-	  for (int x = 0; x < 8; x++)
+	  for (int x = scrollOffsetPixels; x < 8; x++)
 	    {
+	      if (xOffset+x > 256)
+		break;
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      colorIndex = colorIndex >> (7-x);
@@ -113,10 +131,8 @@ void PpuState::renderScanline(int scanline)
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
-	      totalTimeSpentPuttingPixels += al_get_time()-start_time;
 	    }
 	}
-      //      cout << "Spent " << totalTimeSpentPuttingPixels << " seconds on scanline " << scanline << "\n";
     } // End if background enabled
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {

@@ -37,6 +37,8 @@ public:
   int oamReadByteFrom(int address);
   void oamWriteByteTo(int address, int value);
 
+  char* mirroredNametableAtXY(int x, int y);
+  
   int readFromNametable(int nametable, int address);
   void writeToNametable(int nametable, int address, int value);
 

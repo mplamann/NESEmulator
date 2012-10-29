@@ -169,10 +169,33 @@ void MemoryState::ppuWriteByteTo(int address, int value)
       palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
+char* MemoryState::mirroredNametableAtXY(int x, int y)
+{
+  cout << "Where is mirroredNametableAtXY being used?\n";
+  if (mirroring == 0)
+    {
+      // Horizontal mirroring
+      if ((y%2) == 0)
+	return nametable1;
+      else
+	return nametable2;
+    }
+  else if (mirroring == 1)
+    {
+      if ((x%2) == 0)
+	return nametable1;
+      else
+	return nametable2;
+    }
+  else
+    {
+      cout << "Unknown mirroring configuration\n";
+      return nametable1;
+    }
+}
+
 int MemoryState::readFromNametable(int nametable, int address)
 {
-  //if (address > 0x23C8)
-  //return 0;
   int currentNametable = 1;
   if (mirroring == 0) // Horizontal Mirroring
     {
@@ -206,8 +229,9 @@ void MemoryState::DMA(int address)
 
 void MemoryState::writeToNametable(int nametable, int address, int value)
 {
-  //  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
+  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
   int currentNametable = 1;
+  nametable %= 4;
   if (mirroring == 0) // Horizontal Mirroring
     {
       if (nametable > 1)
@@ -221,7 +245,7 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
   else
     {
     } // TODO: Single-Screen Mirroring - needs mapper support
-  int arrayAddress = (address - 0x2400) % 0x400;
+  int arrayAddress = (address - 0x2000) % 0x400;
   if (currentNametable == 1)
     nametable1[arrayAddress] = value;
   else
