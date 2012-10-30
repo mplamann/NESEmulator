@@ -171,7 +171,6 @@ void MemoryState::ppuWriteByteTo(int address, int value)
 
 char* MemoryState::mirroredNametableAtXY(int x, int y)
 {
-  cout << "Where is mirroredNametableAtXY being used?\n";
   if (mirroring == 0)
     {
       // Horizontal mirroring
@@ -229,7 +228,6 @@ void MemoryState::DMA(int address)
 
 void MemoryState::writeToNametable(int nametable, int address, int value)
 {
-  cout << "Nametable written to at address " << hex << uppercase << address << "\n";
   int currentNametable = 1;
   nametable %= 4;
   if (mirroring == 0) // Horizontal Mirroring
@@ -250,6 +248,37 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
     nametable1[arrayAddress] = value;
   else
     nametable2[arrayAddress] = value;
+}
+
+int MemoryState::getNametableEntryForTile(int x, int y, int xScroll, int yScroll)
+{
+  if (PPUCTRL & 0x01)
+    x += 256;
+  if (PPUCTRL & 0x02)
+    y += 240;
+  x += xScroll;
+  y += yScroll;
+  char* currentNametable = mirroredNametableAtXY((x/256),(y/240));
+  int address = (y%240)*32;         // Account for both y wrapping around and each line being 32 tiles wide
+  address += (x%256);               // Account for x coordinate
+  return currentNametable[address];
+}
+
+int MemoryState::attributeEntryForXY(int x, int y, int xScroll, int yScroll)
+{
+  if (PPUCTRL & 0x01)
+    x += 256;
+  if (PPUCTRL & 0x02)
+    y += 240;
+  x += xScroll;
+  y += yScroll;
+  char* currentNametable = mirroredNametableAtXY((x/256),(y/240));
+  int address = 0x3C0;
+
+  // I don't remember why this works. Voodoo for now.
+  int first = ((y%240)>>2)*8;
+  address += first + ((x%256) >> 2);
+  return currentNametable[address];
 }
 
 int MemoryState::oamReadByteFrom(int address)

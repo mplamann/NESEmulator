@@ -74,7 +74,7 @@ void PpuState::renderScanline(int scanline)
 
   if (memory->PPUMASK & 0x08) // If background enabled
     {
-      int scrolledScanline = scanline+vScroll;
+      /*int scrolledScanline = scanline+vScroll;
       // Screen is 32x30 tiles
       int tileY = scrolledScanline / 8;
       int firstTileWithoutScroll = tileY*32;
@@ -132,8 +132,36 @@ void PpuState::renderScanline(int scanline)
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
 	    }
+	    }*/
+      int tileY = scanline / 8;
+      int lineInTile = scanline - (tileY*8);
+      int attributeY = tileY / 4;
+      int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
+      int upperLimit = (memory->PPUSCROLLX & 0x07) ? 33 : 32;
+      for (int i = 0; i < upperLimit; i++)
+	{
+	  int patternTableTile = memory->getNametableEntryForTile(i,tileY,memory->PPUSCROLLX,vScroll);
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
+	  int xOffset = i*8 - (memory->PPUSCROLLX & 0x07); // Account for both tile width and X scrolling
+	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i,tileY);
+	  for (int x = 0; x < 8; x++)
+	    {
+	      if (i == 0 && x == 0)
+		x = (memory->PPUSCROLLX & 0x07);
+	      int andOperator = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      colorIndex = colorIndex >> (7-x);
+
+	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
+	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
+	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      scanlinePoints[(xOffset+x)&0xFF].color=color;
+	    }
 	}
     } // End if background enabled
+      
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
       int basePatternTable = (memory->PPUCTRL & 0x08) ? 0x1000 : 0x0000;
@@ -143,20 +171,28 @@ void PpuState::renderScanline(int scanline)
 	  int yCoord = memory->oamReadByteFrom(i*4);
 	  if ((yCoord > scanline || scanline-yCoord >= 8) || yCoord > 0xEF)
 	    continue;
-	  if (scanline == 0)
-	    cout << "What?\n";
+	  int spriteFlags = memory->oamReadByteFrom(i*4+2);
+	  
 	  int spriteLine = scanline-yCoord;
+	  if (spriteFlags & 0x80) // Check for vertical flip
+	    spriteLine = 8-spriteLine;
 	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
 	  int patternTableIndex = patternTableTile*16;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine + 8);
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
-	  int paletteIndex = memory->oamReadByteFrom(i*4+2) & 0x3;
+	  int paletteIndex = spriteFlags & 0x3;
+	  
 	  for (int x = 0; x < 8; x++)
 	    {
-	      int andOperator = 1<<(7-x);
+	      int andOperator = 1<<(7-x);      
+	      if (spriteFlags&0x40) // Check for horizontal flip
+		andOperator = 1<<x;
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
-	      colorIndex = colorIndex >> (7-x);
+	      if (spriteFlags & 0x40) // Horizontal flip again
+		colorIndex = colorIndex >> x;
+	      else
+		colorIndex = colorIndex >> (7-x);
 	      if (colorIndex != 0)
 		{
 		  char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);

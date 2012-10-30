@@ -64,9 +64,9 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
-  memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
+  //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/Mega Man (USA).nes");
-  //memory->loadFileToRAM("../ROMs/Galaga.nes");
+  memory->loadFileToRAM("../ROMs/Galaga.nes");
   cpu->doRESET();
   #endif
 

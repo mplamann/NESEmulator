@@ -42,6 +42,9 @@ public:
   int readFromNametable(int nametable, int address);
   void writeToNametable(int nametable, int address, int value);
 
+  int getNametableEntryForTile(int x, int y, int xScroll, int yScroll);
+  int attributeEntryForXY(int x, int y, int xScroll, int yScroll);
+
   char colorForPaletteIndex(bool isSprite, int palette, int index);
 
   // PPU Registers
