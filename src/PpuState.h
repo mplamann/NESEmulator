@@ -11,6 +11,7 @@ class PpuState
  private:
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
+  ALLEGRO_DISPLAY* nametableDisplay;
   int cycles;
   ALLEGRO_VERTEX pointList[256*224];
   int vScroll; // Vertical scroll is preserved during the entire frame.

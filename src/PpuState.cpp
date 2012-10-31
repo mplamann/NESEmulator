@@ -15,6 +15,13 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error!\n";
       return false;
     }
+  nametableDisplay = al_create_display(2*width, height);
+  if (!nametableDisplay)
+    {
+      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
+      cout << "Error!\n";
+      return false;
+    }
   al_register_event_source(event_queue, al_get_display_event_source(display));
 
   if (!al_init_primitives_addon())
@@ -72,67 +79,11 @@ void PpuState::renderScanline(int scanline)
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
 
+  al_set_target_backbuffer(display);
+  memory->PPUSCROLLX=0;
+  //vScroll=240;
   if (memory->PPUMASK & 0x08) // If background enabled
     {
-      /*int scrolledScanline = scanline+vScroll;
-      // Screen is 32x30 tiles
-      int tileY = scrolledScanline / 8;
-      int firstTileWithoutScroll = tileY*32;
-      int firstTileToRender = firstTileWithoutScroll + (memory->PPUSCROLLX/8);
-      int lineInTile = scrolledScanline - (tileY * 8);
-      int attributeY = tileY / 4;
-
-      int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
-      int baseNametable;
-      switch (memory->PPUCTRL&0x3)
-	{
-	case 0:
-	  baseNametable = 0x2000;
-	  break;
-	case 1:
-	  baseNametable = 0x2400;
-	  break;
-	case 2:
-	  baseNametable = 0x2800;
-	  break;
-	case 3:
-	  baseNametable = 0x2C00;
-	  break;
-	}
-      
-      for (int i = firstTileToRender; i < firstTileToRender + 32; i++)
-	{
-	  if ((i - firstTileWithoutScroll) == 32)
-	    {
-	      baseNametable = (baseNametable == 0x2000 ? 0x2400 : 0x2000);
-	    }
-	  int tileIndexInNametable = ((i - firstTileWithoutScroll) % 32) + firstTileWithoutScroll;
-	  int nameTableAddress = baseNametable + tileIndexInNametable;
-	  int attributeAddress = baseNametable + 0x3C0 + attributeOffsetForTile(tileIndexInNametable-firstTileToRender, tileY);
-	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attributeAddress),tileIndexInNametable-firstTileToRender,tileY);
-
-	  int patternTableTile = memory->ppuReadByteFrom(nameTableAddress);
-	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
-	  int xOffset = (i-firstTileToRender)*8;
-
-	  int scrollOffsetPixels = memory->PPUSCROLLX&0x03;
-	  
-	  for (int x = scrollOffsetPixels; x < 8; x++)
-	    {
-	      if (xOffset+x > 256)
-		break;
-	      int andOperator = 1<<(7-x);
-	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
-	      colorIndex = colorIndex >> (7-x);
-
-	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
-	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
-	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-	      scanlinePoints[(xOffset+x)&0xFF].color=color;
-	    }
-	    }*/
       int tileY = scanline / 8;
       int lineInTile = scanline - (tileY*8);
       int attributeY = tileY / 4;
@@ -161,7 +112,7 @@ void PpuState::renderScanline(int scanline)
 	    }
 	}
     } // End if background enabled
-      
+
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
       int basePatternTable = (memory->PPUCTRL & 0x08) ? 0x1000 : 0x0000;
@@ -205,6 +156,41 @@ void PpuState::renderScanline(int scanline)
     } // End if sprites enabled
 
   al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
+
+  al_set_target_backbuffer(nametableDisplay);
+  for (int nametable = 0; nametable < 2; nametable++)
+    {
+      int tileY = scanline / 8;
+      int lineInTile = scanline - (tileY*8);
+      int attributeY = tileY / 4;
+      int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
+      for (int i = 0; i < 32; i++)
+	{
+	  int patternTableTile = memory->getNametableEntryForTile(i,tileY,nametable*256,nametable*240);
+	  //int nametableAddress = ((tileY%240)*32)+(i%256);
+	  //int patternTableTile = memory->nametable1[nametableAddress];
+	  //if (nametable == 1)
+	  //  patternTableTile = memory->nametable2[nametableAddress];
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
+	  int xOffset = i*8;
+	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,0,0),i,tileY);
+	  for (int x = 0; x < 8; x++)
+	    {
+	      int andOperator = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      colorIndex = colorIndex >> (7-x);
+	      
+	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
+	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
+	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      scanlinePoints[(xOffset+x)&0xFF].color=color;
+	      scanlinePoints[(xOffset+x)&0xFF].x += nametable*256;
+	    }
+	}
+      al_draw_prim(scanlinePoints,NULL,0,0,256,ALLEGRO_PRIM_POINT_LIST);
+    }
 }
 
 void PpuState::endFrame()
@@ -213,6 +199,9 @@ void PpuState::endFrame()
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
   //al_unlock_bitmap(al_get_target_bitmap());
+  al_set_target_backbuffer(display);
+  al_flip_display();
+  al_set_target_backbuffer(nametableDisplay);
   al_flip_display();
 }
 

@@ -13,8 +13,7 @@ private:
   GamepadState* gamepad;
   char RAM[RAM_SIZE];
   char palette[0x20];
-  char nametable1[0x400];
-  char nametable2[0x400];
+
   int mirroring;
   char OAM[256];
   char JOYSTROBE;
@@ -22,6 +21,8 @@ private:
 
   void DMA(int address);
 public:
+  char nametable1[0x400]; // FIXME: This is just for a PPU test... should be private variables
+  char nametable2[0x400];
   MemoryState(void);
   ~MemoryState(void);
   void setGamepad(GamepadState* gpad);

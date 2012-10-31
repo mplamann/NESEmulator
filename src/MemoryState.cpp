@@ -97,7 +97,7 @@ void MemoryState::writeByteTo(int address, int value)
 	case 0x2005:
 	  if (isPpuScrollOnX)
 	    PPUSCROLLX = (value & 0xFF);
-	  else
+	  else if ((value & 0xFF) < 240)     // http://fms.komkon.org/EMUL8/NES.html#LABG says that y scroll >240 is ignored
 	    PPUSCROLLY = (value & 0xFF);
 	  isPpuScrollOnX = !isPpuScrollOnX;
 	  break;
@@ -243,7 +243,7 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
   else
     {
     } // TODO: Single-Screen Mirroring - needs mapper support
-  int arrayAddress = (address - 0x2000) % 0x400;
+  int arrayAddress = address & 0x3FF;
   if (currentNametable == 1)
     nametable1[arrayAddress] = value;
   else
