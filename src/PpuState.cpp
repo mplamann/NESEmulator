@@ -80,8 +80,6 @@ void PpuState::renderScanline(int scanline)
     }
 
   al_set_target_backbuffer(display);
-  memory->PPUSCROLLX=0;
-  //vScroll=240;
   if (memory->PPUMASK & 0x08) // If background enabled
     {
       int tileY = scanline / 8;
@@ -105,7 +103,7 @@ void PpuState::renderScanline(int scanline)
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      colorIndex = colorIndex >> (7-x);
 
-	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
+	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
@@ -146,7 +144,7 @@ void PpuState::renderScanline(int scanline)
 		colorIndex = colorIndex >> (7-x);
 	      if (colorIndex != 0)
 		{
-		  char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
+		  unsigned char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 		  scanlinePoints[(xOffset+x)&0xFF].color=color;
@@ -167,22 +165,18 @@ void PpuState::renderScanline(int scanline)
       for (int i = 0; i < 32; i++)
 	{
 	  int patternTableTile = memory->getNametableEntryForTile(i,tileY,nametable*256,nametable*240);
-	  //int nametableAddress = ((tileY%240)*32)+(i%256);
-	  //int patternTableTile = memory->nametable1[nametableAddress];
-	  //if (nametable == 1)
-	  //  patternTableTile = memory->nametable2[nametableAddress];
 	  int patternTableIndex = patternTableTile*16;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
 	  int xOffset = i*8;
-	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,0,0),i,tileY);
+	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,nametable*256,nametable*240),i,tileY);
 	  for (int x = 0; x < 8; x++)
 	    {
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      colorIndex = colorIndex >> (7-x);
 	      
-	      char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
+	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
@@ -195,13 +189,12 @@ void PpuState::renderScanline(int scanline)
 
 void PpuState::endFrame()
 {
-  //al_draw_prim(pointList, NULL, 0, 0, 256*224, ALLEGRO_PRIM_POINT_LIST);
   // Assume VBlank is starting
   memory->PPUSTATUS |= 0x80;
-  //al_unlock_bitmap(al_get_target_bitmap());
   al_set_target_backbuffer(display);
   al_flip_display();
   al_set_target_backbuffer(nametableDisplay);
+  al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
   al_flip_display();
 }
 

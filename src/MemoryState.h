@@ -11,18 +11,19 @@ class MemoryState
 private:
   Mapper* mapper;
   GamepadState* gamepad;
-  char RAM[RAM_SIZE];
-  char palette[0x20];
+  unsigned char RAM[RAM_SIZE];
+  unsigned char palette[0x20];
+  unsigned char nametable1[0x400];
+  unsigned char nametable2[0x400];
 
   int mirroring;
-  char OAM[256];
-  char JOYSTROBE;
+  unsigned char OAM[256];
+  unsigned char JOYSTROBE;
   bool isPpuScrollOnX;
+  bool isPpuAddrHigh;
 
   void DMA(int address);
 public:
-  char nametable1[0x400]; // FIXME: This is just for a PPU test... should be private variables
-  char nametable2[0x400];
   MemoryState(void);
   ~MemoryState(void);
   void setGamepad(GamepadState* gpad);
@@ -38,7 +39,7 @@ public:
   int oamReadByteFrom(int address);
   void oamWriteByteTo(int address, int value);
 
-  char* mirroredNametableAtXY(int x, int y);
+  unsigned char* mirroredNametableAtXY(int x, int y);
   
   int readFromNametable(int nametable, int address);
   void writeToNametable(int nametable, int address, int value);
@@ -46,15 +47,15 @@ public:
   int getNametableEntryForTile(int x, int y, int xScroll, int yScroll);
   int attributeEntryForXY(int x, int y, int xScroll, int yScroll);
 
-  char colorForPaletteIndex(bool isSprite, int palette, int index);
+  unsigned char colorForPaletteIndex(bool isSprite, int palette, int index);
 
   // PPU Registers
-  char PPUCTRL;
-  char PPUMASK;
-  char PPUSTATUS;
+  unsigned char PPUCTRL;
+  unsigned char PPUMASK;
+  unsigned char PPUSTATUS;
   unsigned char OAMADDR;
-  char PPUSCROLLX;
-  char PPUSCROLLY;
+  unsigned char PPUSCROLLX;
+  unsigned char PPUSCROLLY;
   int PPUADDR;
 };
 

@@ -11,6 +11,7 @@ using namespace std;
 MemoryState::MemoryState(void)
 {
   isPpuScrollOnX = true;
+  isPpuAddrHigh = true;
   PPUSCROLLX = 0;
   PPUSCROLLY = 0;
   for (int i = 0; i < RAM_SIZE; i++)
@@ -46,7 +47,7 @@ int MemoryState::readByteFrom(int address)
 	{
 	case 0x2002:
 	  {
-	    PPUADDR = -1;
+	    isPpuAddrHigh = true;
 	    return PPUSTATUS & 0xFF;
 	  }
 	case 0x2004:
@@ -69,7 +70,6 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
-  //  cout << "CPU Write $" << address << " = " << value << "\n";
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   else if (address < 0x5000)
@@ -78,8 +78,6 @@ void MemoryState::writeByteTo(int address, int value)
 	{
 	case 0x2000:
 	  PPUCTRL = (value & 0xFF);
-	  /*if (PPUCTRL & 0x04)
-	    cout << "WARNING: VW Bit set. PPU probably won't work right.\n";*/
 	  break;
 	case 0x2001:
 	  PPUMASK = (value & 0xFF);
@@ -102,10 +100,11 @@ void MemoryState::writeByteTo(int address, int value)
 	  isPpuScrollOnX = !isPpuScrollOnX;
 	  break;
 	case 0x2006:
-	  if (PPUADDR == -1)
+	  if (isPpuAddrHigh)
 	    PPUADDR = (value & 0xFF) << 8;
 	  else
 	    PPUADDR += (value & 0xFF);
+	  isPpuAddrHigh = !isPpuAddrHigh;
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
@@ -169,7 +168,7 @@ void MemoryState::ppuWriteByteTo(int address, int value)
       palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
-char* MemoryState::mirroredNametableAtXY(int x, int y)
+unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
 {
   if (mirroring == 0)
     {
@@ -253,31 +252,31 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
 int MemoryState::getNametableEntryForTile(int x, int y, int xScroll, int yScroll)
 {
   if (PPUCTRL & 0x01)
-    x += 256;
+    x += 32;
   if (PPUCTRL & 0x02)
-    y += 240;
-  x += xScroll;
-  y += yScroll;
-  char* currentNametable = mirroredNametableAtXY((x/256),(y/240));
-  int address = (y%240)*32;         // Account for both y wrapping around and each line being 32 tiles wide
-  address += (x%256);               // Account for x coordinate
+    y += 30;
+  x += (xScroll/8);
+  y += (yScroll/8);
+  unsigned char* currentNametable = mirroredNametableAtXY((x/32),(y/30));
+  int address = (y%30)*32;         // Account for both y wrapping around and each line being 32 tiles wide
+  address += (x%32);               // Account for x coordinate
   return currentNametable[address];
 }
 
 int MemoryState::attributeEntryForXY(int x, int y, int xScroll, int yScroll)
 {
   if (PPUCTRL & 0x01)
-    x += 256;
+    x += 32;
   if (PPUCTRL & 0x02)
-    y += 240;
-  x += xScroll;
-  y += yScroll;
-  char* currentNametable = mirroredNametableAtXY((x/256),(y/240));
+    y += 30;
+  x += (xScroll/8);
+  y += (yScroll/8);
+  unsigned char* currentNametable = mirroredNametableAtXY((x/32),(y/30));
   int address = 0x3C0;
 
   // I don't remember why this works. Voodoo for now.
-  int first = ((y%240)>>2)*8;
-  address += first + ((x%256) >> 2);
+  int first = ((y%30)>>2)*8;
+  address += first + ((x%32) >> 2);
   return currentNametable[address];
 }
 
@@ -291,7 +290,7 @@ void MemoryState::oamWriteByteTo(int address, int value)
   OAM[address] = (value & 0xFF);
 }
 
-char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex, int index)
+unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex, int index)
 {
   int baseAddress = 0;
   if (isSprite)
