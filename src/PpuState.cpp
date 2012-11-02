@@ -15,13 +15,13 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error!\n";
       return false;
     }
-  /*nametableDisplay = al_create_display(2*width, height);
+  nametableDisplay = al_create_display(2*width, height);
   if (!nametableDisplay)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
       cout << "Error!\n";
       return false;
-      }*/
+      }
   al_register_event_source(event_queue, al_get_display_event_source(display));
 
   if (!al_init_primitives_addon())
@@ -66,7 +66,6 @@ inline int attributeValueFromByteXY(int byte, int x, int y)
 
 void PpuState::renderScanline(int scanline)
 {
-  scanline += vScroll;
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
 
@@ -78,8 +77,8 @@ void PpuState::renderScanline(int scanline)
       scanlinePoints[i].z = 0;
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
-
-  //al_set_target_backbuffer(display);
+  scanline += vScroll & 0x07;
+  al_set_target_backbuffer(display);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
       int tileY = scanline / 8;
@@ -113,24 +112,45 @@ void PpuState::renderScanline(int scanline)
 
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
+      int spriteHeight = 8;
+      if (memory->PPUCTRL & 0x20)
+	spriteHeight = 16;
       int basePatternTable = (memory->PPUCTRL & 0x08) ? 0x1000 : 0x0000;
       for (int i = 0; i < 64; i++)
 	{
 	  // Check if sprite is visible on this scanline
 	  int yCoord = memory->oamReadByteFrom(i*4);
-	  if ((yCoord > scanline || scanline-yCoord >= 8) || yCoord > 0xEF)
+	  if ((yCoord > scanline || scanline-yCoord >= spriteHeight) || yCoord > 0xEF)
 	    continue;
 	  int spriteFlags = memory->oamReadByteFrom(i*4+2);
 	  
 	  int spriteLine = scanline-yCoord;
 	  if (spriteFlags & 0x80) // Check for vertical flip
-	    spriteLine = 8-spriteLine;
-	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
-	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine + 8);
+	    spriteLine = spriteHeight-spriteLine;
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
 	  int paletteIndex = spriteFlags & 0x3;
+
+	  int patternTablePlane1, patternTablePlane2;
+	  int patternTableTile = memory->oamReadByteFrom(i*4+1);
+	  
+	  if (spriteHeight == 8)
+	    {
+	      int patternTableIndex = patternTableTile*16;
+	      patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine);
+	      patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + spriteLine + 8);
+	    }
+	  else if (spriteHeight == 16)
+	    {
+	      if (patternTableTile & 0x01)
+		patternTableTile += 0x100;
+	      patternTableTile &= 0x1FE;
+	      int patternTableIndex = patternTableTile*16;
+	      patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
+	      patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
+	    }
+	  else
+	    { cout << "Error! Unknown sprite height: " << spriteHeight << "\n"; }
+	  
 	  
 	  for (int x = 0; x < 8; x++)
 	    {
@@ -193,9 +213,9 @@ void PpuState::endFrame()
   memory->PPUSTATUS |= 0x80;
   al_set_target_backbuffer(display);
   al_flip_display();
-  /*al_set_target_backbuffer(nametableDisplay);
+  al_set_target_backbuffer(nametableDisplay);
   al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
-  al_flip_display();*/
+  al_flip_display();
 }
 
 PpuState::PpuState()
