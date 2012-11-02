@@ -15,13 +15,13 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error!\n";
       return false;
     }
-  nametableDisplay = al_create_display(2*width, height);
+  /*nametableDisplay = al_create_display(2*width, height);
   if (!nametableDisplay)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
       cout << "Error!\n";
       return false;
-    }
+      }*/
   al_register_event_source(event_queue, al_get_display_event_source(display));
 
   if (!al_init_primitives_addon())
@@ -79,7 +79,7 @@ void PpuState::renderScanline(int scanline)
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
 
-  al_set_target_backbuffer(display);
+  //al_set_target_backbuffer(display);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
       int tileY = scanline / 8;
@@ -94,7 +94,7 @@ void PpuState::renderScanline(int scanline)
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
 	  int xOffset = i*8 - (memory->PPUSCROLLX & 0x07); // Account for both tile width and X scrolling
-	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i,tileY);
+	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i+memory->PPUSCROLLX/8,tileY+vScroll/8);
 	  for (int x = 0; x < 8; x++)
 	    {
 	      if (i == 0 && x == 0)
@@ -155,7 +155,7 @@ void PpuState::renderScanline(int scanline)
 
   al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
 
-  al_set_target_backbuffer(nametableDisplay);
+  /*al_set_target_backbuffer(nametableDisplay);
   for (int nametable = 0; nametable < 2; nametable++)
     {
       int tileY = scanline / 8;
@@ -184,7 +184,7 @@ void PpuState::renderScanline(int scanline)
 	    }
 	}
       al_draw_prim(scanlinePoints,NULL,0,0,256,ALLEGRO_PRIM_POINT_LIST);
-    }
+      }*/
 }
 
 void PpuState::endFrame()
@@ -193,9 +193,9 @@ void PpuState::endFrame()
   memory->PPUSTATUS |= 0x80;
   al_set_target_backbuffer(display);
   al_flip_display();
-  al_set_target_backbuffer(nametableDisplay);
+  /*al_set_target_backbuffer(nametableDisplay);
   al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
-  al_flip_display();
+  al_flip_display();*/
 }
 
 PpuState::PpuState()
