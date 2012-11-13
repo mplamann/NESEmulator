@@ -349,6 +349,8 @@ bool CpuState::RunInstruction()
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
 
+  int lastPC = PC;
+
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
   cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
 
@@ -364,6 +366,10 @@ bool CpuState::RunInstruction()
     {
       //      cout << "Opcode " << opcode << " unimplemented.";
       PC++; // Roll with it
+    }
+  if (PC - lastPC == 0x1B)
+    {
+      cout << "Error! PC just skipped forwards by 0x1B.\n";
     }
 #endif
   return success;

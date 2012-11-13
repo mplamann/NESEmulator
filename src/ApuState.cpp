@@ -1,4 +1,6 @@
 #include "ApuState.h"
+#include "MemoryState.h"
+#include "CpuState.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_native_dialog.h>
@@ -7,8 +9,24 @@ using namespace std;
 
 ApuState::ApuState(void)
 {
-
+  apu = new Nes_Apu();
+  buf = new Blip_Buffer();
+  blargg_err_t error = buf->sample_rate(44100, 5000);  // Without a length (ms), this allocates 4GB of RAM. Not so good.
+  if (error)
+    cout << "Error setting sample rate.\n";
+  buf->clock_rate(1789773);
+  apu->output(buf);
+  lastCycle = 0;
 }
+
+void ApuState::setMemory(MemoryState* _memory)
+{
+  memory = _memory;
+  //apu->dmc_reader(memory->apuReadByteFrom);
+}
+
+void ApuState::setCpu(CpuState* _cpu)
+{ cpu = _cpu; }
 
 ApuState::~ApuState(void)
 {
@@ -28,8 +46,8 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
 
   al_reserve_samples(0); // Creates a mixer for us
   
-  stream = al_create_audio_stream(8, SAMPLES_PER_BUFFER, 22050,
-				  ALLEGRO_AUDIO_DEPTH_UINT8, ALLEGRO_CHANNEL_CONF_1);
+  stream = al_create_audio_stream(8, SAMPLES_PER_BUFFER, 44100,
+				  ALLEGRO_AUDIO_DEPTH_INT16, ALLEGRO_CHANNEL_CONF_1);
   if (!stream)
     {
       al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to create stream!", NULL, NULL);
@@ -49,18 +67,32 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
 
 void ApuState::audioStreamFragment()
 {
-  /*buf = (char*)al_get_audio_stream_fragment(stream);
-  if (!buf)
+  blip_sample_t* fragment = (blip_sample_t*)al_get_audio_stream_fragment(stream);
+  if (!fragment)
     return;
-  /*for (i = 0; i < SAMPLES_PER_BUFFER; i++)
+  apu->end_frame(cpu->getCycles() - lastCycle);
+  buf->end_frame(cpu->getCycles() - lastCycle);
+  lastCycle = cpu->getCycles();
+
+  if (buf->samples_avail() >= SAMPLES_PER_BUFFER)
     {
-      // Create saw waves
-      buf[i] = ((val >> 16) & 0xFF);
-      val += pitch;
-      pitch++;
-      }*/
-  /*if (!al_set_audio_stream_fragment(stream, buf))
+      size_t count = buf->read_samples(fragment, SAMPLES_PER_BUFFER);
+      cout << "read out " << count << " samples.\n";
+    }
+  
+  if (!al_set_audio_stream_fragment(stream, fragment))
     {
       cout << "Error setting stream fragment.\n";
-      }*/
+    }
 }
+
+void ApuState::write_register(long cycles, unsigned address, int data)
+{
+  apu->write_register(cycles, address, data);
+}
+
+int ApuState::read_status(long cycles)
+{
+  return apu->read_status(cycles);
+}
+

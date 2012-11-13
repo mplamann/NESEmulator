@@ -8,7 +8,8 @@ Mapper::Mapper(char* file)
   nPrgBanks = file[4];
   nChrBanks = file[5];
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
-
+  mirroring = file[6] & 0x9;
+  
   // Initialize 2D arrays
   prgBanks = new char*[nPrgBanks];
   chrBanks = new char*[nChrBanks];

@@ -22,7 +22,7 @@ void setup() {
   size(434,180);
   frameRate(30);
   println(Serial.list());
-  arduino = new Serial(this, Serial.list()[4], 9600); // ATTENTION!!!
+  arduino = new Serial(this, Serial.list()[0], 9600); // ATTENTION!!!
   bgImage = loadImage("NEScontroller.jpg");
   try
   {

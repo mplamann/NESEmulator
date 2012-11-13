@@ -48,7 +48,7 @@ digitalWrite(clock,LOW);
 void loop() {
 controllerRead();
 //Serial.println(controller_data, BIN);
-Serial.println(controller_data);
+Serial.write(controller_data);
 
 if (controller_data==B01111111){
   digitalWrite(ledpin, HIGH);   

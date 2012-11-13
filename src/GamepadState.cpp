@@ -29,10 +29,13 @@ bool GamepadState::initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue)
 bool GamepadState::initializeArduino()
 {
   serial = new Serial();
-  if (serial->Set_baud(9600))
+  cout << "Setting baud rate...";
+  if (!serial->Set_baud(9600))
     return false;
-  if (serial->Open("/dev/tty.usbmodemfd141"))
+  cout << "Done\nOpening serial port...";
+  if (!serial->Open("/dev/tty.usbmodemfd141"))
     return false;
+  cout << "Done\n";
   return true;
 }
 
@@ -139,17 +142,36 @@ void GamepadState::readFromArduino()
 {
   int data;
   if (serial->Read(&data, 1))
-    setStateArduino(data);
+    {
+      setStateArduino(data);
+      serial->Input_discard(); // Ignore spammed signals... I think this improves responsiveness. It just seems to work.
+    }
 }
 
 void GamepadState::setStateArduino(int arduinoState)
 {
-  player1.R = arduinoState & (1 << 0);
-  player1.L = arduinoState & (1 << 1);
-  player1.D = arduinoState & (1 << 2);
-  player1.U = arduinoState & (1 << 3);
-  player1.ST = arduinoState & (1 << 4);
-  player1.SEL = arduinoState & (1 << 5);
-  player1.A = arduinoState & (1 << 6);
-  player1.B = arduinoState & (1 << 7);
+  player1.R = !(arduinoState & (1 << 7));
+  player1.L = !(arduinoState & (1 << 6));
+  player1.D = !(arduinoState & (1 << 5));
+  player1.U = !(arduinoState & (1 << 4));
+  player1.ST = !(arduinoState & (1 << 3));
+  player1.SEL = !(arduinoState & (1 << 2));
+  player1.A = !(arduinoState & (1 << 0));
+  player1.B = !(arduinoState & (1 << 1));
+  /*if (player1.A)
+    cout << "A\n";
+  if (player1.B)
+    cout << "B\n";
+  if (player1.ST)
+    cout << "START\n";
+  if (player1.SEL)
+    cout << "SELECT\n";
+  if (player1.R)
+    cout << "->\n";
+  if (player1.L)
+    cout << "<-\n";
+  if (player1.D)
+    cout << "v\n";
+  if (player1.U)
+  cout << "^\n";*/
 }

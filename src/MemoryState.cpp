@@ -1,4 +1,5 @@
 #include "MemoryState.h"
+#include "CpuState.h"
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
@@ -29,6 +30,16 @@ MemoryState::~MemoryState(void)
 void MemoryState::setGamepad(GamepadState* gpad)
 {
   gamepad = gpad;
+}
+
+void MemoryState::setApu(ApuState* _apu)
+{
+  apu = _apu;
+}
+
+void MemoryState::setCpu(CpuState* _cpu)
+{
+  cpu = _cpu;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -72,6 +83,10 @@ void MemoryState::writeByteTo(int address, int value)
 {
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
+  if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)
+    {
+      apu->write_register(cpu->getCycles(), address, value);
+    }
   else if (address < 0x5000)
     {
       switch (address)
@@ -168,9 +183,14 @@ void MemoryState::ppuWriteByteTo(int address, int value)
       palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
+int MemoryState::apuReadByteFrom(void* user_data, unsigned address)
+{
+  return readByteFrom(address);
+}
+
 unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
 {
-  if (mirroring == 0)
+  if (mapper->mirroring == 0)
     {
       // Horizontal mirroring
       if ((y%2) == 0)
@@ -178,7 +198,7 @@ unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
       else
 	return nametable2;
     }
-  else if (mirroring == 1)
+  else if (mapper->mirroring == 1)
     {
       if ((x%2) == 0)
 	return nametable1;
@@ -195,12 +215,12 @@ unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
 int MemoryState::readFromNametable(int nametable, int address)
 {
   int currentNametable = 1;
-  if (mirroring == 0) // Horizontal Mirroring
+  if (mapper->mirroring == 0) // Horizontal Mirroring
     {
       if (nametable > 1)
 	currentNametable = 2;
     }
-  else if (mirroring == 1) // Vertical Mirroring
+  else if (mapper->mirroring == 1) // Vertical Mirroring
     {
       if (nametable == 1 || nametable == 3)
 	currentNametable = 2;
@@ -229,12 +249,12 @@ void MemoryState::writeToNametable(int nametable, int address, int value)
 {
   int currentNametable = 1;
   nametable %= 4;
-  if (mirroring == 0) // Horizontal Mirroring
+  if (mapper->mirroring == 0) // Horizontal Mirroring
     {
       if (nametable > 1)
 	currentNametable = 2;
     }
-  else if (mirroring == 1) // Vertical Mirroring
+  else if (mapper->mirroring == 1) // Vertical Mirroring
     {
       if (nametable == 1 || nametable == 3)
 	currentNametable = 2;
@@ -310,12 +330,12 @@ void MemoryState::loadFileToRAM(char* filename)
   size_t result;
   char* file;
 
-  cout << "Loading ROM ";
+  cout << "Loading ROM... ";
 
   fileStream = fopen(filename, "rb");
   if (fileStream == NULL)
     {
-      cout << "Could not read file. ROM not loaded.";
+      cout << "Could not read file. ROM not loaded.\n";
       return;
     }
 
@@ -327,7 +347,7 @@ void MemoryState::loadFileToRAM(char* filename)
   file = (char*)malloc(sizeof(char)*size);
   if (file == NULL)
     {
-      cout << "Memory error. ROM not loaded.";
+      cout << "Memory error. ROM not loaded.\n";
       fclose(fileStream);
       return;
     }
@@ -335,7 +355,7 @@ void MemoryState::loadFileToRAM(char* filename)
   result = fread (file,1,size,fileStream);
   if (result != size)
     {
-      cout << "Reading error. ROM not loaded.";
+      cout << "Reading error. ROM not loaded.\n";
       fclose(fileStream);
       return;
     }
@@ -363,8 +383,6 @@ void MemoryState::loadFileToRAM(char* filename)
       mapper = new Mapper(file);
       break;
     }
-
-  mirroring = file[6] & 0x9;
 
   cout << "Done.\n";
   

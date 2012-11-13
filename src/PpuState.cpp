@@ -15,13 +15,13 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error!\n";
       return false;
     }
-  nametableDisplay = al_create_display(2*width, height);
+  /*nametableDisplay = al_create_display(2*width, height);
   if (!nametableDisplay)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
       cout << "Error!\n";
       return false;
-      }
+      }*/
   al_register_event_source(event_queue, al_get_display_event_source(display));
 
   if (!al_init_primitives_addon())
@@ -43,6 +43,7 @@ void PpuState::setDisplayTitle(const char* title)
 void PpuState::startFrame()
 {
   vScroll = memory->PPUSCROLLY;
+  memory->PPUSTATUS &= 0xBF;
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -68,6 +69,7 @@ void PpuState::renderScanline(int scanline)
 {
   // Assume VBlank is done
   memory->PPUSTATUS &= 0x7F;
+  bool backgroundPoints[256];
 
   ALLEGRO_VERTEX scanlinePoints[256];
   for (int i = 0; i < 256; i++)
@@ -78,7 +80,8 @@ void PpuState::renderScanline(int scanline)
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
   scanline += vScroll & 0x07;
-  al_set_target_backbuffer(display);
+  ALLEGRO_BITMAP* bitmap = al_get_backbuffer(display);
+  al_set_target_bitmap(bitmap);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
       int tileY = scanline / 8;
@@ -106,12 +109,16 @@ void PpuState::renderScanline(int scanline)
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
+	      if (colorIndex != 0)
+		backgroundPoints[(xOffset+x)&0xFF] = true;
 	    }
 	}
     } // End if background enabled
 
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
+      int spritesOnScanline = 0;
+      memory->PPUSTATUS &= 0xDF; // Reset sprite overflow flag
       int spriteHeight = 8;
       if (memory->PPUCTRL & 0x20)
 	spriteHeight = 16;
@@ -122,6 +129,11 @@ void PpuState::renderScanline(int scanline)
 	  int yCoord = memory->oamReadByteFrom(i*4);
 	  if ((yCoord > scanline || scanline-yCoord >= spriteHeight) || yCoord > 0xEF)
 	    continue;
+	  if (++spritesOnScanline > 8)  // Check for sprite overflow
+	    {
+	      memory->PPUSTATUS |= 0x20;
+	      break;
+	    }
 	  int spriteFlags = memory->oamReadByteFrom(i*4+2);
 	  
 	  int spriteLine = scanline-yCoord;
@@ -142,7 +154,7 @@ void PpuState::renderScanline(int scanline)
 	  else if (spriteHeight == 16)
 	    {
 	      if (patternTableTile & 0x01)
-		patternTableTile += 0x100;
+		patternTableTile |= 0x100;
 	      patternTableTile &= 0x1FE;
 	      int patternTableIndex = patternTableTile*16;
 	      patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
@@ -167,13 +179,19 @@ void PpuState::renderScanline(int scanline)
 		  unsigned char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-		  scanlinePoints[(xOffset+x)&0xFF].color=color;
+		  if (!((spriteFlags & 0x20) && backgroundPoints[(xOffset+x)&0xFF]))
+		    scanlinePoints[(xOffset+x)&0xFF].color=color;
+		  if (backgroundPoints[(xOffset+x)&0xFF] && i == 0)
+		    memory->PPUSTATUS |= 0x40;
 		}
 	    }
         }
     } // End if sprites enabled
 
-  al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
+  // Make sure that we are not drawing to a null bitmap  
+  // Don't know why this is a problem, but it seems to be
+  if (al_get_target_bitmap()) 
+    al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
 
   /*al_set_target_backbuffer(nametableDisplay);
   for (int nametable = 0; nametable < 2; nametable++)
@@ -213,9 +231,9 @@ void PpuState::endFrame()
   memory->PPUSTATUS |= 0x80;
   al_set_target_backbuffer(display);
   al_flip_display();
-  al_set_target_backbuffer(nametableDisplay);
-  al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
-  al_flip_display();
+  //al_set_target_backbuffer(nametableDisplay);
+  //al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
+  //al_flip_display();
 }
 
 PpuState::PpuState()

@@ -3,20 +3,24 @@
 #include "Util.h"
 #include "Mapper.h"
 #include "GamepadState.h"
+#include "ApuState.h"
 
 #define RAM_SIZE 0x2000
+
+class CpuState;
 
 class MemoryState
 {
 private:
   Mapper* mapper;
   GamepadState* gamepad;
+  ApuState* apu;
+  CpuState* cpu;
   unsigned char RAM[RAM_SIZE];
   unsigned char palette[0x20];
   unsigned char nametable1[0x400];
   unsigned char nametable2[0x400];
 
-  int mirroring;
   unsigned char OAM[256];
   unsigned char JOYSTROBE;
   bool isPpuScrollOnX;
@@ -27,6 +31,8 @@ public:
   MemoryState(void);
   ~MemoryState(void);
   void setGamepad(GamepadState* gpad);
+  void setApu(ApuState* apu);
+  void setCpu(CpuState* cpu);
   
   int readByteFrom(int address);
   void writeByteTo(int address, int value);
@@ -36,6 +42,8 @@ public:
   int ppuReadByteFrom(int address);
   void ppuWriteByteTo(int address, int value);
 
+  int apuReadByteFrom(void* user_data, unsigned address);
+  
   int oamReadByteFrom(int address);
   void oamWriteByteTo(int address, int value);
 

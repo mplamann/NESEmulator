@@ -45,6 +45,10 @@ int main(int argc, char **argv)
   ppu->setMemory(memory);
   cpu->setMemory(memory);
   memory->setGamepad(gamepad);
+  memory->setApu(apu);
+  memory->setCpu(cpu);
+  apu->setMemory(memory);
+  apu->setCpu(cpu);
 
   if (!setupAllegroEvents())
     { cleanup(); return -1; }
@@ -52,21 +56,21 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   if (!gamepad->initializeKeyboard(event_queue))
     { cleanup(); return -1; }
-  if ((usingArduino = gamepad->initializeArduino()))
-    {} // Then we don't use the arduino. Live with it.
+  if (!(usingArduino = gamepad->initializeArduino()))
+    { cout << "No arduino.\n"; } // Then we don't use the arduino. Live with it.
   if (!apu->initializeAudio(event_queue))
     { cleanup(); return -1; }
 
 #ifndef RUN_TEST
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
-  //memory->loadFileToRAM("../ROMs/Castlevania.nes");
+  memory->loadFileToRAM("../ROMs/Castlevania.nes");
   //memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
-  //memory->loadFileToRAM("../ROMs/Mega Man (USA).nes");
-  memory->loadFileToRAM("../ROMs/Galaga.nes");
+  //memory->loadFileToRAM("../ROMs/MegaMan.nes");
+  //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
   cpu->doRESET();
   #endif
@@ -89,7 +93,7 @@ int main(int argc, char **argv)
     {
       double game_time = al_get_time();
 
-      if (usingArduino)
+      //      if (usingArduino)
 	gamepad->readFromArduino();
 
       if (memory->PPUCTRL & 0x80)
@@ -102,7 +106,6 @@ int main(int argc, char **argv)
 
       ppu->startFrame();
       for (int scanline = 0; scanline < 240; scanline++)
-	//for (int scanline = 8; scanline < 232; scanline++)
 	{
 	  targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
 	  while (cpu->getCycles() < targetCpuCycle)
@@ -121,7 +124,6 @@ int main(int argc, char **argv)
 	  char windowTitle[50];
 	  sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
 	  ppu->setDisplayTitle(windowTitle);
-	  //cout << fps << " FPS\n";
 	}
 
       frames_done++;
@@ -180,7 +182,7 @@ bool processEvents()
 	}
       if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
 	{
-	  apu->audioStreamFragment();
+	  //apu->audioStreamFragment();
 	}
     }
   return false;
