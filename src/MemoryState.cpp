@@ -21,6 +21,7 @@ MemoryState::MemoryState(void)
     palette[i] = 0;
   for (int i = 0; i < 0x400; i++)
     nametable1[i] = nametable2[i] = 0;
+  apu = NULL;
 }
 
 MemoryState::~MemoryState(void)
@@ -66,9 +67,9 @@ int MemoryState::readByteFrom(int address)
 	case 0x2007:
 	  return ppuReadByteFrom(PPUADDR) & 0xFF;
 	case 0x4016:
-	  return gamepad->readPlayer1() & 0xFF;
+	  return (gamepad->readPlayer1() & 0xFF) | 0x40; // the 0x40 is just because, I guess?
 	case 0x4017:
-	  return gamepad->readPlayer2() & 0xFF;
+	  return (gamepad->readPlayer2() & 0xFF) | 0x40; // Apparently, that is how it works, and some games expect it
 	default:
 	  return -1;
 	}
@@ -85,7 +86,8 @@ void MemoryState::writeByteTo(int address, int value)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)
     {
-      apu->write_register(cpu->getCycles(), address, value);
+      if (apu != NULL)
+	apu->write_register(cpu->getCycles(), address, value);
     }
   else if (address < 0x5000)
     {
@@ -242,6 +244,7 @@ void MemoryState::DMA(int address)
       int currentAddress = (address << 8) + i;
       writeByteTo(0x2004,readByteFrom(currentAddress));
     }
+  cpu->incrementCycles(512);
   return;
 }
 

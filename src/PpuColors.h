@@ -55,6 +55,7 @@ ALLEGRO_COLOR* getPaletteColors()
     al_map_rgb(164,228,252),
     al_map_rgb(184,184,248),
     al_map_rgb(216,184,248),
+    al_map_rgb(248,184,248),
     al_map_rgb(248,164,192),
     al_map_rgb(240,208,176),
     al_map_rgb(252,224,168),

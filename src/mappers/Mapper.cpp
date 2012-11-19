@@ -95,6 +95,8 @@ int Mapper::ppuReadByteFrom(int address)
 
 void Mapper::ppuWriteByteTo(int address, int value)
 {
+  if (nChrBanks == 0)
+    return;
   char* bank = chrBanks[0];
   if (address >= 8*1024 && nChrBanks > 1)
     bank = chrBanks[1];

@@ -99,8 +99,6 @@ void CpuBranches::doJump(int target)
 {
   cycles += 3;
   PC = target;
-  // Yay! that was a fun function!
-  // Necessary too!
 }
 
 // for NMI or IRQ/BRK
@@ -122,7 +120,6 @@ void CpuBranches::doRESET()
 
 void CpuBranches::doNMI()
 {
-  //  cout << "NMI!\n";
   int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
   processInterrupt(vector);
 }

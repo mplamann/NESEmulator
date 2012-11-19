@@ -13,6 +13,7 @@
 using namespace std;
 
 //#define RUN_TEST
+//#define USE_AUDIO
 
 const int PPU_CYCLES_PER_SCANLINE = 1364;
 const int CPU_CYCLES_PER_PPU_CYCLE = 12;
@@ -40,15 +41,18 @@ int main(int argc, char **argv)
   memory = new MemoryState();
   ppu = new PpuState();
   gamepad = new GamepadState();
-  apu = new ApuState();
   
   ppu->setMemory(memory);
   cpu->setMemory(memory);
   memory->setGamepad(gamepad);
-  memory->setApu(apu);
   memory->setCpu(cpu);
+
+#ifdef USE_AUDIO
+  apu = new ApuState();
+  memory->setApu(apu);
   apu->setMemory(memory);
   apu->setCpu(cpu);
+#endif
 
   if (!setupAllegroEvents())
     { cleanup(); return -1; }
@@ -58,20 +62,24 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
   if (!(usingArduino = gamepad->initializeArduino()))
     { cout << "No arduino.\n"; } // Then we don't use the arduino. Live with it.
+
+#ifdef USE_AUDIO
   if (!apu->initializeAudio(event_queue))
     { cleanup(); return -1; }
+#endif
 
 #ifndef RUN_TEST
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
-  memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  //memory->loadFileToRAM("../ROMs/SMB1.nes");
+  //memory->loadFileToRAM("../ROMs/Castlevania.nes");
+  memory->loadFileToRAM("../ROMs/SMB1.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
+  //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
   #endif
 
@@ -94,25 +102,45 @@ int main(int argc, char **argv)
       double game_time = al_get_time();
 
       //      if (usingArduino)
-	gamepad->readFromArduino();
+      //gamepad->readFromArduino();
 
       if (memory->PPUCTRL & 0x80)
 	cpu->doNMI();
       // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
       // I will just put that last dummy scanline here
-      int targetCpuCycle = cpu->getCycles() + 22*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+      int targetCpuCycle = cpu->getCycles() + 21*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
       while (cpu->getCycles() < targetCpuCycle)
-	cpu->RunInstruction();
+	{
+	  done = !cpu->RunInstruction();
+	  if (done)
+	    break;
+	}
 
+      // Render frame
       ppu->startFrame();
       for (int scanline = 0; scanline < 240; scanline++)
 	{
 	  targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
 	  while (cpu->getCycles() < targetCpuCycle)
-	    cpu->RunInstruction();
+	    {
+	      done = !cpu->RunInstruction();
+	      if (done)
+		break;
+	    }
 	  if (scanline >= 8 && scanline <= 232)
 	    ppu->renderScanline(scanline);
 	}
+
+      // "Render" dummy scanline
+      targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+      while (cpu->getCycles() < targetCpuCycle)
+	{
+	  done = !cpu->RunInstruction();
+	  if (done)
+	    break;
+	}
+      
+      // This also sets the VBlank flag
       ppu->endFrame(); // Flip back buffer to screen
       done = processEvents();
 
@@ -136,7 +164,9 @@ int main(int argc, char **argv)
   delete memory;
   delete ppu;
   delete gamepad;
+#ifdef USE_AUDIO
   delete apu;
+#endif
   cout << "Goodbye.\n";
   return 0;
 }
@@ -180,10 +210,12 @@ bool processEvents()
 	{
 	  gamepad->keyUp(event);
 	}
+#ifdef USE_AUDIO
       if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
 	{
-	  //apu->audioStreamFragment();
+	  apu->audioStreamFragment();
 	}
+#endif
     }
   return false;
 }
@@ -194,5 +226,8 @@ void cleanup()
   delete memory;
   delete ppu;
   delete gamepad;
+
+#ifdef USE_AUDIO
   delete apu;
+#endif
 }

@@ -512,6 +512,7 @@ int CpuRegisters::getP()
   return P;
 }
 int CpuRegisters::getCycles() {return cycles;}
+void CpuRegisters::incrementCycles(int dCycles) {cycles += dCycles;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
 bool CpuRegisters::getC() {return C;}

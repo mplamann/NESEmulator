@@ -58,6 +58,7 @@ class CpuRegisters
   void setS(int value);
   void setPC(int value);
   void setP(int value);
+  void incrementCycles(int dCycles);
   MemoryState* getMemory();
   void setMemory(MemoryState* mem);
 };

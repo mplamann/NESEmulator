@@ -1,0 +1,18 @@
+* Tasks
+** TODO Get Castlevania running
+   NMI timing might be the issue here. My emulator enters NMI earlier than Nintendulator 
+   does, and thus skips some code that may affect the NMI routine. In NMI, everything
+   seems to be peachy until some incorrect value is LDA'd from memory. Then, stuff happens.
+
+** TODO Fix 8x16 sprites
+   The upper 8x8 seems to be good, but the lower 8x8 is wrong pattern, wrong colors
+
+** TODO Fix Mario's background
+   The sky should not be black. Mario adventures under a blue sky.
+
+   11/19/2012 - Started working on this
+     Turns out that the palettes themselves are being set incorrectly. They should be 0x22 
+     for blue sky. I suspect a timing error, but I don't know for sure.
+
+     I have been using [[http://web.textfiles.com/games/ppu.txt][this file]] as a reference for PPU timing. So far, I can't find what's
+     wrong.
