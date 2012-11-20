@@ -55,12 +55,15 @@ int MemoryState::readByteFrom(int address)
     }
   else if (address < 0x5000)
     {
+      int retVal = 0;
       switch (address)
 	{
 	case 0x2002:
 	  {
 	    isPpuAddrHigh = true;
-	    return PPUSTATUS & 0xFF;
+	    retVal = PPUSTATUS & 0xFF;
+	    PPUSTATUS &= 0x7F;         // Reading 0x2002 resets the NMI flag
+	    return retVal; 
 	  }
 	case 0x2004:
 	  return OAM[OAMADDR] & 0xFF;
@@ -315,6 +318,8 @@ void MemoryState::oamWriteByteTo(int address, int value)
 
 unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex, int index)
 {
+  if (index == 0)
+    return palette[0];
   int baseAddress = 0;
   if (isSprite)
     baseAddress += 0x10;

@@ -36,7 +36,12 @@ Thumbs.db
 
 # ROMs #
 ########
-ROMs/SMB*
+ROMs/
+
+# Log files (100's of MB) #
+###########################
+log/*.log
+log/*.debug
 
 # Binaries #
 ############
