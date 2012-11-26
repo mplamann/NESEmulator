@@ -1,5 +1,8 @@
 #pragma once
 
+//#define CPU_DEBUG
+//#define PPU_DEBUG
+
 const int ADC_Imm = 0x69;
 const int ADC_Zp = 0x65;
 const int ADC_Zpx = 0x75;

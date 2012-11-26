@@ -64,6 +64,7 @@ public:
   unsigned char OAMADDR;
   unsigned char PPUSCROLLX;
   unsigned char PPUSCROLLY;
+  unsigned char PPU_LAST_WRITE;
   int PPUADDR;
 };
 

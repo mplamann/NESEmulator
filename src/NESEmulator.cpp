@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
   //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
-  #endif
+#endif
 
 #ifdef RUN_TEST
   memory->loadFileToRAM("../ROMs/nestest.nes");
@@ -90,59 +90,54 @@ int main(int argc, char **argv)
   cpu->setS(0xFD);
 
   while (true)
-  cpu->RunInstruction();
+    cpu->RunInstruction();
 #endif
   
   double old_time = al_get_time();
+  double game_time = 0.0;
   
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
+  int scanline = 241; // This is the scanline that Nintendulator starts on
+
   while (!done)
     {
-      double game_time = al_get_time();
-
-      //      if (usingArduino)
-      //gamepad->readFromArduino();
-
-      if (memory->PPUCTRL & 0x80)
-	cpu->doNMI();
-      // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
-      // I will just put that last dummy scanline here
-      int targetCpuCycle = cpu->getCycles() + 21*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-      while (cpu->getCycles() < targetCpuCycle)
+      game_time = al_get_time();
+      
+      // Render one frame
+      for (; scanline < 262; scanline++)
 	{
-	  done = !cpu->RunInstruction();
-	  if (done)
-	    break;
-	}
-
-      // Render frame
-      ppu->startFrame();
-      for (int scanline = 0; scanline < 240; scanline++)
-	{
-	  targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+	  int targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
 	  while (cpu->getCycles() < targetCpuCycle)
 	    {
-	      done = !cpu->RunInstruction();
-	      if (done)
-		break;
+	      if (!cpu->RunInstruction())
+		break; // This means that an unknown instruction was run.
+#ifdef CPU_DEBUG
+	      else
+		cout << " SL: " << dec << scanline << hex << " \n";
+#endif
 	    }
-	  if (scanline >= 8 && scanline <= 232)
-	    ppu->renderScanline(scanline);
-	}
+	  
 
-      // "Render" dummy scanline
-      targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-      while (cpu->getCycles() < targetCpuCycle)
-	{
-	  done = !cpu->RunInstruction();
-	  if (done)
-	    break;
+	  //if (usingArduino)
+	  //  gamepad->readFromArduino();
+
+	  if (scanline == 241)
+	    {
+	      memory->PPUSTATUS |= 0x80;  // Set VINT flag
+	      if (memory->PPUCTRL & 0x80)
+		cpu->doNMI();
+	    }
+	  if (scanline == 0)
+	    ppu->startFrame();
+	  if (scanline < 241)
+	    {
+	      ppu->renderScanline(scanline);
+	    }
+	  if (scanline == 240)
+	    ppu->endFrame();
 	}
-      
-      // This also sets the VBlank flag
-      ppu->endFrame(); // Flip back buffer to screen
-      done = processEvents();
+      scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
 
       if (game_time - old_time >= 1.0)
 	{
@@ -155,7 +150,69 @@ int main(int argc, char **argv)
 	}
 
       frames_done++;
+
+      done = processEvents();
     }
+  
+  /*while (!done)
+    {
+    double game_time = al_get_time();
+
+    //      if (usingArduino)
+    //gamepad->readFromArduino();
+
+    if (memory->PPUCTRL & 0x80)
+    cpu->doNMI();
+    // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
+    // I will just put that last dummy scanline here
+    int targetCpuCycle = cpu->getCycles() + 21*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+    while (cpu->getCycles() < targetCpuCycle)
+    {
+    done = !cpu->RunInstruction();
+    if (done)
+    break;
+    }
+
+    // Render frame
+    ppu->startFrame();
+    for (int scanline = 0; scanline < 240; scanline++)
+    {
+    targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+    while (cpu->getCycles() < targetCpuCycle)
+    {
+    done = !cpu->RunInstruction();
+    if (done)
+    break;
+    }
+    if (scanline >= 8 && scanline <= 232)
+    ppu->renderScanline(scanline);
+    }
+
+    // "Render" dummy scanline
+    targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
+    while (cpu->getCycles() < targetCpuCycle)
+    {
+    done = !cpu->RunInstruction();
+    if (done)
+    break;
+    }
+      
+    // This also sets the VBlank flag
+    ppu->endFrame(); // Flip back buffer to screen
+    done = processEvents();
+
+    if (game_time - old_time >= 1.0)
+    {
+    fps = frames_done / (game_time - old_time);
+    frames_done = 0;
+    old_time = game_time;
+    char windowTitle[50];
+    sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
+    ppu->setDisplayTitle(windowTitle);
+    }
+
+    frames_done++;
+    }*/
 
   cout << "Cleaning up...";
   if (event_queue != NULL)

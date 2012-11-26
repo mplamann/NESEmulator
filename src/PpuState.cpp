@@ -16,6 +16,8 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       return false;
     }
   al_register_event_source(event_queue, al_get_display_event_source(display));
+
+#ifdef PPU_DEBUG
   al_set_new_window_position(513,0);
   nametableDisplay = al_create_display(2*width, height);
   if (!nametableDisplay)
@@ -35,7 +37,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       return false;
     }
   al_set_window_title(paletteDisplay, "Palettes");
-
+#endif
 
   if (!al_init_primitives_addon())
     {
@@ -206,6 +208,7 @@ void PpuState::renderScanline(int scanline)
   if (al_get_target_bitmap()) 
     al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
 
+#ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);
   for (int nametable = 0; nametable < 2; nametable++)
     {
@@ -236,15 +239,15 @@ void PpuState::renderScanline(int scanline)
 	}
       al_draw_prim(scanlinePoints,NULL,0,0,256,ALLEGRO_PRIM_POINT_LIST);
       }
-  
+#endif
 }
 
 void PpuState::endFrame()
 {
-  // Assume VBlank is starting
-  memory->PPUSTATUS |= 0x80;
   al_set_target_backbuffer(display);
   al_flip_display();
+
+#ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);
   al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
   al_flip_display();
@@ -260,6 +263,7 @@ void PpuState::endFrame()
 	}
     }
     al_flip_display();
+#endif
 }
 
 PpuState::PpuState()

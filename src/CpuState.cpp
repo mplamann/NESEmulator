@@ -1,7 +1,5 @@
 #include "CpuState.h"
 
-#define CPU_DEBUG
-
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -352,7 +350,7 @@ bool CpuState::RunInstruction()
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
   cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
 
-  cout << "\n";
+  //cout << "\n";
 
 #endif
   if (super::RunInstruction())

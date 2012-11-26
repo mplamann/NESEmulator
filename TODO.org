@@ -1,4 +1,5 @@
 * Tasks
+
 ** TODO Get Castlevania running
    NMI timing might be the issue here. My emulator enters NMI earlier than Nintendulator 
    does, and thus skips some code that may affect the NMI routine. In NMI, everything

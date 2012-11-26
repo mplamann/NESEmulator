@@ -63,6 +63,7 @@ int MemoryState::readByteFrom(int address)
 	    isPpuAddrHigh = true;
 	    retVal = PPUSTATUS & 0xFF;
 	    PPUSTATUS &= 0x7F;         // Reading 0x2002 resets the NMI flag
+	    retVal |= (PPU_LAST_WRITE & 0x1F);
 	    return retVal; 
 	  }
 	case 0x2004:
@@ -150,6 +151,8 @@ void MemoryState::writeByteTo(int address, int value)
     {
       mapper->writeByteTo(address, value);
     }
+  if (address >= 0x2000 && address <= 0x2007)
+    PPU_LAST_WRITE = value;
 }
 
 int MemoryState::ppuReadByteFrom(int address)
