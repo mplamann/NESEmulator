@@ -1,6 +1,6 @@
 #pragma once
 
-//#define CPU_DEBUG
+#define CPU_DEBUG
 //#define PPU_DEBUG
 
 const int ADC_Imm = 0x69;

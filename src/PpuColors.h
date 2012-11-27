@@ -2,7 +2,7 @@
 
 ALLEGRO_COLOR* getPaletteColors()
 {
-  ALLEGRO_COLOR paletteColors[] = {
+  static ALLEGRO_COLOR paletteColors[] = {
     al_map_rgb(124,124,124),
     al_map_rgb(0,0,252),
     al_map_rgb(0,0,188),

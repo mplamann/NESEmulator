@@ -15,7 +15,7 @@ def parseReg(regString):
 
 with open(inputFilePath) as inputFile:
     with open(referenceFilePath) as referenceFile:
-        lineNumber = 0
+        lineNumber = 1
         while True:
             inputLine = inputFile.readline()
             referenceLine = referenceFile.readline()

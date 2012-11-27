@@ -15,8 +15,9 @@ using namespace std;
 //#define RUN_TEST
 //#define USE_AUDIO
 
-const int PPU_CYCLES_PER_SCANLINE = 1364;
-const int CPU_CYCLES_PER_PPU_CYCLE = 12;
+//const int PPU_CYCLES_PER_SCANLINE = 341;
+//const int CPU_CYCLES_PER_PPU_CYCLE = 3;
+const float CPU_CYCLES_PER_SCANLINE = 113.6666;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
 CpuState* cpu;
@@ -92,6 +93,8 @@ int main(int argc, char **argv)
   while (true)
     cpu->RunInstruction();
 #endif
+
+  cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
   double old_time = al_get_time();
   double game_time = 0.0;
@@ -100,6 +103,7 @@ int main(int argc, char **argv)
   bool done = false;
   int scanline = 241; // This is the scanline that Nintendulator starts on
 
+  float targetCycle = 0;
   while (!done)
     {
       game_time = al_get_time();
@@ -107,14 +111,15 @@ int main(int argc, char **argv)
       // Render one frame
       for (; scanline < 262; scanline++)
 	{
-	  int targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-	  while (cpu->getCycles() < targetCpuCycle)
+	  targetCycle += CPU_CYCLES_PER_SCANLINE;
+	  while (cpu->getCycles() < targetCycle)
 	    {
 	      if (!cpu->RunInstruction())
 		break; // This means that an unknown instruction was run.
 #ifdef CPU_DEBUG
 	      else
-		cout << " SL: " << dec << scanline << hex << " \n";
+		cout << " CYC: " << dec << cpu->getCycles()*3 << " SL: " << scanline << hex << " \n";
+	      // CYC is in PPU cycles - 3 per CPU cycle
 #endif
 	    }
 	  
