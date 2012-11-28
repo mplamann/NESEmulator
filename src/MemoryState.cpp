@@ -86,6 +86,8 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
+  //  if (cpu->getCycles() < 29658 && (address == 0x2000 || address == 0x2001 || address == 0x2005 || address == 0x2006))
+  //return; // PPU ignores some writes shortly after startup
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)

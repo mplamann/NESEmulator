@@ -15,8 +15,7 @@ using namespace std;
 //#define RUN_TEST
 //#define USE_AUDIO
 
-//const int PPU_CYCLES_PER_SCANLINE = 341;
-//const int CPU_CYCLES_PER_PPU_CYCLE = 3;
+const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.6666;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
@@ -111,23 +110,10 @@ int main(int argc, char **argv)
       // Render one frame
       for (; scanline < 262; scanline++)
 	{
-	  targetCycle += CPU_CYCLES_PER_SCANLINE;
-	  while (cpu->getCycles() < targetCycle)
-	    {
-	      if (!cpu->RunInstruction())
-		break; // This means that an unknown instruction was run.
-#ifdef CPU_DEBUG
-	      else
-		cout << " CYC: " << dec << cpu->getCycles()*3 << " SL: " << scanline << hex << " \n";
-	      // CYC is in PPU cycles - 3 per CPU cycle
-#endif
-	    }
-	  
-
 	  //if (usingArduino)
 	  //  gamepad->readFromArduino();
 
-	  if (scanline == 241)
+	  if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
 	    {
 	      memory->PPUSTATUS |= 0x80;  // Set VINT flag
 	      if (memory->PPUCTRL & 0x80)
@@ -141,6 +127,18 @@ int main(int argc, char **argv)
 	    }
 	  if (scanline == 240)
 	    ppu->endFrame();
+
+	  targetCycle += CPU_CYCLES_PER_SCANLINE;
+	  while (cpu->getCycles() < targetCycle)
+	    {
+	      if (!cpu->RunInstruction())
+		break; // This means that an unknown instruction was run.
+#ifdef CPU_DEBUG
+	      else
+		cout << " SL: " << dec << scanline << hex << " \n";
+	      // CYC is in PPU cycles - 3 per CPU cycle
+#endif
+	    }
 	}
       scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
 

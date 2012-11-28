@@ -120,12 +120,14 @@ void CpuBranches::doRESET()
 
 void CpuBranches::doNMI()
 {
+  cycles += 7;
   int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
   processInterrupt(vector);
 }
 
 void CpuBranches::doBRK()
 {
+  cycles += 7;
   int vector = memory->readByteFrom(VECTOR_BRK) + (memory->readByteFrom(VECTOR_BRK+1) << 8);
   processInterrupt(vector);
 }

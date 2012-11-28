@@ -42,6 +42,7 @@ ROMs/
 ###########################
 log/*.log
 log/*.debug
+callgrind.*
 
 # Binaries #
 ############

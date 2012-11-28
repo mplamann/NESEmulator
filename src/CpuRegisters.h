@@ -14,7 +14,7 @@ class CpuRegisters
 
   bool N,Z,C,I,D,V,B; // Processor status flags
 
-  int cycles;
+  long cycles;
   MemoryState* memory;
   bool pageBoundaryCrossed(int address, int offset);
   void setNZ(int value);
@@ -44,7 +44,7 @@ class CpuRegisters
   int getS();
   int getPC();
   int getP();
-  int getCycles();
+  long getCycles();
   bool getN();
   bool getZ();
   bool getC();

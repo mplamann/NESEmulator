@@ -415,7 +415,7 @@ void CpuRegisters::setNZ(int value)
 bool CpuRegisters::pageBoundaryCrossed(int address, int offset)
 {
   int newAddress = address + offset;
-  if ((newAddress & 0xF0) != (address & 0xF0))
+  if ((newAddress & 0xFF00) != (address & 0xFF00))
     return true;
   return false;
 }
@@ -511,7 +511,7 @@ int CpuRegisters::getP()
     P |= 0x08;
   return P;
 }
-int CpuRegisters::getCycles() {return cycles;}
+long CpuRegisters::getCycles() {return cycles;}
 void CpuRegisters::incrementCycles(int dCycles) {cycles += dCycles;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
