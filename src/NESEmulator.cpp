@@ -15,10 +15,13 @@ using namespace std;
 //#define RUN_TEST
 //#define USE_AUDIO
 
+const int FRAMERATE = 60;
+
 const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.6666;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
+ALLEGRO_TIMER* timer;
 CpuState* cpu;
 MemoryState* memory;
 PpuState* ppu;
@@ -30,9 +33,14 @@ bool usingArduino;
 bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
+void renderFrame();
 
 double fps = 0;
 int frames_done = 0;
+float targetCycle = 0;
+double old_time = al_get_time();
+double game_time = 0.0;
+int scanline = 241; // This is the scanline that Nintendulator starts on
 
 int main(int argc, char **argv)
 {
@@ -95,127 +103,44 @@ int main(int argc, char **argv)
 
   cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
-  double old_time = al_get_time();
-  double game_time = 0.0;
-  
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
-  int scanline = 241; // This is the scanline that Nintendulator starts on
 
-  float targetCycle = 0;
+  ALLEGRO_EVENT event;
+  bool need_redraw = false;
+  
   while (!done)
     {
-      game_time = al_get_time();
-      
-      // Render one frame
-      for (; scanline < 262; scanline++)
+      al_wait_for_event(event_queue, &event);
+      if (event.type == ALLEGRO_EVENT_TIMER)
 	{
-	  //if (usingArduino)
-	  //  gamepad->readFromArduino();
-
-	  if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
-	    {
-	      memory->PPUSTATUS |= 0x80;  // Set VINT flag
-	      if (memory->PPUCTRL & 0x80)
-		cpu->doNMI();
-	    }
-	  if (scanline == 0)
-	    ppu->startFrame();
-	  if (scanline < 241)
-	    {
-	      ppu->renderScanline(scanline);
-	    }
-	  if (scanline == 240)
-	    ppu->endFrame();
-
-	  targetCycle += CPU_CYCLES_PER_SCANLINE;
-	  while (cpu->getCycles() < targetCycle)
-	    {
-	      if (!cpu->RunInstruction())
-		break; // This means that an unknown instruction was run.
-#ifdef CPU_DEBUG
-	      else
-		cout << " SL: " << dec << scanline << hex << " \n";
-	      // CYC is in PPU cycles - 3 per CPU cycle
+	  need_redraw = true;
+	}
+      if (need_redraw && al_event_queue_is_empty(event_queue))
+	{
+	  renderFrame();
+	  need_redraw = false;
+	}
+      
+      if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	{
+	  done = true;
+	}
+      if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+	{
+	  gamepad->keyDown(event);
+	}
+      if (event.type == ALLEGRO_EVENT_KEY_UP)
+	{
+	  gamepad->keyUp(event);
+	}
+#ifdef USE_AUDIO
+      if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
+	{
+	  apu->audioStreamFragment();
+	}
 #endif
-	    }
-	}
-      scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
-
-      if (game_time - old_time >= 1.0)
-	{
-	  fps = frames_done / (game_time - old_time);
-	  frames_done = 0;
-	  old_time = game_time;
-	  char windowTitle[50];
-	  sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
-	  ppu->setDisplayTitle(windowTitle);
-	}
-
-      frames_done++;
-
-      done = processEvents();
     }
-  
-  /*while (!done)
-    {
-    double game_time = al_get_time();
-
-    //      if (usingArduino)
-    //gamepad->readFromArduino();
-
-    if (memory->PPUCTRL & 0x80)
-    cpu->doNMI();
-    // VBlank lasts 20 scanlines + 1 dummy scanline and then another at the end of the frame.
-    // I will just put that last dummy scanline here
-    int targetCpuCycle = cpu->getCycles() + 21*PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-    while (cpu->getCycles() < targetCpuCycle)
-    {
-    done = !cpu->RunInstruction();
-    if (done)
-    break;
-    }
-
-    // Render frame
-    ppu->startFrame();
-    for (int scanline = 0; scanline < 240; scanline++)
-    {
-    targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-    while (cpu->getCycles() < targetCpuCycle)
-    {
-    done = !cpu->RunInstruction();
-    if (done)
-    break;
-    }
-    if (scanline >= 8 && scanline <= 232)
-    ppu->renderScanline(scanline);
-    }
-
-    // "Render" dummy scanline
-    targetCpuCycle = cpu->getCycles() + PPU_CYCLES_PER_SCANLINE/CPU_CYCLES_PER_PPU_CYCLE;
-    while (cpu->getCycles() < targetCpuCycle)
-    {
-    done = !cpu->RunInstruction();
-    if (done)
-    break;
-    }
-      
-    // This also sets the VBlank flag
-    ppu->endFrame(); // Flip back buffer to screen
-    done = processEvents();
-
-    if (game_time - old_time >= 1.0)
-    {
-    fps = frames_done / (game_time - old_time);
-    frames_done = 0;
-    old_time = game_time;
-    char windowTitle[50];
-    sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
-    ppu->setDisplayTitle(windowTitle);
-    }
-
-    frames_done++;
-    }*/
 
   cout << "Cleaning up...";
   if (event_queue != NULL)
@@ -229,6 +154,57 @@ int main(int argc, char **argv)
 #endif
   cout << "Goodbye.\n";
   return 0;
+}
+
+void renderFrame()
+{
+  game_time = al_get_time();
+      
+  // Render one frame
+  for (; scanline < 262; scanline++)
+    {
+      //if (usingArduino)
+      //  gamepad->readFromArduino();
+
+      if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
+	{
+	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
+	  if (memory->PPUCTRL & 0x80)
+	    cpu->doNMI();
+	}
+      if (scanline == 0)
+	ppu->startFrame();
+      if (scanline < 241)
+	{
+	  ppu->renderScanline(scanline);
+	}
+      if (scanline == 240)
+	ppu->endFrame();
+
+      targetCycle += CPU_CYCLES_PER_SCANLINE;
+      while (cpu->getCycles() < targetCycle)
+	{
+	  if (!cpu->RunInstruction())
+	    break; // This means that an unknown instruction was run.
+#ifdef CPU_DEBUG
+	  else
+	    cout << " SL: " << dec << scanline << hex << " \n";
+	  // CYC is in PPU cycles - 3 per CPU cycle
+#endif
+	}
+    }
+  scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
+
+  if (game_time - old_time >= 1.0)
+    {
+      fps = frames_done / (game_time - old_time);
+      frames_done = 0;
+      old_time = game_time;
+      char windowTitle[50];
+      sprintf(windowTitle, "nesemulator - %.2f FPS", fps);
+      ppu->setDisplayTitle(windowTitle);
+    }
+  frames_done++;
 }
 
 bool setupAllegroEvents()
@@ -250,6 +226,15 @@ bool setupAllegroEvents()
       return false;
     }
   cout << "Done.\n";
+  cout << "Initializing FPS timer...";
+  timer = al_create_timer(1.0 / FRAMERATE);
+  if (!timer)
+    {
+      cout << "Error!\n";
+      return false;
+    }
+  al_register_event_source(event_queue, al_get_timer_event_source(timer));
+  al_start_timer(timer);
   return true;
 }
 
@@ -286,6 +271,7 @@ void cleanup()
   delete memory;
   delete ppu;
   delete gamepad;
+  al_destroy_timer(timer);
 
 #ifdef USE_AUDIO
   delete apu;
