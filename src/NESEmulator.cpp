@@ -38,7 +38,7 @@ void renderFrame();
 double fps = 0;
 int frames_done = 0;
 float targetCycle = 0;
-double old_time = al_get_time();
+double old_time = 0.0;
 double game_time = 0.0;
 int scanline = 241; // This is the scanline that Nintendulator starts on
 
@@ -81,6 +81,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   memory->loadFileToRAM("../ROMs/SMB1.nes");
+  //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
@@ -128,6 +129,10 @@ int main(int argc, char **argv)
 	}
       if (event.type == ALLEGRO_EVENT_KEY_DOWN)
 	{
+	  if (event.keyboard.keycode == ALLEGRO_KEY_B)
+	    {
+	      cout << "BREAK!\n";
+	    }
 	  gamepad->keyDown(event);
 	}
       if (event.type == ALLEGRO_EVENT_KEY_UP)

@@ -55,6 +55,10 @@ int Mapper::readByteFrom(int address)
       cout << "Mapper.c does not know what to do with address " << address << ". Returning 0\n";
       return 0;
     }
+  else if (nPrgBanks == 0)
+    {
+      return 0;
+    }
   else if (address < 0xC000)
     {
       int adjustedAddress = address - 0x8000;
@@ -87,6 +91,8 @@ void Mapper::writeByteTo(int address, int value)
 
 int Mapper::ppuReadByteFrom(int address)
 {
+  if (nChrBanks == 0)
+    return 0;
   char* bank = chrBanks[0];
   if (address >= 8*1024 && nChrBanks > 1)
     bank = chrBanks[1];

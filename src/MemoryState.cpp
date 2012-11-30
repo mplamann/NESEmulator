@@ -86,8 +86,37 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
-  //  if (cpu->getCycles() < 29658 && (address == 0x2000 || address == 0x2001 || address == 0x2005 || address == 0x2006))
-  //return; // PPU ignores some writes shortly after startup
+  //if (cpu->getCycles() < 29658 && (address == 0x2000 || address == 0x2001 || address == 0x2005 || address == 0x2006))
+  //  return; // PPU ignores some writes shortly after startup
+  if (address >= 0x2000 && address < 0x2007 && address != 0x2004)
+    {
+      int oldValue;
+      switch (address)
+	{
+	case 0x2000:
+	  oldValue = PPUCTRL;
+	  break;
+	case 0x2001:
+	  oldValue = PPUMASK;
+	  break;
+	case 0x2002:
+	  oldValue = PPUSTATUS;
+	  break;
+	case 0x2003:
+	  oldValue = OAMADDR;
+	  break;
+	case 0x2005:
+	  oldValue = (isPpuScrollOnX) ? PPUSCROLLY : PPUSCROLLX;
+	  break;
+	case 0x2006:
+	  oldValue = PPUADDR;
+	  break;
+	case 0x2007:
+	  oldValue = 0x2323232323232323;
+	  break;
+	}
+      cout << "0x" << hex << address << " = 0x" << value << "   from 0x" << oldValue << "\n";
+    }
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)

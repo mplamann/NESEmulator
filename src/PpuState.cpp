@@ -82,9 +82,9 @@ inline int attributeValueFromByteXY(int byte, int x, int y)
 
 void PpuState::renderScanline(int scanline)
 {
-  // Assume VBlank is done
-  memory->PPUSTATUS &= 0x7F;
   bool backgroundPoints[256];
+  for (int i = 0; i < 256; i++)
+      backgroundPoints[i] = false;
 
   ALLEGRO_VERTEX scanlinePoints[256];
   for (int i = 0; i < 256; i++)
@@ -125,7 +125,9 @@ void PpuState::renderScanline(int scanline)
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      scanlinePoints[(xOffset+x)&0xFF].color=color;
 	      if (colorIndex != 0)
-		backgroundPoints[(xOffset+x)&0xFF] = true;
+		{
+		  backgroundPoints[(xOffset+x)&0xFF] = true;
+		}
 	    }
 	}
     } // End if background enabled
@@ -197,7 +199,10 @@ void PpuState::renderScanline(int scanline)
 		  if (!((spriteFlags & 0x20) && backgroundPoints[(xOffset+x)&0xFF]))
 		    scanlinePoints[(xOffset+x)&0xFF].color=color;
 		  if (backgroundPoints[(xOffset+x)&0xFF] && i == 0)
-		    memory->PPUSTATUS |= 0x40;
+		    {
+		      memory->PPUSTATUS |= 0x40;
+		      cout << "Sprite #0 Hit!\n";
+		    }
 		}
 	    }
         }
