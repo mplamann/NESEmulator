@@ -116,6 +116,8 @@ void PpuState::renderScanline(int scanline)
 	    {
 	      if (i == 0 && x == 0)
 		x = (memory->PPUSCROLLX & 0x07);
+	      if (!(memory->PPUMASK & 0x02) && (xOffset+x)&0xFF < 8)
+		continue;
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
 	      colorIndex = colorIndex >> (7-x);
@@ -183,6 +185,9 @@ void PpuState::renderScanline(int scanline)
 	  
 	  for (int x = 0; x < 8; x++)
 	    {
+	      // Check if this is hidden by PPUMASK
+	      if (!(memory->PPUMASK & 0x02) && (xOffset+x)&0xFF < 8)
+		continue;
 	      int andOperator = 1<<(7-x);      
 	      if (spriteFlags&0x40) // Check for horizontal flip
 		andOperator = 1<<x;
@@ -201,7 +206,9 @@ void PpuState::renderScanline(int scanline)
 		  if (backgroundPoints[(xOffset+x)&0xFF] && i == 0)
 		    {
 		      memory->PPUSTATUS |= 0x40;
+#ifdef PPU_WRITE_LOG
 		      cout << "Sprite #0 Hit!\n";
+#endif
 		    }
 		}
 	    }

@@ -88,6 +88,7 @@ void MemoryState::writeByteTo(int address, int value)
 {
   //if (cpu->getCycles() < 29658 && (address == 0x2000 || address == 0x2001 || address == 0x2005 || address == 0x2006))
   //  return; // PPU ignores some writes shortly after startup
+#ifdef PPU_WRITE_LOG
   if (address >= 0x2000 && address < 0x2007 && address != 0x2004)
     {
       int oldValue;
@@ -115,8 +116,9 @@ void MemoryState::writeByteTo(int address, int value)
 	  oldValue = 0x2323232323232323;
 	  break;
 	}
-      cout << "0x" << hex << address << " = 0x" << value << "   from 0x" << oldValue << "\n";
+      cout << "0x" << hex << address << " = 0x" << setw(2) << value << "   from 0x" << setw(2) << oldValue << "\n";
     }
+#endif
   if (address < 0x2000)
     RAM[address] = (value & 0xFF); // Each byte only holds 8 bits of data
   if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)
@@ -155,7 +157,15 @@ void MemoryState::writeByteTo(int address, int value)
 	  if (isPpuAddrHigh)
 	    PPUADDR = (value & 0xFF) << 8;
 	  else
-	    PPUADDR += (value & 0xFF);
+	    {
+	      PPUADDR += (value & 0xFF);
+	      if (PPUADDR == 0)
+		{
+		  PPUSCROLLX = 0;
+		  PPUSCROLLY = 0;
+		  PPUCTRL &= 0xFC;
+		}
+	    }
 	  isPpuAddrHigh = !isPpuAddrHigh;
 	  break;
 	case 0x2007:
@@ -352,13 +362,20 @@ void MemoryState::oamWriteByteTo(int address, int value)
 
 unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex, int index)
 {
+  unsigned char retVal = 0;
   if (index == 0)
-    return palette[0];
-  int baseAddress = 0;
-  if (isSprite)
-    baseAddress += 0x10;
-  baseAddress += paletteIndex*4;
-  return palette[baseAddress+index];
+    retVal =  palette[0];
+  else
+    {
+      int baseAddress = 0;
+      if (isSprite)
+	baseAddress += 0x10;
+      baseAddress += paletteIndex*4;
+      retVal = palette[baseAddress+index];
+    }
+  if (PPUMASK & 0x01)
+    retVal &= 0x30;
+  return retVal;
 }
 
 ////////////////////////////////////////////////////////////////////////
