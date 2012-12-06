@@ -20,7 +20,9 @@ private:
   unsigned char palette[0x20];
   unsigned char nametable1[0x400];
   unsigned char nametable2[0x400];
-
+  
+  int ppuDataBuffer;
+  
   unsigned char OAM[256];
   unsigned char JOYSTROBE;
   bool isPpuScrollOnX;

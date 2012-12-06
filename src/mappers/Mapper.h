@@ -16,6 +16,7 @@ class Mapper
   void writeByteTo(int address, int value);
   int ppuReadByteFrom(int address);
   void ppuWriteByteTo(int address, int value);
+  void updatePpuAddr(int address) {}
   int mirroring;
 
   Mapper(char* file);

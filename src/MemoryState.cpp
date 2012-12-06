@@ -69,7 +69,15 @@ int MemoryState::readByteFrom(int address)
 	case 0x2004:
 	  return OAM[OAMADDR] & 0xFF;
 	case 0x2007:
-	  return ppuReadByteFrom(PPUADDR) & 0xFF;
+	  if (PPUADDR >= 0x3F00)
+	    retVal = ppuReadByteFrom(PPUADDR) & 0xFF;
+	  else
+	    {
+	      retVal = ppuDataBuffer;
+	      ppuDataBuffer = ppuReadByteFrom(PPUADDR) & 0xFF;
+	    }
+	  PPUADDR++;
+	  return retVal;
 	case 0x4016:
 	  return (gamepad->readPlayer1() & 0xFF) | 0x40; // the 0x40 is just because, I guess?
 	case 0x4017:
@@ -166,6 +174,7 @@ void MemoryState::writeByteTo(int address, int value)
 		  PPUCTRL &= 0xFC;
 		}
 	    }
+	  mapper->updatePpuAddr(PPUADDR);
 	  isPpuAddrHigh = !isPpuAddrHigh;
 	  break;
 	case 0x2007:
@@ -174,6 +183,7 @@ void MemoryState::writeByteTo(int address, int value)
 	    PPUADDR++;
 	  else
 	    PPUADDR += 32;
+	  mapper->updatePpuAddr(PPUADDR);
 	  break;
 	case 0x4014:                   // DMA
 	  DMA(value);
@@ -228,8 +238,10 @@ void MemoryState::ppuWriteByteTo(int address, int value)
     writeToNametable(3,address,value & 0xFF);
   else if (address < 0x3F00)
     ppuWriteByteTo(address - 0x1000, value & 0xFF);
+  else if ((address-0x3F00) % 0x10 == 0)
+    palette[0] = value&0xFF;
   else
-      palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
+    palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
 int MemoryState::apuReadByteFrom(void* user_data, unsigned address)
