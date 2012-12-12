@@ -13,7 +13,7 @@
 using namespace std;
 
 //#define RUN_TEST
-//#define USE_AUDIO
+#define USE_AUDIO
 
 const int FRAMERATE = 60;
 
@@ -81,6 +81,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
   memory->loadFileToRAM("../ROMs/SMB1.nes");
+  //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");

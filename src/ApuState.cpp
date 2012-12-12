@@ -5,6 +5,7 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <iostream>
+#include <math.h>
 using namespace std;
 
 ApuState::ApuState(void)
@@ -70,25 +71,36 @@ void ApuState::audioStreamFragment()
   blip_sample_t* fragment = (blip_sample_t*)al_get_audio_stream_fragment(stream);
   if (!fragment)
     return;
-  apu->end_frame(cpu->getCycles() - lastCycle);
-  buf->end_frame(cpu->getCycles() - lastCycle);
+  int dCycles = cpu->getCycles() - lastCycle;
   lastCycle = cpu->getCycles();
+  apu->end_frame(dCycles);
+  buf->end_frame(dCycles);
+
 
   if (buf->samples_avail() >= SAMPLES_PER_BUFFER)
     {
       size_t count = buf->read_samples(fragment, SAMPLES_PER_BUFFER);
-      cout << "read out " << count << " samples.\n";
-    }
-  
+      }
+  /*
+  int freq = 440;
+	float PI = 3.1415926535;
+	
+	
+         for (int i = 0; i < SAMPLES_PER_BUFFER; i++) {
+	   fragment[i] = 128*sin(PI*2*freq*i/22050.0);
+         }
+  */
   if (!al_set_audio_stream_fragment(stream, fragment))
     {
       cout << "Error setting stream fragment.\n";
     }
 }
 
-void ApuState::write_register(long cycles, unsigned address, int data)
+void ApuState::write_register(unsigned address, int data)
 {
-  apu->write_register(cycles, address, data);
+  int dCycles = cpu->getCycles() - lastCycle;
+  lastCycle = cpu->getCycles();
+  apu->write_register(dCycles, address, data);
 }
 
 int ApuState::read_status(long cycles)

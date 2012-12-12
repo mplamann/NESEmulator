@@ -4,7 +4,7 @@
 
 #include "Nes_Apu.h" // Thanks to Blargg's Audio Libraries
 
-#define SAMPLES_PER_BUFFER 1024
+#define SAMPLES_PER_BUFFER 4096
 
 class MemoryState;
 class CpuState;
@@ -19,7 +19,7 @@ class ApuState
   void setMemory(MemoryState* memory);
   void setCpu(CpuState* cpu);
 
-  void write_register(long cycles, unsigned address, int data);
+  void write_register(unsigned address, int data);
   int read_status(long cycles);
 
  private:

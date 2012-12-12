@@ -132,7 +132,7 @@ void MemoryState::writeByteTo(int address, int value)
   if (address >= 0x4000 && address <= 0x4017 && address != 0x4014 && address != 0x4016)
     {
       if (apu != NULL)
-	apu->write_register(cpu->getCycles(), address, value);
+	apu->write_register(address, value);
     }
   else if (address < 0x5000)
     {
