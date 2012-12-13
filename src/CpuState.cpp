@@ -337,36 +337,50 @@ void printVariable(char* text, int value)
 }
 #endif
 
+void CpuState::printLog()
+{
+ int opcode = memory->readByteFrom(PC); 
+ int arg1 = memory->readByteFrom(PC+1);
+ int arg2 = memory->readByteFrom(PC+2);
+ 
+ int lastPC = PC;
+ 
+ cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
+ cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
+ 
+ cout << " CYC: " << dec << getCycles()*3%341 << hex;
+}
+
 bool CpuState::RunInstruction()
 {
   bool success = false;
-#ifdef CPU_DEBUG
-  int opcode = memory->readByteFrom(PC);
-  int arg1 = memory->readByteFrom(PC+1);
-  int arg2 = memory->readByteFrom(PC+2);
-
-  int lastPC = PC;
-
-  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
-  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
-
-  cout << " CYC: " << dec << getCycles()*3%341 << hex;
-  
-  //cout << "\n";
-
+#ifdef CPU_DEBUG  
+  printLog();
 #endif
+  //int opcode = memory->readByteFrom(PC);
   if (super::RunInstruction())
     success = true;
-#ifdef CPU_DEBUG
-  if (success == false)
-    {
-      //      cout << "Opcode " << opcode << " unimplemented.";
-      PC++; // Roll with it
-    }
-#endif
+  //cycles += cycleMap[opcode];
+
   if (!success)
     {
       cout << "Error - unknown opcode.\n";
     }
   return success;
+}
+
+
+void CpuState::RunForCycles(int cycle_count)
+{
+  total_cycles += cycle_count;
+  cycles_remain += cycle_count;
+
+  int lastCycle = getCycles();
+  while (cycles_remain > 0)
+    {
+      RunInstruction();
+      int dCycles = getCycles()-lastCycle;
+      cycles_remain -= dCycles;
+      lastCycle = getCycles();
+    }
 }

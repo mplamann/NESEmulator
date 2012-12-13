@@ -7,10 +7,12 @@
 class CpuState : public CpuBranches
 {
 private:
-	typedef CpuBranches super;
+  typedef CpuBranches super;
+  void printLog();
 public:
-	CpuState(void);
-	~CpuState(void);
-	bool RunInstruction();
+  CpuState(void);
+  ~CpuState(void);
+  bool RunInstruction();
+  void RunForCycles(int cycles);
 };
 

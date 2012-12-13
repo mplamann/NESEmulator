@@ -80,7 +80,8 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  memory->loadFileToRAM("../ROMs/SMB1.nes");
+  memory->loadFileToRAM("../ROMs/Super Mario Bros. (JU) [!].nes");
+  //memory->loadFileToRAM("../ROMs/square1/square1.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
@@ -113,39 +114,42 @@ int main(int argc, char **argv)
   
   while (!done)
     {
-      al_wait_for_event(event_queue, &event);
-      if (event.type == ALLEGRO_EVENT_TIMER)
+      while (al_get_next_event(event_queue, &event))
 	{
-	  need_redraw = true;
-	}
-      if (need_redraw && al_event_queue_is_empty(event_queue))
-	{
-	  renderFrame();
-	  need_redraw = false;
-	}
-      
-      if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-	{
-	  done = true;
-	}
-      if (event.type == ALLEGRO_EVENT_KEY_DOWN)
-	{
-	  if (event.keyboard.keycode == ALLEGRO_KEY_B)
+	  //al_wait_for_event(event_queue, &event);
+	  if (event.type == ALLEGRO_EVENT_TIMER)
 	    {
-	      cout << "BREAK!\n";
+	      need_redraw = true;
 	    }
-	  gamepad->keyDown(event);
-	}
-      if (event.type == ALLEGRO_EVENT_KEY_UP)
-	{
-	  gamepad->keyUp(event);
-	}
+	  if (need_redraw && al_event_queue_is_empty(event_queue))
+	    {
+	      renderFrame();
+	      need_redraw = false;
+	    }
+	  
+	  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	    {
+	      done = true;
+	    }
+	  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+	    {
+	      if (event.keyboard.keycode == ALLEGRO_KEY_B)
+		{
+		  cout << "BREAK!\n";
+		}
+	      gamepad->keyDown(event);
+	    }
+	  if (event.type == ALLEGRO_EVENT_KEY_UP)
+	    {
+	      gamepad->keyUp(event);
+	    }
 #ifdef USE_AUDIO
-      if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
-	{
-	  apu->audioStreamFragment();
-	}
+	  if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
+	    {
+	      apu->audioStreamFragment();
+	    }
 #endif
+	}
     }
 
   cout << "Cleaning up...";
@@ -172,7 +176,7 @@ void renderFrame()
       //if (usingArduino)
       //  gamepad->readFromArduino();
 
-      if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
+      if (scanline == 241)// && cpu->getCycles() > PPU_STARTUP_TIME)
 	{
 	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
 	  if (memory->PPUCTRL & 0x80)
@@ -187,17 +191,7 @@ void renderFrame()
       if (scanline == 240)
 	ppu->endFrame();
 
-      targetCycle += CPU_CYCLES_PER_SCANLINE;
-      while (cpu->getCycles() < targetCycle)
-	{
-	  if (!cpu->RunInstruction())
-	    break; // This means that an unknown instruction was run.
-#ifdef CPU_DEBUG
-	  else
-	    cout << " SL: " << dec << scanline << hex << " \n";
-	  // CYC is in PPU cycles - 3 per CPU cycle
-#endif
-	}
+      cpu->RunForCycles(CPU_CYCLES_PER_SCANLINE);
     }
   scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
 
@@ -211,6 +205,8 @@ void renderFrame()
       ppu->setDisplayTitle(windowTitle);
     }
   frames_done++;
+
+  apu->finishFrame();
 }
 
 bool setupAllegroEvents()
@@ -255,6 +251,7 @@ bool processEvents()
 	}
       if (event.type == ALLEGRO_EVENT_KEY_DOWN)
 	{
+	  cout << "KD\n";
 	  gamepad->keyDown(event);
 	}
       if (event.type == ALLEGRO_EVENT_KEY_UP)

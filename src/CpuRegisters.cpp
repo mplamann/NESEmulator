@@ -10,6 +10,8 @@ CpuRegisters::CpuRegisters(void)
   S=0xFF;
   PC=0;
   cycles = 0;
+  total_cycles = 0;
+  cycles_remain = 0;
 
   C = false; // Carry flag
   Z = false; // Zero flag
@@ -511,8 +513,9 @@ int CpuRegisters::getP()
     P |= 0x08;
   return P;
 }
-long CpuRegisters::getCycles() {return cycles;}
+int CpuRegisters::getCycles() {return cycles;}
 void CpuRegisters::incrementCycles(int dCycles) {cycles += dCycles;}
+void CpuRegisters::incrementTotalCycles(int dCycles) {total_cycles += dCycles;}
 bool CpuRegisters::getN() {return N;}
 bool CpuRegisters::getZ() {return Z;}
 bool CpuRegisters::getC() {return C;}
@@ -537,4 +540,9 @@ void CpuRegisters::setP(int P)
   //B = ((P & 0x10) != 0);
   V = ((P & 0x40) != 0);
   N = ((P & 0x80) != 0);
+}
+
+int CpuRegisters::elapsed()
+{
+  return total_cycles - cycles_remain;
 }

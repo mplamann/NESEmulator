@@ -12,12 +12,11 @@ ApuState::ApuState(void)
 {
   apu = new Nes_Apu();
   buf = new Blip_Buffer();
-  blargg_err_t error = buf->sample_rate(44100, 5000);  // Without a length (ms), this allocates 4GB of RAM. Not so good.
+  blargg_err_t error = buf->sample_rate(44100, 1000);  // Without a length (ms), this allocates 4GB of RAM. Not so good.
   if (error)
     cout << "Error setting sample rate.\n";
   buf->clock_rate(1789773);
   apu->output(buf);
-  lastCycle = 0;
 }
 
 void ApuState::setMemory(MemoryState* _memory)
@@ -66,30 +65,28 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
   return true;
 }
 
+void ApuState::finishFrame()
+{
+  apu->end_frame(cpu->elapsed());
+  buf->end_frame(cpu->elapsed());
+  cpu->incrementTotalCycles(-cpu->elapsed());
+}
+
 void ApuState::audioStreamFragment()
 {
   blip_sample_t* fragment = (blip_sample_t*)al_get_audio_stream_fragment(stream);
   if (!fragment)
     return;
-  int dCycles = cpu->getCycles() - lastCycle;
-  lastCycle = cpu->getCycles();
-  apu->end_frame(dCycles);
-  buf->end_frame(dCycles);
-
 
   if (buf->samples_avail() >= SAMPLES_PER_BUFFER)
     {
       size_t count = buf->read_samples(fragment, SAMPLES_PER_BUFFER);
-      }
-  /*
-  int freq = 440;
-	float PI = 3.1415926535;
-	
-	
-         for (int i = 0; i < SAMPLES_PER_BUFFER; i++) {
-	   fragment[i] = 128*sin(PI*2*freq*i/22050.0);
-         }
-  */
+    }
+  
+  for (int i = 0; i < SAMPLES_PER_BUFFER; i++) {
+    //cout << dec << "fragment[" << i << "] = " << fragment[i] << "\n";
+  }
+  
   if (!al_set_audio_stream_fragment(stream, fragment))
     {
       cout << "Error setting stream fragment.\n";
@@ -98,9 +95,7 @@ void ApuState::audioStreamFragment()
 
 void ApuState::write_register(unsigned address, int data)
 {
-  int dCycles = cpu->getCycles() - lastCycle;
-  lastCycle = cpu->getCycles();
-  apu->write_register(dCycles, address, data);
+  apu->write_register(cpu->elapsed(), address, data);
 }
 
 int ApuState::read_status(long cycles)
