@@ -13,9 +13,9 @@ class Mapper
   int prgBank2Index;
  public:
   int readByteFrom(int address);
-  void writeByteTo(int address, int value);
+  virtual void writeByteTo(int address, int value);
   int ppuReadByteFrom(int address);
-  void ppuWriteByteTo(int address, int value);
+  virtual void ppuWriteByteTo(int address, int value);
   void updatePpuAddr(int address) {}
   int mirroring;
 

@@ -8,6 +8,11 @@
 #include <math.h>
 using namespace std;
 
+int dmc_read(void* memory, cpu_addr_t addr)
+{
+  return ((MemoryState*)memory)->apuReadByteFrom(NULL, addr);
+}
+
 ApuState::ApuState(void)
 {
   apu = new Nes_Apu();
@@ -22,7 +27,7 @@ ApuState::ApuState(void)
 void ApuState::setMemory(MemoryState* _memory)
 {
   memory = _memory;
-  //apu->dmc_reader(memory->apuReadByteFrom);
+  apu->dmc_reader(dmc_read, memory);
 }
 
 void ApuState::setCpu(CpuState* _cpu)

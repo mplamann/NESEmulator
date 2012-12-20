@@ -7,6 +7,7 @@ Mapper::Mapper(char* file)
 {
   nPrgBanks = file[4];
   nChrBanks = file[5];
+  cout << nPrgBanks << " PRG banks\n" << nChrBanks << " CHR banks\n";
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
   mirroring = file[6] & 0x9;
   
@@ -15,7 +16,7 @@ Mapper::Mapper(char* file)
   chrBanks = new char*[nChrBanks];
   for (int i = 0; i < nPrgBanks; i++)
     prgBanks[i] = new char[16*1024];
-  for (int i = 0; i < nChrBanks; i++)
+  for (int i = 0; i < (nChrBanks > 0 ? nChrBanks : 2); i++)
     chrBanks[i] = new char[8*1024];
 
   prgBank1Index = 0;
@@ -73,7 +74,8 @@ int Mapper::readByteFrom(int address)
 
 void Mapper::writeByteTo(int address, int value)
 {
-  if (address < 0x8000)
+  cout << "Mapper.cpp written to, can't do anything with this!\n";
+  /*if (address < 0x8000)
     {
       cout << "Mapper.c does not know what to do with address " << address << ". Returning.\n";
     }
@@ -86,25 +88,23 @@ void Mapper::writeByteTo(int address, int value)
     {
       int adjustedAddress = address - 0xC000;
       prgBanks[prgBank1Index][adjustedAddress] = value;
-    }
+      }*/
 }
 
 int Mapper::ppuReadByteFrom(int address)
 {
-  if (nChrBanks == 0)
-    return 0;
   char* bank = chrBanks[0];
-  if (address >= 8*1024 && nChrBanks > 1)
+  if (address >= 8*1024 && nChrBanks != 1)
     bank = chrBanks[1];
   return bank[address % (8*1024)];
 }
 
 void Mapper::ppuWriteByteTo(int address, int value)
 {
-  if (nChrBanks == 0)
+  if (nChrBanks != 0)
     return;
   char* bank = chrBanks[0];
-  if (address >= 8*1024 && nChrBanks > 1)
+  if (address >= 8*1024 && nChrBanks != 1)
     bank = chrBanks[1];
   bank[address % (8*1024)] = (value & 0xFF);
 }

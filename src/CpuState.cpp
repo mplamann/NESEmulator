@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 using namespace std;
 
 CpuState::CpuState(void)
 {
+  accumulator = 0;
 }
 
 
@@ -370,15 +372,28 @@ bool CpuState::RunInstruction()
 }
 
 
-void CpuState::RunForCycles(int cycle_count)
+void CpuState::RunForCycles(float cycle_count, int scanline)
 {
+  double fpart, ipart;
+  fpart = modf(cycle_count, &ipart);
+  accumulator += fpart;
+
+  while (accumulator > 1)
+    {
+      accumulator--;
+      cycle_count++;
+    }
+      
   total_cycles += cycle_count;
   cycles_remain += cycle_count;
-
+  
   int lastCycle = getCycles();
   while (cycles_remain > 0)
     {
       RunInstruction();
+#ifdef CPU_DEBUG
+      cout << " SL: " << dec << scanline << hex << "\n";
+#endif
       int dCycles = getCycles()-lastCycle;
       cycles_remain -= dCycles;
       lastCycle = getCycles();

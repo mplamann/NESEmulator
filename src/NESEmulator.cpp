@@ -2,6 +2,7 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_audio.h>
 
+
 #include "CpuState.h"
 #include "PpuState.h"
 #include "MemoryState.h"
@@ -18,7 +19,7 @@ using namespace std;
 const int FRAMERATE = 60;
 
 const int PPU_STARTUP_TIME = 27384;
-const float CPU_CYCLES_PER_SCANLINE = 113.6666;
+const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
 ALLEGRO_TIMER* timer;
@@ -80,18 +81,24 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  memory->loadFileToRAM("../ROMs/Super Mario Bros. (JU) [!].nes");
+  //memory->loadFileToRAM("../ROMs/Super Mario Bros. (JU) [!].nes");
+  //memory->loadFileToRAM("../ROMs/MapperTest/mapper2.nes");
+  
   //memory->loadFileToRAM("../ROMs/square1/square1.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
-  //memory->loadFileToRAM("../ROMs/MegaMan.nes");
+  memory->loadFileToRAM("../ROMs/MegaMan.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
+  //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
+  //memory->loadFileToRAM("../ROMs/Excitebike.nes");
+  //memory->loadFileToRAM("../ROMs/Galaxian.nes");
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
   //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
+  cpu->setS(0xFD);
 #endif
 
 #ifdef RUN_TEST
@@ -176,7 +183,7 @@ void renderFrame()
       //if (usingArduino)
       //  gamepad->readFromArduino();
 
-      if (scanline == 241)// && cpu->getCycles() > PPU_STARTUP_TIME)
+      if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
 	{
 	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
 	  if (memory->PPUCTRL & 0x80)
@@ -191,7 +198,7 @@ void renderFrame()
       if (scanline == 240)
 	ppu->endFrame();
 
-      cpu->RunForCycles(CPU_CYCLES_PER_SCANLINE);
+      cpu->RunForCycles(CPU_CYCLES_PER_SCANLINE, scanline);
     }
   scanline = 0; // Reset scanline. This comes at the end to not interfere with startup state.
 

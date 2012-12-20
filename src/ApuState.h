@@ -29,7 +29,6 @@ class ApuState
   MemoryState* memory;
   CpuState* cpu;
 
-  int dmc_read(void*, cpu_addr_t addr);
   void output_samples(const blip_sample_t*, size_t count);
   blip_sample_t out_buf[SAMPLES_PER_BUFFER];
 

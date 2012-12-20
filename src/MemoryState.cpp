@@ -22,6 +22,8 @@ MemoryState::MemoryState(void)
   for (int i = 0; i < 0x400; i++)
     nametable1[i] = nametable2[i] = 0;
   apu = NULL;
+  PPUSTATUS = 0x0;
+  PPU_LAST_WRITE = 0x0;
 }
 
 MemoryState::~MemoryState(void)

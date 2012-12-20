@@ -9,5 +9,4 @@ public:
   Mapper2(char* file);
   ~Mapper2(void);
   void writeByteTo(int address, int value);
-  void ppuWriteByteTo(int address, int value);
 };
