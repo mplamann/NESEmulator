@@ -157,7 +157,7 @@ void PpuState::renderScanline(int scanline)
 	  
 	  int spriteLine = scanline-yCoord;
 	  if (spriteFlags & 0x80) // Check for vertical flip
-	    spriteLine = spriteHeight-spriteLine;
+	    spriteLine = spriteHeight-spriteLine-1;
 	  int xOffset = memory->oamReadByteFrom(i*4+3);
 	  int paletteIndex = spriteFlags & 0x3;
 
@@ -176,6 +176,8 @@ void PpuState::renderScanline(int scanline)
 		patternTableTile |= 0x100;
 	      patternTableTile &= 0x1FE;
 	      int patternTableIndex = patternTableTile*16;
+	      if (spriteLine >= 8)
+		patternTableIndex += 8;
 	      patternTablePlane1 = memory->ppuReadByteFrom(patternTableIndex + spriteLine);
 	      patternTablePlane2 = memory->ppuReadByteFrom(patternTableIndex + spriteLine + 8);
 	    }

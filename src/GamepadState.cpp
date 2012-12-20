@@ -7,6 +7,22 @@ using namespace std;
 
 GamepadState::GamepadState(void)
 {
+  player1.A = false;
+  player1.B = false;
+  player1.U = false;
+  player1.D = false;
+  player1.L = false;
+  player1.R = false;
+  player1.ST = false;
+  player1.SEL = false;
+  player2.A = false;
+  player2.B = false;
+  player2.U = false;
+  player2.D = false;
+  player2.L = false;
+  player2.R = false;
+  player2.ST = false;
+  player2.SEL = false;
 }
 
 GamepadState::~GamepadState(void)

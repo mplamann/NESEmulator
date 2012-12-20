@@ -91,6 +91,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   memory->loadFileToRAM("../ROMs/MegaMan.nes");
+  //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
   //memory->loadFileToRAM("../ROMs/Excitebike.nes");

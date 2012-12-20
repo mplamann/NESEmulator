@@ -7,7 +7,7 @@ Mapper::Mapper(char* file)
 {
   nPrgBanks = file[4];
   nChrBanks = file[5];
-  cout << nPrgBanks << " PRG banks\n" << nChrBanks << " CHR banks\n";
+  cout << "\n" << nPrgBanks << " PRG banks\n" << nChrBanks << " CHR banks\n";
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
   mirroring = file[6] & 0x9;
   
