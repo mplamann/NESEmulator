@@ -9,6 +9,7 @@
 class PpuState
 {
  private:
+  int width, height, scale;
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
   ALLEGRO_DISPLAY* nametableDisplay;

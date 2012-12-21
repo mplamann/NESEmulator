@@ -90,8 +90,8 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
-  memory->loadFileToRAM("../ROMs/MegaMan.nes");
-  //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
+  //memory->loadFileToRAM("../ROMs/MegaMan.nes");
+  memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
   //memory->loadFileToRAM("../ROMs/Excitebike.nes");
@@ -181,8 +181,8 @@ void renderFrame()
   // Render one frame
   for (; scanline < 262; scanline++)
     {
-      //if (usingArduino)
-      //  gamepad->readFromArduino();
+      if (usingArduino)
+        gamepad->readFromArduino();
 
       if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
 	{

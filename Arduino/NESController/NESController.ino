@@ -1,8 +1,8 @@
 /* INITIALIZATION */
 
-int latch = 17; // set the latch pin
-int clock = 16; // set the clock pin
-int datin = 18;// set the data in pin
+int latch = 5; // set the latch pin
+int clock = 7; // set the clock pin
+int datin = 6;// set the data in pin
 byte controller_data = 0;
 int ledpin = 13;
 
@@ -35,8 +35,6 @@ controller_data = digitalRead(datin);
 for (int i = 1; i <= 7; i ++) {
 digitalWrite(clock,HIGH);
 delayMicroseconds(2);
-//controller_data = controller_data << 1;
-//controller_data = controller_data + digitalRead(datin) ;
 controller_data += digitalRead(datin)*(1<<i);
 delayMicroseconds(4);
 digitalWrite(clock,LOW);

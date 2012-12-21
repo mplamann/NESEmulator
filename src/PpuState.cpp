@@ -5,10 +5,11 @@ using namespace std;
 
 bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
-  int height = 224;
-  int width = 256;
+  height = 224;
+  width = 256;
+  scale = 3;
   cout << "Initializing display...";
-  display = al_create_display(width, height);
+  display = al_create_display(width*scale, height*scale);
   if (!display)
     {
       al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
@@ -86,11 +87,11 @@ void PpuState::renderScanline(int scanline)
   for (int i = 0; i < 256; i++)
       backgroundPoints[i] = false;
 
-  ALLEGRO_VERTEX scanlinePoints[256];
-  for (int i = 0; i < 256; i++)
+  ALLEGRO_VERTEX scanlinePoints[256*scale];
+  for (int i = 0; i < 256*scale; i++)
     {
       scanlinePoints[i].x = i;
-      scanlinePoints[i].y = scanline-8;
+      scanlinePoints[i].y = (scanline-8)*scale;
       scanlinePoints[i].z = 0;
       scanlinePoints[i].color = al_map_rgb(0,0,0);
     }
@@ -125,7 +126,8 @@ void PpuState::renderScanline(int scanline)
 	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-	      scanlinePoints[(xOffset+x)&0xFF].color=color;
+	      for (int j = 0; j < scale; j++)
+		scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
 	      if (colorIndex != 0)
 		{
 		  backgroundPoints[(xOffset+x)&0xFF] = true;
@@ -204,7 +206,10 @@ void PpuState::renderScanline(int scanline)
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 		  if (!((spriteFlags & 0x20) && backgroundPoints[(xOffset+x)&0xFF]))
-		    scanlinePoints[(xOffset+x)&0xFF].color=color;
+		    {
+		      for (int j = 0; j < scale; j++)
+			scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
+		    }
 		  if (backgroundPoints[(xOffset+x)&0xFF] && i == 0)
 		    {
 		      memory->PPUSTATUS |= 0x40;
@@ -219,8 +224,15 @@ void PpuState::renderScanline(int scanline)
 
   // Make sure that we are not drawing to a null bitmap  
   // Don't know why this is a problem, but it seems to be
-  if (al_get_target_bitmap()) 
-    al_draw_prim(scanlinePoints, NULL, 0, 0, 256, ALLEGRO_PRIM_POINT_LIST);
+  if (al_get_target_bitmap())
+    {
+      for (int j = 0; j < scale; j++)
+	{
+	  al_draw_prim(scanlinePoints, NULL, 0, 0, 256*scale, ALLEGRO_PRIM_POINT_LIST);
+	  for (int point = 0; point < 256*scale; point++)
+	    scanlinePoints[point].y++;
+	}
+    }
 
 #ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);

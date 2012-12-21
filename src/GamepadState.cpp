@@ -47,10 +47,10 @@ bool GamepadState::initializeArduino()
   serial = new Serial();
   cout << "Setting baud rate...";
   if (!serial->Set_baud(9600))
-    return false;
+    //return false;
   cout << "Done\nOpening serial port...";
-  if (!serial->Open("/dev/tty.usbmodemfd141"))
-    return false;
+  if (!serial->Open("/dev/tty.usbmodemfd131"))
+    //return false;
   cout << "Done\n";
   return true;
 }
