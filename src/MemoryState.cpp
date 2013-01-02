@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "Mapper0.h"
+#include "Mapper1.h"
 #include "Mapper2.h"
 using namespace std;
 
@@ -253,21 +254,24 @@ int MemoryState::apuReadByteFrom(void* user_data, unsigned address)
 
 unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
 {
-  if (mapper->mirroring == 0)
+  if (mapper->mirroring == MIRRORING_HORIZONTAL)
     {
-      // Horizontal mirroring
       if ((y%2) == 0)
 	return nametable1;
       else
 	return nametable2;
     }
-  else if (mapper->mirroring == 1)
+  else if (mapper->mirroring == MIRRORING_VERTICAL)
     {
       if ((x%2) == 0)
 	return nametable1;
       else
 	return nametable2;
     }
+  else if (mapper->mirroring == MIRRORING_LOWER_BANK)
+    return nametable1;
+  else if (mapper->mirroring == MIRRORING_UPPER_BANK)
+    return nametable2;
   else
     {
       cout << "Unknown mirroring configuration\n";
@@ -448,6 +452,9 @@ void MemoryState::loadFileToRAM(char* filename)
     {
     case 0:
       mapper = new Mapper0(file);
+      break;
+    case 1:
+      mapper = new Mapper1(file);
       break;
     case 2:
       mapper = new Mapper2(file);

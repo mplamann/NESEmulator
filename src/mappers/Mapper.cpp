@@ -21,8 +21,12 @@ Mapper::Mapper(char* file)
 
   prgBank1Index = 0;
   prgBank2Index = 0;
+  chrBank1Index = 0;
+  chrBank2Index = 0;
   if (nPrgBanks > 1)
     prgBank2Index = 1;
+  if (nChrBanks != 1)
+    chrBank2Index = 1;
 
   int filePointer = 16;
   for (int i = 0; i < nPrgBanks; i++)
@@ -75,27 +79,13 @@ int Mapper::readByteFrom(int address)
 void Mapper::writeByteTo(int address, int value)
 {
   cout << "Mapper.cpp written to, can't do anything with this!\n";
-  /*if (address < 0x8000)
-    {
-      cout << "Mapper.c does not know what to do with address " << address << ". Returning.\n";
-    }
-  else if (address < 0xC000)
-    {
-      int adjustedAddress = address - 0x8000;
-      prgBanks[prgBank1Index][adjustedAddress] = value;
-    }
-  else
-    {
-      int adjustedAddress = address - 0xC000;
-      prgBanks[prgBank1Index][adjustedAddress] = value;
-      }*/
 }
 
 int Mapper::ppuReadByteFrom(int address)
 {
-  char* bank = chrBanks[0];
+  char* bank = chrBanks[chrBank1Index];
   if (address >= 8*1024 && nChrBanks != 1)
-    bank = chrBanks[1];
+    bank = chrBanks[chrBank2Index];
   return bank[address % (8*1024)];
 }
 
@@ -103,8 +93,8 @@ void Mapper::ppuWriteByteTo(int address, int value)
 {
   if (nChrBanks != 0)
     return;
-  char* bank = chrBanks[0];
+  char* bank = chrBanks[chrBank1Index];
   if (address >= 8*1024 && nChrBanks != 1)
-    bank = chrBanks[1];
+    bank = chrBanks[chrBank2Index];
   bank[address % (8*1024)] = (value & 0xFF);
 }

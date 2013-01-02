@@ -311,3 +311,8 @@ const int cycleMap[] = {7, 8, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
 			2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
 			2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
 			2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7};
+
+const int MIRRORING_HORIZONTAL = 0;
+const int MIRRORING_VERTICAL = 1;
+const int MIRRORING_LOWER_BANK = 2;
+const int MIRRORING_UPPER_BANK = 3;

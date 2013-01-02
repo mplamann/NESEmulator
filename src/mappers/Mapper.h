@@ -11,10 +11,12 @@ class Mapper
 
   int prgBank1Index;
   int prgBank2Index;
+  int chrBank1Index;
+  int chrBank2Index;
  public:
-  int readByteFrom(int address);
+  virtual int readByteFrom(int address);
   virtual void writeByteTo(int address, int value);
-  int ppuReadByteFrom(int address);
+  virtual int ppuReadByteFrom(int address);
   virtual void ppuWriteByteTo(int address, int value);
   void updatePpuAddr(int address) {}
   int mirroring;

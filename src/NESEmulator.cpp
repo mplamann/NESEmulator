@@ -91,7 +91,8 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
-  memory->loadFileToRAM("../ROMs/Pac-Man.nes");
+  memory->loadFileToRAM("../ROMs/Metroid.nes");
+  //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
   //memory->loadFileToRAM("../ROMs/Excitebike.nes");
@@ -181,8 +182,8 @@ void renderFrame()
   // Render one frame
   for (; scanline < 262; scanline++)
     {
-      if (usingArduino)
-        gamepad->readFromArduino();
+      //if (usingArduino)
+	//        gamepad->readFromArduino();
 
       if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
 	{
@@ -246,34 +247,6 @@ bool setupAllegroEvents()
   al_register_event_source(event_queue, al_get_timer_event_source(timer));
   al_start_timer(timer);
   return true;
-}
-
-bool processEvents()
-{
-  ALLEGRO_EVENT event;
-  while (al_get_next_event(event_queue, &event))
-    {
-      if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-	{
-	  return true;
-	}
-      if (event.type == ALLEGRO_EVENT_KEY_DOWN)
-	{
-	  cout << "KD\n";
-	  gamepad->keyDown(event);
-	}
-      if (event.type == ALLEGRO_EVENT_KEY_UP)
-	{
-	  gamepad->keyUp(event);
-	}
-#ifdef USE_AUDIO
-      if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
-	{
-	  apu->audioStreamFragment();
-	}
-#endif
-    }
-  return false;
 }
 
 void cleanup()
