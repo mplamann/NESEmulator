@@ -468,3 +468,26 @@ void MemoryState::loadFileToRAM(char* filename)
   
   return;
 }
+
+char* MemoryState::stateData(size_t* size)
+{
+  int sRam = RAM_SIZE*sizeof(unsigned char);
+  int sPalette = 0x20*sizeof(unsigned char);
+  int sNametables = 0x800*sizeof(unsigned char);
+  int sPpuDataBuffer = sizeof(int);
+  int sOAM = 256*sizeof(unsigned char);
+  int sJOYSTROBE = sizeof(unsigned char);
+  int sPpuToggles = 2*sizeof(int);
+  int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
+  int sPpuRegs = 8*sizeof(int);
+  int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
+  *size = sRam + sPalette + sNametables + sPpuDataBuffer + sOAM + sJOYSTROBE + sPpuToggles + sPpuRegs;
+  char* buffer = (char*)malloc(sizeof(char)*(*size));
+  int bufferIndex = 0;
+  
+  memcpy(buffer+bufferIndex, RAM, sRam);
+  bufferIndex += sRam;
+  memcpy(buffer+bufferIndex, palette, sPalette);
+  
+  return buffer;
+}

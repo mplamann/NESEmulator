@@ -15,5 +15,7 @@ public:
   ~CpuState(void);
   bool RunInstruction();
   void RunForCycles(float cycle_count, int scanline);
+  
+  char* stateData(size_t* size);
 };
 

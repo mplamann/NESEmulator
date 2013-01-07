@@ -7,6 +7,10 @@ Mapper1::Mapper1(char* file) : Mapper(file)
   cout << "using mapper 1...";
   shiftIndex = 0;
   shiftRegister = 0;
+  prgBankMode = PRG_SWITCH_FIRST_16;
+  chrBankMode = CHR_SWITCH_2x4;
+  prgBankIndex = 0;
+  updatePRGIndexes();
 }
 
 Mapper1::~Mapper1(void)
@@ -17,7 +21,14 @@ void Mapper1::writeByteTo(int address, int value)
 {
   if (address >= 0x6000 && address < 0x8000)
     {
-      prgRam[address-0x6000] = value;
+      if (prgRamEnabled)
+	{
+	  prgRam[address-0x6000] = value;
+	}
+      else
+	{
+	  return;
+	}
     }
   shiftRegister |= (value & 0x01) << (shiftIndex++);
 
@@ -30,22 +41,22 @@ void Mapper1::writeByteTo(int address, int value)
   
   if (shiftIndex == 5)
     {
-      switch (address && 0xF000)
+      switch (address & 0xF000)
 	{
-	case 0x8:
-	case 0x9:
+	case 0x8000:
+	case 0x9000:
 	  writeControl(shiftRegister);
 	  break;
-	case 0xA:
-	case 0xB:
+	case 0xA000:
+	case 0xB000:
 	  writeCHR0(shiftRegister);
 	  break;
-	case 0xC:
-	case 0xD:
+	case 0xC000:
+	case 0xD000:
 	  writeCHR1(shiftRegister);
 	  break;
-	case 0xE:
-	case 0xF:
+	case 0xE000:
+	case 0xF000:
 	  writePRG(shiftRegister);
 	  break;
 	}
@@ -135,6 +146,11 @@ void Mapper1::updatePRGIndexes()
 int Mapper1::readByteFrom(int address)
 {
   if (address >= 0x6000 && address < 0x8000)
-    return prgRam[address-0x6000];
+    {
+      if (prgRamEnabled)
+	return prgRam[address-0x6000];
+      else
+	return 0;
+    }
   return Mapper::readByteFrom(address);
 }

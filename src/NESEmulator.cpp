@@ -35,6 +35,8 @@ bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
 void renderFrame();
+void saveState();
+void loadState();
 
 double fps = 0;
 int frames_done = 0;
@@ -50,6 +52,9 @@ int main(int argc, char **argv)
   memory = new MemoryState();
   ppu = new PpuState();
   gamepad = new GamepadState();
+
+  saveState();
+  return 0;
   
   ppu->setMemory(memory);
   cpu->setMemory(memory);
@@ -91,7 +96,10 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
-  memory->loadFileToRAM("../ROMs/Metroid.nes");
+  memory->loadFileToRAM("../ROMs/Mega Man 2.nes");
+  //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
+  //memory->loadFileToRAM("../ROMs/Metroid.nes");
+  //memory->loadFileToRAM("../ROMs/Zelda.nes");
   //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
@@ -260,4 +268,48 @@ void cleanup()
 #ifdef USE_AUDIO
   delete apu;
 #endif
+}
+
+void saveState()
+{
+  cout << "Saving state...\n";
+  
+  size_t memorySize;
+  size_t cpuSize;
+  size_t ppuSize;
+
+  char* memoryData;
+  char* cpuData;
+  char* ppuData;
+
+  memoryData = memory->stateData(&memorySize);
+  cpuData = cpu->stateData(&cpuSize);
+  ppuData = ppu->stateData(&ppuSize);
+
+  cout << "Header fields are " << sizeof(size_t) << " bytes.\n";
+  
+  cout << "MemoryState " << memorySize * sizeof(char) << " bytes.\n";
+  cout << "CpuState    " << cpuSize * sizeof(char) << " bytes.\n";
+  cout << "PpuState    " << ppuSize * sizeof(char) << " bytes.\n";
+
+  FILE* fileStream = fopen("state.sav","wb");
+  
+  // Write header - memorySize,cpuSize,ppuSize
+  size_t header[3];
+  header[0] = memorySize;
+  header[1] = cpuSize;
+  header[2] = ppuSize;
+  fwrite(header, sizeof(size_t), 3, fileStream);
+
+  // Write state data
+  fwrite(memoryData, sizeof(char), memorySize, fileStream);
+  fwrite(cpuData, sizeof(char), cpuSize, fileStream);
+  fwrite(ppuData, sizeof(char), ppuSize, fileStream);
+  fclose(fileStream);
+
+  free(memoryData);
+  free(cpuData);
+  free(ppuData);
+
+  cout << "State saved.\n";
 }

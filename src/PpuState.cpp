@@ -7,7 +7,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
   height = 224;
   width = 256;
-  scale = 3;
+  scale = 2;
   cout << "Initializing display...";
   display = al_create_display(width*scale, height*scale);
   if (!display)
@@ -310,3 +310,10 @@ void PpuState::setMemory(MemoryState* mem)
 
 int PpuState::getCycles() {return cycles;}
 MemoryState* PpuState::getMemory() {return memory;}
+
+char* PpuState::stateData(size_t* size)
+{
+  *size = 1;
+  char* buffer = (char*)malloc(sizeof(char)*(*size));
+  return buffer;
+}

@@ -35,6 +35,8 @@ public:
   void setGamepad(GamepadState* gpad);
   void setApu(ApuState* apu);
   void setCpu(CpuState* cpu);
+
+  char* stateData(size_t* size);
   
   int readByteFrom(int address);
   void writeByteTo(int address, int value);

@@ -32,4 +32,6 @@ class PpuState
   void setMemory(MemoryState* mem);
   MemoryState* getMemory();
   int getCycles();
+
+  char* stateData(size_t* size);
 };
