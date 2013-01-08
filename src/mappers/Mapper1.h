@@ -33,4 +33,8 @@ class Mapper1 : public Mapper
   ~Mapper1(void);
   void writeByteTo(int address, int value);
   int readByteFrom(int address);
+
+  size_t stateSize();
+  char* stateData();
+  void loadState(char* buffer);
 };

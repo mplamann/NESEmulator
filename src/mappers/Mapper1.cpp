@@ -154,3 +154,39 @@ int Mapper1::readByteFrom(int address)
     }
   return Mapper::readByteFrom(address);
 }
+
+size_t Mapper1::stateSize()
+{
+  int sPrgRam = sizeof(int)*0x2000;
+  int sOtherInts = sizeof(int)*5;
+  return sPrgRam + sOtherInts + sizeof(bool);
+}
+
+char* Mapper1::stateData()
+{
+  char* buffer = (char*)malloc(sizeof(char)*stateSize());
+  int bufferIndex = 0;
+  memcpy(buffer+bufferIndex, prgRam, sizeof(int)*0x2000);
+  bufferIndex+=sizeof(int)*0x2000;
+  memcpy(buffer+bufferIndex, &prgRamEnabled, sizeof(bool));
+  bufferIndex+=sizeof(bool);
+  int otherValues[5] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode};
+  memcpy(buffer+bufferIndex, otherValues, 5*sizeof(int));
+  return buffer;
+}
+
+void Mapper1::loadState(char* buffer)
+{
+  int bufferIndex = 0;
+  memcpy(prgRam, buffer, sizeof(int)*0x2000);
+  bufferIndex+=sizeof(int)*0x2000;
+  memcpy(&prgRamEnabled, buffer+bufferIndex, sizeof(bool));
+  bufferIndex+=sizeof(bool);
+  int otherValues[5];
+  memcpy(otherValues, buffer+bufferIndex, 5*sizeof(int));
+  prgBankIndex = otherValues[0];
+  shiftRegister = otherValues[1];
+  shiftIndex = otherValues[2];
+  prgBankMode = otherValues[3];
+  chrBankMode = otherValues[4];
+}

@@ -12,6 +12,7 @@ class CpuState;
 class ApuState
 {
  public:
+  Nes_Apu* apu;
   ApuState(void);
   ~ApuState(void);
   bool initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue);
@@ -25,7 +26,6 @@ class ApuState
 
  private:
   Blip_Buffer* buf;
-  Nes_Apu* apu;
   MemoryState* memory;
   CpuState* cpu;
 

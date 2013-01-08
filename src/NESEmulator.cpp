@@ -8,6 +8,7 @@
 #include "MemoryState.h"
 #include "GamepadState.h"
 #include "ApuState.h"
+#include "apu_snapshot.h"
 #include <time.h>
 #include <iostream>
 #include <iomanip>
@@ -45,6 +46,9 @@ double old_time = 0.0;
 double game_time = 0.0;
 int scanline = 241; // This is the scanline that Nintendulator starts on
 
+bool shouldSaveState = false;
+bool shouldLoadState = false;
+
 int main(int argc, char **argv)
 {
   cout << hex << uppercase;
@@ -53,9 +57,6 @@ int main(int argc, char **argv)
   ppu = new PpuState();
   gamepad = new GamepadState();
 
-  saveState();
-  return 0;
-  
   ppu->setMemory(memory);
   cpu->setMemory(memory);
   memory->setGamepad(gamepad);
@@ -142,6 +143,11 @@ int main(int argc, char **argv)
 	    {
 	      renderFrame();
 	      need_redraw = false;
+	      if (shouldSaveState)
+		saveState();
+	      else if (shouldLoadState)
+		loadState();
+	      shouldSaveState = shouldLoadState = false;
 	    }
 	  
 	  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -153,6 +159,14 @@ int main(int argc, char **argv)
 	      if (event.keyboard.keycode == ALLEGRO_KEY_B)
 		{
 		  cout << "BREAK!\n";
+		}
+	      if (event.keyboard.keycode == ALLEGRO_KEY_T)
+		{
+		  shouldSaveState = true;
+		}
+	      if (event.keyboard.keycode == ALLEGRO_KEY_Y)
+		{
+		  shouldLoadState = true;
 		}
 	      gamepad->keyDown(event);
 	    }
@@ -281,10 +295,12 @@ void saveState()
   char* memoryData;
   char* cpuData;
   char* ppuData;
+  apu_snapshot_t* apuData = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
 
   memoryData = memory->stateData(&memorySize);
   cpuData = cpu->stateData(&cpuSize);
   ppuData = ppu->stateData(&ppuSize);
+  apu->apu->save_snapshot(apuData);
 
   cout << "Header fields are " << sizeof(size_t) << " bytes.\n";
   
@@ -305,6 +321,7 @@ void saveState()
   fwrite(memoryData, sizeof(char), memorySize, fileStream);
   fwrite(cpuData, sizeof(char), cpuSize, fileStream);
   fwrite(ppuData, sizeof(char), ppuSize, fileStream);
+  fwrite(apuData, sizeof(apu_snapshot_t), 1, fileStream);
   fclose(fileStream);
 
   free(memoryData);
@@ -312,4 +329,40 @@ void saveState()
   free(ppuData);
 
   cout << "State saved.\n";
+}
+
+void loadState()
+{
+  cout << "Loading state...\n";
+
+  size_t header[3];
+  
+  char* memoryData;
+  char* cpuData;
+  char* ppuData;
+  apu_snapshot_t* apuData;
+
+  FILE* fileStream = fopen("state.sav", "rb");
+  fread(header, sizeof(size_t), 3, fileStream);
+
+  memoryData = (char*)malloc(header[0]*sizeof(char));
+  cpuData = (char*)malloc(header[1]*sizeof(char));
+  ppuData = (char*)malloc(header[2]*sizeof(char));
+  apuData = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
+  
+  fread(memoryData, sizeof(char), header[0], fileStream);
+  fread(cpuData, sizeof(char), header[1], fileStream);
+  fread(ppuData, sizeof(char), header[2], fileStream);
+  fread(apuData, sizeof(apu_snapshot_t), 1, fileStream);
+  
+  fclose(fileStream);
+
+  memory->loadState(memoryData, header[0]);
+  cpu->loadState(cpuData, header[1]);
+  ppu->loadState(ppuData, header[2]);
+  apu->apu->load_snapshot(*apuData);
+
+  free(memoryData);
+  free(cpuData);
+  free(ppuData);
 }

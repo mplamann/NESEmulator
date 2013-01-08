@@ -313,7 +313,13 @@ MemoryState* PpuState::getMemory() {return memory;}
 
 char* PpuState::stateData(size_t* size)
 {
-  *size = 1;
+  *size = sizeof(int);
   char* buffer = (char*)malloc(sizeof(char)*(*size));
+  memcpy(buffer, &cycles, *size);
   return buffer;
+}
+
+void PpuState::loadState(char* buffer, size_t size)
+{
+  memcpy(&cycles, buffer, size);
 }

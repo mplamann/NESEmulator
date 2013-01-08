@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #pragma once
 
 class Mapper
@@ -20,6 +22,10 @@ class Mapper
   virtual void ppuWriteByteTo(int address, int value);
   void updatePpuAddr(int address) {}
   int mirroring;
+
+  virtual size_t stateSize();
+  virtual char* stateData();
+  virtual void loadState(char* state);
 
   Mapper(char* file);
   ~Mapper(void);

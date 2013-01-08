@@ -34,4 +34,5 @@ class PpuState
   int getCycles();
 
   char* stateData(size_t* size);
+  void loadState(char* state, size_t size);
 };

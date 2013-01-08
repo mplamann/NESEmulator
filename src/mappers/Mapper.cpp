@@ -98,3 +98,17 @@ void Mapper::ppuWriteByteTo(int address, int value)
     bank = chrBanks[chrBank2Index];
   bank[address % (8*1024)] = (value & 0xFF);
 }
+
+size_t Mapper::stateSize()
+{
+  return 0;
+}
+
+char* Mapper::stateData()
+{
+  return (char*)malloc(sizeof(char)*stateSize());
+}
+
+void Mapper::loadState(char* ignored)
+{
+}

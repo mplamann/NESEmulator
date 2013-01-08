@@ -37,6 +37,7 @@ public:
   void setCpu(CpuState* cpu);
 
   char* stateData(size_t* size);
+  void loadState(char* state, size_t size);
   
   int readByteFrom(int address);
   void writeByteTo(int address, int value);

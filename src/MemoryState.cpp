@@ -481,13 +481,70 @@ char* MemoryState::stateData(size_t* size)
   int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
   int sPpuRegs = 8*sizeof(int);
   int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
-  *size = sRam + sPalette + sNametables + sPpuDataBuffer + sOAM + sJOYSTROBE + sPpuToggles + sPpuRegs;
+
+  int sMapper = mapper->stateSize();
+  char* mapperData = mapper->stateData();
+  
+  *size = sRam + sPalette + sNametables + sPpuDataBuffer + sOAM + sJOYSTROBE + sPpuToggles + sPpuRegs + sMapper;
   char* buffer = (char*)malloc(sizeof(char)*(*size));
   int bufferIndex = 0;
   
   memcpy(buffer+bufferIndex, RAM, sRam);
   bufferIndex += sRam;
   memcpy(buffer+bufferIndex, palette, sPalette);
+  bufferIndex += sPalette;
+  memcpy(buffer+bufferIndex, nametable1, sNametables/2);
+  bufferIndex += sNametables/2;
+  memcpy(buffer+bufferIndex, nametable2, sNametables/2);
+  bufferIndex += sNametables/2;
+  memcpy(buffer+bufferIndex, &ppuDataBuffer, sPpuDataBuffer);
+  bufferIndex += sPpuDataBuffer;
+  memcpy(buffer+bufferIndex, OAM, sOAM);
+  bufferIndex += sOAM;
+  memcpy(buffer+bufferIndex, &JOYSTROBE, sJOYSTROBE);
+  bufferIndex += sJOYSTROBE;
+  memcpy(buffer+bufferIndex, ppuToggles, sPpuToggles);
+  bufferIndex += sPpuToggles;
+  memcpy(buffer+bufferIndex, ppuRegs, sPpuRegs);
+  bufferIndex += sPpuRegs;
+  memcpy(buffer+bufferIndex, mapperData, sMapper);
+  free (mapperData);
   
   return buffer;
+}
+
+void MemoryState::loadState(char* buffer, size_t size)
+{
+  int sRam = RAM_SIZE*sizeof(unsigned char);
+  int sPalette = 0x20*sizeof(unsigned char);
+  int sNametables = 0x800*sizeof(unsigned char);
+  int sPpuDataBuffer = sizeof(int);
+  int sOAM = 256*sizeof(unsigned char);
+  int sJOYSTROBE = sizeof(unsigned char);
+  int sPpuToggles = 2*sizeof(int);
+  int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
+  int sPpuRegs = 8*sizeof(int);
+  int sMapper = mapper->stateSize();
+  int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
+  int bufferIndex = 0;
+  
+  memcpy(RAM, buffer+bufferIndex, sRam);
+  bufferIndex += sRam;
+  memcpy(palette, buffer+bufferIndex, sPalette);
+  bufferIndex += sPalette;
+  memcpy(nametable1, buffer+bufferIndex, sNametables/2);
+  bufferIndex += sNametables/2;
+  memcpy(nametable2, buffer+bufferIndex, sNametables/2);
+  bufferIndex += sNametables/2;
+  memcpy(&ppuDataBuffer, buffer+bufferIndex, sPpuDataBuffer);
+  bufferIndex += sPpuDataBuffer;
+  memcpy(OAM, buffer+bufferIndex, sOAM);
+  bufferIndex += sOAM;
+  memcpy(&JOYSTROBE, buffer+bufferIndex, sJOYSTROBE);
+  bufferIndex += sJOYSTROBE;
+  memcpy(ppuToggles, buffer+bufferIndex, sPpuToggles);
+  bufferIndex += sPpuToggles;
+  memcpy(ppuRegs, buffer+bufferIndex, sPpuRegs);
+  bufferIndex += sPpuRegs;
+  mapper->loadState((char*)(buffer+bufferIndex));
 }

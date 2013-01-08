@@ -17,5 +17,6 @@ public:
   void RunForCycles(float cycle_count, int scanline);
   
   char* stateData(size_t* size);
+  void loadState(char* state, size_t size);
 };
 
