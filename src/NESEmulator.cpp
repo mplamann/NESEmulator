@@ -134,7 +134,6 @@ int main(int argc, char **argv)
     {
       while (al_get_next_event(event_queue, &event))
 	{
-	  //al_wait_for_event(event_queue, &event);
 	  if (event.type == ALLEGRO_EVENT_TIMER)
 	    {
 	      need_redraw = true;

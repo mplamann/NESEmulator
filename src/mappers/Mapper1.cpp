@@ -158,7 +158,7 @@ int Mapper1::readByteFrom(int address)
 size_t Mapper1::stateSize()
 {
   int sPrgRam = sizeof(int)*0x2000;
-  int sOtherInts = sizeof(int)*5;
+  int sOtherInts = sizeof(int)*9;
   return sPrgRam + sOtherInts + sizeof(bool);
 }
 
@@ -170,8 +170,8 @@ char* Mapper1::stateData()
   bufferIndex+=sizeof(int)*0x2000;
   memcpy(buffer+bufferIndex, &prgRamEnabled, sizeof(bool));
   bufferIndex+=sizeof(bool);
-  int otherValues[5] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode};
-  memcpy(buffer+bufferIndex, otherValues, 5*sizeof(int));
+  int otherValues[9] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode, prgBank1Index, prgBank2Index, chrBank1Index, chrBank2Index};
+  memcpy(buffer+bufferIndex, otherValues, 9*sizeof(int));
   return buffer;
 }
 
@@ -182,11 +182,15 @@ void Mapper1::loadState(char* buffer)
   bufferIndex+=sizeof(int)*0x2000;
   memcpy(&prgRamEnabled, buffer+bufferIndex, sizeof(bool));
   bufferIndex+=sizeof(bool);
-  int otherValues[5];
-  memcpy(otherValues, buffer+bufferIndex, 5*sizeof(int));
+  int otherValues[9];
+  memcpy(otherValues, buffer+bufferIndex, 9*sizeof(int));
   prgBankIndex = otherValues[0];
   shiftRegister = otherValues[1];
   shiftIndex = otherValues[2];
   prgBankMode = otherValues[3];
   chrBankMode = otherValues[4];
+  prgBank1Index = otherValues[5];
+  prgBank2Index = otherValues[6];
+  chrBank1Index = otherValues[7];
+  chrBank2Index = otherValues[8];
 }
