@@ -10,6 +10,7 @@ Mapper1::Mapper1(char* file) : Mapper(file)
   prgBankMode = PRG_SWITCH_FIRST_16;
   chrBankMode = CHR_SWITCH_2x4;
   prgBankIndex = 0;
+  prgRamEnabled = false;
   updatePRGIndexes();
 }
 
@@ -119,7 +120,7 @@ void Mapper1::writeCHR1(int value)
 
 void Mapper1::writePRG(int value)
 {
-  prgRamEnabled = (value & 0x10);
+  prgRamEnabled = !(value & 0x10);
   prgBankIndex = (value & 0xF);
   updatePRGIndexes();
 }

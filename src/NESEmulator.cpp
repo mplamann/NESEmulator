@@ -14,8 +14,10 @@
 #include <iomanip>
 using namespace std;
 
-//#define RUN_TEST
 #define USE_AUDIO
+
+#define OSX
+//#define IOS
 
 const int FRAMERATE = 60;
 
@@ -83,7 +85,6 @@ int main(int argc, char **argv)
     { cleanup(); return -1; }
 #endif
 
-#ifndef RUN_TEST
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
@@ -97,6 +98,7 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
+  //memory->loadFileToRAM("../ROMs/Final Fantasy.nes");
   memory->loadFileToRAM("../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
@@ -110,17 +112,6 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
   cpu->setS(0xFD);
-#endif
-
-#ifdef RUN_TEST
-  memory->loadFileToRAM("../ROMs/nestest.nes");
-  cout << "ROM Loaded\n";
-  cpu->setPC(0xC000);
-  cpu->setS(0xFD);
-
-  while (true)
-    cpu->RunInstruction();
-#endif
 
   cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
