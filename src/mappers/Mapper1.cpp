@@ -20,11 +20,16 @@ Mapper1::~Mapper1(void)
 
 void Mapper1::writeByteTo(int address, int value)
 {
+#ifdef MAPPER_DEBUG
+  if (address > 0x8000)
+    cout << "Mapper \"" << address << "\" = " << value << "\n";
+#endif
   if (address >= 0x6000 && address < 0x8000)
     {
       if (prgRamEnabled)
 	{
 	  prgRam[address-0x6000] = value;
+	  return;
 	}
       else
 	{
@@ -38,10 +43,12 @@ void Mapper1::writeByteTo(int address, int value)
       shiftIndex = 0;
       shiftRegister = 0;
       prgBankMode = PRG_SWITCH_FIRST_16;
+      return;
     }
   
-  if (shiftIndex == 5)
+  if (shiftIndex >= 5)
     {
+      cout << "Shift full...";
       switch (address & 0xF000)
 	{
 	case 0x8000:
@@ -60,14 +67,20 @@ void Mapper1::writeByteTo(int address, int value)
 	case 0xF000:
 	  writePRG(shiftRegister);
 	  break;
+	default:
+	  cout << "Unknown thingy: " << address << "\n";
 	}
       shiftRegister = 0;
       shiftIndex = 0;
+      cout << "Emptied.\n";
     }
 }
 
 void Mapper1::writeControl(int value)
 {
+#ifdef MAPPER_DEBUG
+  cout << "Control set to " << value << "\n";
+#endif
   switch (value & 0x3)
     {
     case 0:
@@ -105,6 +118,9 @@ void Mapper1::writeControl(int value)
 
 void Mapper1::writeCHR0(int value)
 {
+#ifdef MAPPER_DEBUG
+  cout << "Bankswitch CHR0 to bank " << value << "\n";
+#endif
   chrBank1Index = value;
   if (chrBankMode == CHR_SWITCH_8)
     {
@@ -115,11 +131,17 @@ void Mapper1::writeCHR0(int value)
 
 void Mapper1::writeCHR1(int value)
 {
+#ifdef MAPPER_DEBUG
+  cout << "Bankswitch CHR1 to bank " << value << "\n";
+#endif
   chrBank2Index = value;
 }
 
 void Mapper1::writePRG(int value)
 {
+#ifdef MAPPER_DEBUG
+  cout << "Bankswitch PRG to bank " << value << "\n";
+#endif
   prgRamEnabled = !(value & 0x10);
   prgBankIndex = (value & 0xF);
   updatePRGIndexes();

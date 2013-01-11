@@ -99,13 +99,13 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
   //memory->loadFileToRAM("../ROMs/Final Fantasy.nes");
-  memory->loadFileToRAM("../ROMs/Mega Man 2.nes");
+  //memory->loadFileToRAM("../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
   //memory->loadFileToRAM("../ROMs/Zelda.nes");
   //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
-  //memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
+  memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
   //memory->loadFileToRAM("../ROMs/Excitebike.nes");
   //memory->loadFileToRAM("../ROMs/Galaxian.nes");
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
