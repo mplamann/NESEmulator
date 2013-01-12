@@ -1,5 +1,7 @@
 #include "Mapper1.h"
 #include <iostream>
+#include <stdlib.h>
+#include <cstring>
 using namespace std;
 
 Mapper1::Mapper1(char* file) : Mapper(file)
@@ -48,7 +50,9 @@ void Mapper1::writeByteTo(int address, int value)
   
   if (shiftIndex >= 5)
     {
+#ifdef MAPPER_DEBUG
       cout << "Shift full...";
+#endif
       switch (address & 0xF000)
 	{
 	case 0x8000:
@@ -72,7 +76,9 @@ void Mapper1::writeByteTo(int address, int value)
 	}
       shiftRegister = 0;
       shiftIndex = 0;
+#ifdef MAPPER_DEBUG
       cout << "Emptied.\n";
+#endif
     }
 }
 

@@ -3,7 +3,7 @@
 //#define CPU_DEBUG
 //#define PPU_DEBUG
 //#define PPU_WRITE_LOG
-#define MAPPER_DEBUG
+//#define MAPPER_DEBUG
 
 const int ADC_Imm = 0x69;
 const int ADC_Zp = 0x65;

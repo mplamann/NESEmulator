@@ -3,7 +3,6 @@
 #include "Util.h"
 #include "MemoryState.h"
 #include <allegro5/allegro.h>
-#include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
 
 class PpuState
@@ -14,6 +13,7 @@ class PpuState
   ALLEGRO_DISPLAY* display;
   ALLEGRO_DISPLAY* nametableDisplay;
   ALLEGRO_DISPLAY* paletteDisplay;
+  ALLEGRO_COLOR blackColor;
   int cycles;
   ALLEGRO_VERTEX pointList[256*224];
   int vScroll; // Vertical scroll is preserved during the entire frame.

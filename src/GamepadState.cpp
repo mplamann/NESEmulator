@@ -1,6 +1,5 @@
 #include "GamepadState.h"
 #include <allegro5/allegro.h>
-#include <allegro5/allegro_native_dialog.h>
 #include <iostream>
 #include "serial.h"
 using namespace std;
@@ -34,7 +33,7 @@ bool GamepadState::initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue)
   cout << "Initializing gamepad...";
   if (!al_install_keyboard())
     {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to initialize keyboard!", NULL, NULL);
+      cout << "Error! Failed to initialize keyboard.\n";
       return false;
     }
   al_register_event_source(event_queue, al_get_keyboard_event_source());

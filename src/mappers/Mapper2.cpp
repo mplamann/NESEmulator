@@ -1,5 +1,7 @@
 #include "Mapper2.h"
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 using namespace std;
 
 Mapper2::Mapper2(char* file) : Mapper(file)
@@ -13,7 +15,7 @@ Mapper2::~Mapper2(void)
 {
 }
 
-void Mapper2::writeByteTo(int address, int value)
+void Mapper2::writeByteTo(int, int value)
 {
   /*if (address < 0x8000)
     {

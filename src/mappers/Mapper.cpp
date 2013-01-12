@@ -106,7 +106,8 @@ size_t Mapper::stateSize()
 
 char* Mapper::stateData()
 {
-  return (char*)malloc(sizeof(char)*stateSize());
+  //return (char*)malloc(sizeof(char)*stateSize());
+  return new char[stateSize()];
 }
 
 void Mapper::loadState(char* ignored)

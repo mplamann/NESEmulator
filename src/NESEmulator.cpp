@@ -1,5 +1,4 @@
 #include <allegro5/allegro.h>
-#include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_audio.h>
 
 
@@ -12,12 +11,10 @@
 #include <time.h>
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 using namespace std;
 
-#define USE_AUDIO
-
-#define OSX
-//#define IOS
+//#define USE_AUDIO
 
 const int FRAMERATE = 60;
 
@@ -30,7 +27,9 @@ CpuState* cpu;
 MemoryState* memory;
 PpuState* ppu;
 GamepadState* gamepad;
+#ifdef USE_AUDIO
 ApuState* apu;
+#endif
 
 bool usingArduino;
 
@@ -51,7 +50,7 @@ int scanline = 241; // This is the scanline that Nintendulator starts on
 bool shouldSaveState = false;
 bool shouldLoadState = false;
 
-int main(int argc, char **argv)
+int main(int, char**)
 {
   cout << hex << uppercase;
   cpu = new CpuState();
@@ -99,13 +98,13 @@ int main(int argc, char **argv)
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
   //memory->loadFileToRAM("../ROMs/Final Fantasy.nes");
-  //memory->loadFileToRAM("../ROMs/Mega Man 2.nes");
+  memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
   //memory->loadFileToRAM("../ROMs/Zelda.nes");
   //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
-  memory->loadFileToRAM("../ROMs/Dragon Warrior 2.nes");
+  //memory->loadFileToRAM((char*)"../ROMs/Dragon Warrior 2.nes");
   //memory->loadFileToRAM("../ROMs/Excitebike.nes");
   //memory->loadFileToRAM("../ROMs/Galaxian.nes");
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
@@ -227,7 +226,9 @@ void renderFrame()
     }
   frames_done++;
 
+#ifdef USE_AUDIO
   apu->finishFrame();
+#endif
 }
 
 bool setupAllegroEvents()
@@ -235,8 +236,7 @@ bool setupAllegroEvents()
   cout << "Initializing Allegro...";
   if (!al_init())
     {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to initialize allegro!", NULL, NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to initialize Allegro.\n";
       return false;
     }
   cout << "Done.\n";
@@ -244,8 +244,7 @@ bool setupAllegroEvents()
   event_queue = al_create_event_queue();
   if (!event_queue)
     {
-      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to create event queue.",NULL,NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to create event queue.\n";
       return false;
     }
   cout << "Done.\n";
@@ -285,12 +284,16 @@ void saveState()
   char* memoryData;
   char* cpuData;
   char* ppuData;
+#ifdef USE_AUDIO
   apu_snapshot_t* apuData = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
+#endif
 
   memoryData = memory->stateData(&memorySize);
   cpuData = cpu->stateData(&cpuSize);
   ppuData = ppu->stateData(&ppuSize);
+#ifdef USE_AUDIO
   apu->apu->save_snapshot(apuData);
+#endif
 
   cout << "Header fields are " << sizeof(size_t) << " bytes.\n";
   
@@ -311,7 +314,9 @@ void saveState()
   fwrite(memoryData, sizeof(char), memorySize, fileStream);
   fwrite(cpuData, sizeof(char), cpuSize, fileStream);
   fwrite(ppuData, sizeof(char), ppuSize, fileStream);
+#ifdef USE_AUDIO
   fwrite(apuData, sizeof(apu_snapshot_t), 1, fileStream);
+#endif
   fclose(fileStream);
 
   free(memoryData);
@@ -330,7 +335,9 @@ void loadState()
   char* memoryData;
   char* cpuData;
   char* ppuData;
+#ifdef USE_AUDIO
   apu_snapshot_t* apuData;
+#endif
 
   FILE* fileStream = fopen("state.sav", "rb");
   fread(header, sizeof(size_t), 3, fileStream);
@@ -338,19 +345,25 @@ void loadState()
   memoryData = (char*)malloc(header[0]*sizeof(char));
   cpuData = (char*)malloc(header[1]*sizeof(char));
   ppuData = (char*)malloc(header[2]*sizeof(char));
+#ifdef USE_AUDIO
   apuData = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
+#endif
   
   fread(memoryData, sizeof(char), header[0], fileStream);
   fread(cpuData, sizeof(char), header[1], fileStream);
   fread(ppuData, sizeof(char), header[2], fileStream);
+#ifdef USE_AUDIO
   fread(apuData, sizeof(apu_snapshot_t), 1, fileStream);
+#endif
   
   fclose(fileStream);
 
   memory->loadState(memoryData, header[0]);
   cpu->loadState(cpuData, header[1]);
   ppu->loadState(ppuData, header[2]);
+#ifdef USE_AUDIO
   apu->apu->load_snapshot(*apuData);
+#endif
 
   free(memoryData);
   free(cpuData);

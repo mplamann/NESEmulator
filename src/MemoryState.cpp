@@ -247,7 +247,7 @@ void MemoryState::ppuWriteByteTo(int address, int value)
     palette[(address-0x3F00) % 0x20] = value & 0xFF; // Rest of RAM is just palette mirrored
 }
 
-int MemoryState::apuReadByteFrom(void* user_data, unsigned address)
+int MemoryState::apuReadByteFrom(void*, unsigned address)
 {
   return readByteFrom(address);
 }
@@ -513,7 +513,7 @@ char* MemoryState::stateData(size_t* size)
   return buffer;
 }
 
-void MemoryState::loadState(char* buffer, size_t size)
+void MemoryState::loadState(char* buffer, size_t)
 {
   int sRam = RAM_SIZE*sizeof(unsigned char);
   int sPalette = 0x20*sizeof(unsigned char);
@@ -524,7 +524,6 @@ void MemoryState::loadState(char* buffer, size_t size)
   int sPpuToggles = 2*sizeof(int);
   int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
   int sPpuRegs = 8*sizeof(int);
-  int sMapper = mapper->stateSize();
   int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
   int bufferIndex = 0;
   

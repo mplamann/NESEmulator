@@ -345,8 +345,6 @@ void CpuState::printLog()
  int arg1 = memory->readByteFrom(PC+1);
  int arg2 = memory->readByteFrom(PC+2);
  
- int lastPC = PC;
- 
  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << nameForOpcode(opcode) << "                             ";
  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S;
  
@@ -372,7 +370,7 @@ bool CpuState::RunInstruction()
 }
 
 
-void CpuState::RunForCycles(float cycle_count, int scanline)
+void CpuState::RunForCycles(float cycle_count, int)
 {
   double fpart, ipart;
   fpart = modf(cycle_count, &ipart);
@@ -428,11 +426,11 @@ char* CpuState::stateData(size_t* size)
   return buffer;
 }
 
-void CpuState::loadState(char* buffer, size_t size)
+void CpuState::loadState(char* buffer, size_t)
 {
   int sizeOfRegs = sizeof(int) * 5;  // A,X,Y,S,PC
   int sizeOfFlags = sizeof(int) * 7; // N,C,Z,I,D,V,B
-  int sizeOfCycleData = sizeof(int)*2 + sizeof(long); // cycles, total_cycles, cycles_remain
+  //int sizeOfCycleData = sizeof(int)*2 + sizeof(long); // cycles, total_cycles, cycles_remain
   int sizeOfAccumulator = sizeof(float);
   int bufferIndex = 0;
   int regs[5];

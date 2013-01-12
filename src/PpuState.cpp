@@ -1,6 +1,6 @@
-#import "PpuState.h"
-#import "PpuColors.h"
-#import <iostream>
+#include "PpuState.h"
+#include "PpuColors.h"
+#include <iostream>
 using namespace std;
 
 bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
@@ -8,12 +8,12 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
   height = 224;
   width = 256;
   scale = 2;
+  blackColor = al_map_rgb(0,0,0);
   cout << "Initializing display...";
   display = al_create_display(width*scale, height*scale);
   if (!display)
     {
-      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to initialize display.\n";
       return false;
     }
   al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -23,8 +23,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
   nametableDisplay = al_create_display(2*width, height);
   if (!nametableDisplay)
     {
-      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to initialize ppu debug display.\n";
       return false;
       }
   al_set_window_title(nametableDisplay, "Nametables");
@@ -33,8 +32,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
   paletteDisplay = al_create_display(512,64);
   if (!paletteDisplay)
     {
-      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize display!", NULL,NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to initialize palette display.\n";
       return false;
     }
   al_set_window_title(paletteDisplay, "Palettes");
@@ -42,8 +40,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 
   if (!al_init_primitives_addon())
     {
-      al_show_native_message_box(NULL,"Critical Error!",NULL,"failed to initialize primitives!", NULL,NULL);
-      cout << "Error!\n";
+      cout << "Error! Failed to initialize primitives\n";
       return false;
     }
   
@@ -93,7 +90,7 @@ void PpuState::renderScanline(int scanline)
       scanlinePoints[i].x = i;
       scanlinePoints[i].y = (scanline-8)*scale;
       scanlinePoints[i].z = 0;
-      scanlinePoints[i].color = al_map_rgb(0,0,0);
+      scanlinePoints[i].color = blackColor;
     }
   scanline += vScroll & 0x07;
   ALLEGRO_BITMAP* bitmap = al_get_backbuffer(display);
@@ -102,7 +99,6 @@ void PpuState::renderScanline(int scanline)
     {
       int tileY = scanline / 8;
       int lineInTile = scanline - (tileY*8);
-      int attributeY = tileY / 4;
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
       int upperLimit = (memory->PPUSCROLLX & 0x07) ? 33 : 32;
       for (int i = 0; i < upperLimit; i++)
@@ -117,7 +113,7 @@ void PpuState::renderScanline(int scanline)
 	    {
 	      if (i == 0 && x == 0)
 		x = (memory->PPUSCROLLX & 0x07);
-	      if (!(memory->PPUMASK & 0x02) && (xOffset+x)&0xFF < 8)
+	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
 		continue;
 	      int andOperator = 1<<(7-x);
 	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
@@ -190,7 +186,7 @@ void PpuState::renderScanline(int scanline)
 	  for (int x = 0; x < 8; x++)
 	    {
 	      // Check if this is hidden by PPUMASK
-	      if (!(memory->PPUMASK & 0x02) && (xOffset+x)&0xFF < 8)
+	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
 		continue;
 	      int andOperator = 1<<(7-x);      
 	      if (spriteFlags&0x40) // Check for horizontal flip

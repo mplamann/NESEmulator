@@ -1,6 +1,6 @@
 #pragma once
-#import <allegro5/allegro.h>
-#import "serial.h"
+#include <allegro5/allegro.h>
+#include "serial.h"
 
 struct gamepad {
   bool A;

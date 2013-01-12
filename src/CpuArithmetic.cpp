@@ -15,7 +15,6 @@ bool CpuArithmetic::RunInstruction()
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
-  int value = 0;
   switch (opcode)
     {
     case ADC_Imm:

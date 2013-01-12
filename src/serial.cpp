@@ -52,7 +52,7 @@
 			GetLastError(), 0, (s), sizeof(s), NULL)
   #define QUERYDOSDEVICE_BUFFER_SIZE 262144
 #else
-  #error "This platform is unsupported, sorry"
+//#error "This platform is unsupported, sorry"
 #endif
 
 

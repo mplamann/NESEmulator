@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MACOSX
+//#define MACOSX
 
 #if defined(LINUX)
 #include <termios.h>

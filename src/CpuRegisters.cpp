@@ -422,17 +422,17 @@ bool CpuRegisters::pageBoundaryCrossed(int address, int offset)
   return false;
 }
 
-int CpuRegisters::addrZp(int arg1, int arg2)
+int CpuRegisters::addrZp(int arg1, int)
 {
   return arg1;
 }
 
-int CpuRegisters::addrZpx(int arg1, int arg2)
+int CpuRegisters::addrZpx(int arg1, int)
 {
   return (arg1 + X) & 0xFF;
 }
 
-int CpuRegisters::addrZpy(int arg1, int arg2)
+int CpuRegisters::addrZpy(int arg1, int)
 {
   return (arg1 + Y) & 0xFF;
 }
@@ -456,14 +456,14 @@ int CpuRegisters::addrAbsy(int arg1, int arg2)
   return (arg1 + (arg2<<8) + Y) & 0xFFFF;
 }
 
-int CpuRegisters::addrIndx(int arg1, int arg2)
+int CpuRegisters::addrIndx(int arg1, int)
 {
   int zpAddress = (arg1 + X) % 256;
   int indirectAddress = memory->readByteFrom((zpAddress)) + (memory->readByteFrom((zpAddress+1)%0x100)<<8);
   return indirectAddress;
 }
 
-int CpuRegisters::addrIndy(int arg1, int arg2)
+int CpuRegisters::addrIndy(int arg1, int)
 {
   int indirectAddress = memory->readByteFrom(arg1) + (memory->readByteFrom((arg1 + 1) & 0xFF) << 8);
   if (pageBoundaryCrossed(indirectAddress,Y))

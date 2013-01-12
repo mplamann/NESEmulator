@@ -3,7 +3,6 @@
 #include "CpuState.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_native_dialog.h>
 #include <iostream>
 #include <math.h>
 using namespace std;
@@ -45,7 +44,7 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
   cout << "Initializing audio...";
   if (!al_install_audio())
     {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to initialize audio!", NULL, NULL);
+      cout << "Error! Failed to initialize audio.\n";
       return false;
     }
 
@@ -55,13 +54,13 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
 				  ALLEGRO_AUDIO_DEPTH_INT16, ALLEGRO_CHANNEL_CONF_1);
   if (!stream)
     {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to create stream!", NULL, NULL);
+      cout << "Error! Failed to create audio stream.\n";
       return false;
     }
 
   if (!al_attach_audio_stream_to_mixer(stream, al_get_default_mixer()))
     {
-      al_show_native_message_box(NULL, "Critical Error!", NULL, "failed to attach stream to mixer!", NULL, NULL);
+      cout << "Error! Failed to attach stream to mixer.\n";
       return false;
     }
 
@@ -85,7 +84,7 @@ void ApuState::audioStreamFragment()
 
   if (buf->samples_avail() >= SAMPLES_PER_BUFFER)
     {
-      size_t count = buf->read_samples(fragment, SAMPLES_PER_BUFFER);
+      buf->read_samples(fragment, SAMPLES_PER_BUFFER);
     }
   
   for (int i = 0; i < SAMPLES_PER_BUFFER; i++) {

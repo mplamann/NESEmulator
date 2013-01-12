@@ -20,7 +20,7 @@ class Mapper
   virtual void writeByteTo(int address, int value);
   virtual int ppuReadByteFrom(int address);
   virtual void ppuWriteByteTo(int address, int value);
-  void updatePpuAddr(int address) {}
+  virtual void updatePpuAddr(int) {}
   int mirroring;
 
   virtual size_t stateSize();
