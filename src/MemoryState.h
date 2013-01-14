@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Util.h"
 #include "Mapper.h"
 #include "GamepadState.h"
 #include "ApuState.h"

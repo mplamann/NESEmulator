@@ -1,4 +1,5 @@
 #include "MemoryState.h"
+#include "Util.h"
 #include "CpuState.h"
 #include <iostream>
 #include <iomanip>
