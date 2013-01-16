@@ -428,7 +428,7 @@ void RTS(CpuV2* cpu, int)
   cpu->PC = popFromStack(cpu) + (popFromStack(cpu) << 8) + 1;
 }
 
-void BPL(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->C, argument); }
+void BPL(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->N, argument); }
 void BMI(CpuV2* cpu, int argument) { doBranch(cpu, cpu->N, argument); }
 void BVC(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->V, argument); }
 void BVS(CpuV2* cpu, int argument) { doBranch(cpu, cpu->V, argument); }

@@ -200,7 +200,7 @@ void renderFrame()
       if (scanline == 241 && cpu->cycles > PPU_STARTUP_TIME)
 	{
 	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
-	  cout << "PPUCTRL is " << (int)memory->PPUCTRL << "\n";
+	  cout << "PPUSTATUS is " << (int)memory->PPUCTRL << "\n";
 	  if (memory->PPUCTRL & 0x80)
 	    {
 	      cout << "Sending NMI...";
