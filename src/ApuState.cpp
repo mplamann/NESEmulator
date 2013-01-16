@@ -1,6 +1,6 @@
 #include "ApuState.h"
 #include "MemoryState.h"
-#include "CpuState.h"
+#include "CpuV2.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <iostream>
@@ -29,7 +29,7 @@ void ApuState::setMemory(MemoryState* _memory)
   apu->dmc_reader(dmc_read, memory);
 }
 
-void ApuState::setCpu(CpuState* _cpu)
+void ApuState::setCpu(CpuV2* _cpu)
 { cpu = _cpu; }
 
 ApuState::~ApuState(void)
@@ -73,7 +73,7 @@ void ApuState::finishFrame()
 {
   apu->end_frame(cpu->elapsed());
   buf->end_frame(cpu->elapsed());
-  cpu->incrementTotalCycles(-cpu->elapsed());
+  cpu->cycles -= cpu->elapsed(); //incrementTotalCycles(-cpu->elapsed());
 }
 
 void ApuState::audioStreamFragment()

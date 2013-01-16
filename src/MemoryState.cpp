@@ -1,6 +1,6 @@
 #include "MemoryState.h"
 #include "Util.h"
-#include "CpuState.h"
+#include "CpuV2.h"
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
@@ -42,7 +42,7 @@ void MemoryState::setApu(ApuState* _apu)
   apu = _apu;
 }
 
-void MemoryState::setCpu(CpuState* _cpu)
+void MemoryState::setCpu(CpuV2* _cpu)
 {
   cpu = _cpu;
 }
@@ -310,7 +310,7 @@ void MemoryState::DMA(int address)
       int currentAddress = (address << 8) + i;
       writeByteTo(0x2004,readByteFrom(currentAddress));
     }
-  cpu->incrementCycles(512);
+  cpu->cycles += 512; //incrementCycles(512);
   return;
 }
 

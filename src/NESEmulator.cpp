@@ -2,7 +2,8 @@
 #include <allegro5/allegro_audio.h>
 
 
-#include "CpuState.h"
+//#include "CpuState.h"
+#include "CpuV2.h"
 #include "PpuState.h"
 #include "MemoryState.h"
 #include "GamepadState.h"
@@ -23,7 +24,7 @@ const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
 
 ALLEGRO_EVENT_QUEUE* event_queue;
 ALLEGRO_TIMER* timer;
-CpuState* cpu;
+CpuV2* cpu;
 MemoryState* memory;
 PpuState* ppu;
 GamepadState* gamepad;
@@ -53,13 +54,13 @@ bool shouldLoadState = false;
 int main(int, char**)
 {
   cout << hex << uppercase;
-  cpu = new CpuState();
+  cpu = new CpuV2();
   memory = new MemoryState();
   ppu = new PpuState();
   gamepad = new GamepadState();
 
   ppu->setMemory(memory);
-  cpu->setMemory(memory);
+  cpu->memory = memory;//cpu->setMemory(memory);
   memory->setGamepad(gamepad);
   memory->setCpu(cpu);
 
@@ -87,7 +88,7 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  //memory->loadFileToRAM("../ROMs/Super Mario Bros. (JU) [!].nes");
+  memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
   //memory->loadFileToRAM("../ROMs/MapperTest/mapper2.nes");
   
   //memory->loadFileToRAM("../ROMs/square1/square1.nes");
@@ -98,7 +99,7 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
   //memory->loadFileToRAM("../ROMs/Final Fantasy.nes");
-  memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
+  //memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
   //memory->loadFileToRAM("../ROMs/Zelda.nes");
@@ -110,9 +111,9 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
   //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
-  cpu->setS(0xFD);
+  cpu->S = 0xFD; //cpu->setS(0xFD);
 
-  cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
+  cpu->cycles -= 6; //cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
   // NOTE: Execution starts at address pointed to by RESET vector
   bool done = false;
@@ -196,11 +197,15 @@ void renderFrame()
       //if (usingArduino)
 	//        gamepad->readFromArduino();
 
-      if (scanline == 241 && cpu->getCycles() > PPU_STARTUP_TIME)
+      if (scanline == 241 && cpu->cycles > PPU_STARTUP_TIME)
 	{
 	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
+	  cout << "PPUCTRL is " << (int)memory->PPUCTRL << "\n";
 	  if (memory->PPUCTRL & 0x80)
-	    cpu->doNMI();
+	    {
+	      cout << "Sending NMI...";
+	      cpu->doNMI();
+	    }
 	}
       if (scanline == 0)
 	ppu->startFrame();

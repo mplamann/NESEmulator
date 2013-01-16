@@ -20,6 +20,7 @@ public:
   long cycles;
   int total_cycles;
   int cycles_remain;
+  int elapsed();
   MemoryState* memory;
   
   CpuV2(void);

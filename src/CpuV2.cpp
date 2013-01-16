@@ -1,5 +1,6 @@
 #include "CpuV2.h"
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 using namespace std;
 
@@ -92,6 +93,7 @@ void LDY(CpuV2* cpu, int argument)
 
 void STA(CpuV2* cpu, int argument)
 {
+  cout << "STA Writing " << cpu->A << " to address " << argument << "\n";
   cpu->memory->writeByteTo(argument, cpu->A);
 }
 
@@ -639,8 +641,8 @@ int (*addressingModes[256]) (CpuV2* cpu, int arg1, int arg2) =
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
  imp, inx, imp, inx, zp,  zp,  ZP,  zp,  imp, imm, ACC, imm, ind, ABS, ABS, abs,
  rel, iny, imp, iny, zpx, ZPX, ZPX, zpx, imp, ABY, imp, aby, abx, ABX, ABX, abx,
- imm, INX, imm, INX, ZP,  ZP,  ZP,  ZP,  imp, imm, acc, imm, ABS, abs, ABS, ABS,
- rel, INY, imp, iny, ZPX, zpx, ZPY, ZPY, imp, aby, acc, aby, abx, abx, aby, aby,
+ imm, INX, imm, INX, ZP,  ZP,  ZP,  ZP,  imp, imm, acc, imm, ABS, ABS, ABS, ABS,
+ rel, INY, imp, iny, ZPX, ZPX, ZPY, ZPY, imp, ABY, acc, aby, abx, ABX, aby, aby,
  imm, inx, imm, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, abs, abs, abs, abs,
  rel, iny, imp, iny, zpx, zpx, zpy, zpy, imp, aby, acc, aby, abx, abx, aby, aby,
  imm, inx, imm, INX, zp,  zp,  ZP,  ZP,  imp, imm, acc, imm, abs, abs, ABS, ABS,
@@ -665,6 +667,24 @@ void (*opcodes[256]) (CpuV2* cpu, int argument) =
  BNE, CMP, KIL, DCP, NOP, CMP, DEC, DCP, CLD, CMP, NOP, DCP, NOP, CMP, DEC, DCP,
  CPX, SBC, NOP, ISB, CPX, SBC, INC, ISB, INX, SBC, NOP, SBC, CPX, SBC, INC, ISB,
  BEQ, SBC, KIL, ISB, NOP, SBC, INC, ISB, SED, SBC, NOP, ISB, NOP, SBC, INC, ISB};
+
+const char* opcodeStrings[256] = 
+{"BRK", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO", "PHP", "ORA", "ASL", "ANC", "NOP", "ORA", "ASL", "SLO",
+ "BPL", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO", "CLC", "ORA", "NOP", "SLO", "NOP", "ORA", "ASL", "SLO",
+ "JSR", "AND", "KIL", "RLA", "BIT", "AND", "ROL", "RLA", "PLP", "AND", "ROL", "ANC", "BIT", "AND", "ROL", "RLA",
+ "BMI", "AND", "KIL", "RLA", "NOP", "AND", "ROL", "RLA", "SEC", "AND", "NOP", "RLA", "NOP", "AND", "ROL", "RLA",
+ "RTI", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE", "PHA", "EOR", "LSR", "ALR", "JMP", "EOR", "LSR", "SRE",
+ "BVC", "EOR", "KIL", "SRE", "NOP", "EOR", "LSR", "SRE", "CLI", "EOR", "NOP", "SRE", "NOP", "EOR", "LSR", "SRE",
+ "RTS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA", "PLA", "ADC", "ROR", "ARR", "JMP", "ADC", "ROR", "RRA",
+ "BVS", "ADC", "KIL", "RRA", "NOP", "ADC", "ROR", "RRA", "SEI", "ADC", "NOP", "RRA", "NOP", "ADC", "ROR", "RRA",
+ "NOP", "STA", "NOP", "SAX", "STY", "STA", "STX", "SAX", "DEY", "NOP", "TXA", "XAA", "STY", "STA", "STX", "SAX",
+ "BCC", "STA", "KIL", "AHX", "STY", "STA", "STX", "SAX", "TYA", "STA", "TXS", "TAS", "SHY", "STA", "SHX", "AHX",
+ "LDY", "LDA", "LDX", "LAX", "LDY", "LDA", "LDX", "LAX", "TAY", "LDA", "TAX", "LAX", "LDY", "LDA", "LDX", "LAX",
+ "BCS", "LDA", "KIL", "LAX", "LDY", "LDA", "LDX", "LAX", "CLV", "LDA", "TSX", "LAS", "LDY", "LDA", "LDX", "LAX",
+ "CPY", "CMP", "NOP", "DCP", "CPY", "CMP", "DEC", "DCP", "INY", "CMP", "DEX", "AXS", "CPY", "CMP", "DEC", "DCP",
+ "BNE", "CMP", "KIL", "DCP", "NOP", "CMP", "DEC", "DCP", "CLD", "CMP", "NOP", "DCP", "NOP", "CMP", "DEC", "DCP",
+ "CPX", "SBC", "NOP", "ISB", "CPX", "SBC", "INC", "ISB", "INX", "SBC", "NOP", "SBC", "CPX", "SBC", "INC", "ISB",
+ "BEQ", "SBC", "KIL", "ISB", "NOP", "SBC", "INC", "ISB", "SED", "SBC", "NOP", "ISB", "NOP", "SBC", "INC", "ISB"};
 
 const int cycleMap[] =
   {7, 8, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
@@ -721,6 +741,9 @@ void CpuV2::RunInstruction()
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
 
+  //  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
+  //  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << "\n";
+
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
   opcodes[opcode](this, argument);
@@ -760,6 +783,7 @@ void CpuV2::doRESET()
 
 void CpuV2::doNMI()
 {
+  cout << "NMI!\n";
   cycles += 7;
   int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
   processInterrupt(this, vector);
@@ -770,3 +794,37 @@ void CpuV2::doBRK()
   cycles += 7;
   BRK(this, 0);
 }
+
+int CpuV2::elapsed()
+{
+  return total_cycles - cycles_remain;
+}
+
+char* CpuV2::stateData(size_t* size)
+{
+  return 0x0;
+}
+
+void CpuV2::loadState(char* buffer, size_t size) {}
+
+CpuV2::CpuV2(void)
+{
+  A = 0;
+  X = 0;
+  Y = 0;
+  S = 0xFF;
+  PC = 0;
+  cycles = 0;
+  total_cycles = 0;
+  cycles_remain = 0;
+
+  C = false;
+  Z = false;
+  I = true;
+  D = false;
+  B = false;
+  V = false;
+  N = false;
+}
+
+CpuV2::~CpuV2(void) {}

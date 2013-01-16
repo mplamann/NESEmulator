@@ -6,7 +6,7 @@
 
 #define RAM_SIZE 0x2000
 
-class CpuState;
+class CpuV2;
 
 class MemoryState
 {
@@ -14,7 +14,7 @@ private:
   Mapper* mapper;
   GamepadState* gamepad;
   ApuState* apu;
-  CpuState* cpu;
+  CpuV2* cpu;
   unsigned char RAM[RAM_SIZE];
   unsigned char palette[0x20];
   unsigned char nametable1[0x400];
@@ -33,7 +33,7 @@ public:
   ~MemoryState(void);
   void setGamepad(GamepadState* gpad);
   void setApu(ApuState* apu);
-  void setCpu(CpuState* cpu);
+  void setCpu(CpuV2* cpu);
 
   char* stateData(size_t* size);
   void loadState(char* state, size_t size);
