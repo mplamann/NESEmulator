@@ -1,6 +1,11 @@
 #include "CpuV2.h"
 #include <iostream>
+#include <cmath>
 using namespace std;
+
+const int VECTOR_NMI = 0xFFFA;
+const int VECTOR_RESET = 0xFFFC;
+const int VECTOR_BRK = 0xFFFE;
 
 //------------------------------------------------------------------------------
 // Helper functions
@@ -13,40 +18,48 @@ inline void setNZ(CpuV2* cpu, int value)
   cpu->Z = (value == 0);
 }
 
+inline int pageBoundaryCycles(int address, int offset)
+{
+  int newAddr = address + offset;
+  if ((newAddr & 0xFF00) != (address & 0xFF00))
+    return 1;
+  return 0;
+}
+
 //------------------------------------------------------------------------------
 // Load / Store Operations
 //------------------------------------------------------------------------------
 
-void TAX(CpuV2* cpu, int argument)
+void TAX(CpuV2* cpu, int)
 {
   cpu->X = cpu->A;
   setNZ(cpu, cpu->X);
 }
 
-void TAY(CpuV2* cpu, int argument)
+void TAY(CpuV2* cpu, int)
 {
   cpu->Y = cpu->A;
   setNZ(cpu, cpu->Y);
 }
 
-void TSX(CpuV2* cpu, int argument)
+void TSX(CpuV2* cpu, int)
 {
   cpu->X = cpu->S;
   setNZ(cpu, cpu->X);
 }
 
-void TXS(CpuV2* cpu, int argument)
+void TXS(CpuV2* cpu, int)
 {
   cpu->S = cpu->X;
 }
 
-void TXA(CpuV2* cpu, int argument)
+void TXA(CpuV2* cpu, int)
 {
   cpu->A = cpu->X;
   setNZ(cpu, cpu->A);
 }
 
-void TYA(CpuV2* cpu, int argument)
+void TYA(CpuV2* cpu, int)
 {
   cpu->A = cpu->Y;
   setNZ(cpu, cpu->A);
@@ -96,33 +109,165 @@ void STY(CpuV2* cpu, int argument)
 // Flag Operations
 //------------------------------------------------------------------------------
 
-void CLC(CpuV2* cpu, int argument) { cpu->C = false; }
-void SEC(CpuV2* cpu, int argument) { cpu->C = true; }
-void CLI(CpuV2* cpu, int argument) { cpu->I = false; }
-void SEI(CpuV2* cpu, int argument) { cpu->I = true; }
-void CLV(CpuV2* cpu, int argument) { cpu->V = false; }
-void CLD(CpuV2* cpu, int argument) { cpu->D = false; }
-void SED(CpuV2* cpu, int argument) { cpu->D = true; }
+void CLC(CpuV2* cpu, int) { cpu->C = false; }
+void SEC(CpuV2* cpu, int) { cpu->C = true; }
+void CLI(CpuV2* cpu, int) { cpu->I = false; }
+void SEI(CpuV2* cpu, int) { cpu->I = true; }
+void CLV(CpuV2* cpu, int) { cpu->V = false; }
+void CLD(CpuV2* cpu, int) { cpu->D = false; }
+void SED(CpuV2* cpu, int) { cpu->D = true; }
+
+//------------------------------------------------------------------------------
+// Boolean Operations
+//------------------------------------------------------------------------------
+
+void AND(CpuV2* cpu, int argument)
+{
+  cpu->A &= argument;
+  setNZ(cpu, cpu->A);
+}
+
+void SAX(CpuV2* cpu, int argument)
+{
+  cpu->memory->writeByteTo(argument, cpu->A & cpu->X);
+}
+
+void EOR(CpuV2* cpu, int argument)
+{
+  cpu->A ^= argument;
+  setNZ(cpu, cpu->A);
+}
+
+void ORA(CpuV2* cpu, int argument)
+{
+  cpu->A |= argument;
+  setNZ(cpu, cpu->A);
+}
+
+void ASL(CpuV2* cpu, int argument)
+{
+  int value = argument << 1;
+  if (argument == -1)
+    value = cpu->A << 1;
+  cpu->C = (argument & 0x80);
+  value &= 0xFF;
+  if (argument == -1)
+    cpu->A = value;
+  else
+    cpu->memory->writeByteTo(argument, value);
+  setNZ(cpu, value);
+}
+
+void LSR(CpuV2* cpu, int argument)
+{
+  int value = argument >> 1;
+  if (argument == -1)
+    value = cpu->A >> 1;
+  cpu->C = argument & 0x01;
+  value &= 0x7F;
+  if (argument == -1)
+    cpu->A = value;
+  else
+    cpu->memory->writeByteTo(argument, value);
+  setNZ(cpu, value);
+}
+
+void ROL(CpuV2* cpu, int argument)
+{
+  int value = argument << 1;
+  if (argument == -1)
+    value = cpu->A << 1;
+  value += (int)cpu->C;
+  cpu->C = (value > 0xFF);
+  value &= 0xFF;
+  if (argument == -1)
+    cpu->A = value;
+  else
+    cpu->memory->writeByteTo(argument, value);
+  setNZ(cpu, value);
+}
+
+void ROR(CpuV2* cpu, int argument)
+{
+  int value = argument;
+  if (argument == -1)
+    value = cpu->A;
+  if (cpu->C)
+    value |= 0x100;
+  cpu->C = (value & 0x01);
+  value = value >> 1;
+  value &= 0xFF;
+  if (argument == -1)
+    cpu->A = value;
+  else
+    cpu->memory->writeByteTo(argument, value);
+  setNZ(cpu, value);
+}
+
+void SLO(CpuV2* cpu, int argument)
+{
+  ASL(cpu, argument);
+  ORA(cpu, cpu->memory->readByteFrom(argument));
+}
+
+void RLA(CpuV2* cpu, int argument)
+{
+  ROL(cpu, argument);
+  AND(cpu, cpu->memory->readByteFrom(argument));
+}
+
+void SRE(CpuV2* cpu, int argument)
+{
+  LSR(cpu, argument);
+  EOR(cpu, cpu->memory->readByteFrom(argument));
+}
+
+void BIT(CpuV2* cpu, int argument)
+{
+  cpu->Z = ((cpu->A & argument) == 0);
+  cpu->V = (0x49 & argument);
+  cpu->N = (0x80 & argument);
+}
 
 //------------------------------------------------------------------------------
 // Stack Operations
 //------------------------------------------------------------------------------
 
-void PHA(CpuV2* cpu, int argument)
+// Helper functions
+//-----------------
+
+void pushToStack(CpuV2* cpu, int value)
 {
-  pushToStack(cpu->A);
+  cpu->memory->writeByteTo(0x100 | (cpu->S-- & 0xFF), value);
 }
 
-void PLA(CpuV2* cpu, int argument)
+int popFromStack(CpuV2* cpu)
 {
+  return cpu->memory->readByteFrom(0x100 | (++cpu->S & 0xFF));
 }
 
-void PHP(CpuV2* cpu, int argument)
+// Opcodes
+//--------
+
+void PHA(CpuV2* cpu, int)
 {
+  pushToStack(cpu, cpu->A);
 }
 
-void PLP(CpuV2* cpu, int argument)
+void PLA(CpuV2* cpu, int)
 {
+  cpu->A = popFromStack(cpu);
+  setNZ(cpu, cpu->A);
+}
+
+void PHP(CpuV2* cpu, int)
+{
+  pushToStack(cpu, cpu->getP() | (1<<4));
+}
+
+void PLP(CpuV2* cpu, int)
+{
+  cpu->setP(popFromStack(cpu));
 }
 
 //------------------------------------------------------------------------------
@@ -195,14 +340,14 @@ void DEC(CpuV2* cpu, int argument)
   modMemory(cpu, argument, -1);
 }
 
-void DEX(CpuV2* cpu, int argument)
+void DEX(CpuV2* cpu, int)
 {
   cpu->X--;
   cpu->X &= 0xFF;
   setNZ(cpu, cpu->X);
 }
 
-void DEY(CpuV2* cpu, int argument)
+void DEY(CpuV2* cpu, int)
 {
   cpu->Y--;
   cpu->Y &= 0xFF;
@@ -214,14 +359,14 @@ void INC(CpuV2* cpu, int argument)
   modMemory(cpu, argument, 1);
 }
 
-void INX(CpuV2* cpu, int argument)
+void INX(CpuV2* cpu, int)
 {
   cpu->X++;
   cpu->X &= 0xFF;
   setNZ(cpu, cpu->X);
 }
 
-void INY(CpuV2* cpu, int argument)
+void INY(CpuV2* cpu, int)
 {
   cpu->Y++;
   cpu->Y &= 0xFF;
@@ -234,158 +379,142 @@ void ISB(CpuV2* cpu, int argument)
   SBC(cpu, cpu->memory->readByteFrom(argument));
 }
 
-void RRA(CpuV2* cpu, int argument)
+void RRA(CpuV2*, int)
 {
   cout << "RRA Unimplemented!\n"; // TODO: FIXME
 }
 
+//------------------------------------------------------------------------------
+// Branches and Jumps
+//------------------------------------------------------------------------------
+
+// Helper Functions
+//-----------------
+
+void doBranch(CpuV2* cpu, bool condition, int offset)
+{
+  if (!condition)
+    return;
+  cpu->cycles += pageBoundaryCycles(cpu->PC, offset);
+  cpu->cycles++;
+  cpu->PC += offset;
+}
+
+// Opcodes
+//--------
+
+void JMP(CpuV2* cpu, int argument)
+{
+  cpu->PC = argument;
+}
+
+void JSR(CpuV2* cpu, int argument)
+{
+  pushToStack(cpu, ((cpu->PC+2) >> 8) & 0xFF);
+  pushToStack(cpu, (cpu->PC+2) & 0xFF);
+  cpu->PC = argument;
+}
+
+void RTI(CpuV2* cpu, int)
+{
+  cpu->setP(popFromStack(cpu));
+  cpu->PC = popFromStack(cpu) + (popFromStack(cpu) << 8);
+}
+
+void RTS(CpuV2* cpu, int)
+{
+  cpu->PC = popFromStack(cpu) + (popFromStack(cpu) << 8) + 1;
+}
+
+void BPL(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->C, argument); }
+void BMI(CpuV2* cpu, int argument) { doBranch(cpu, cpu->N, argument); }
+void BVC(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->V, argument); }
+void BVS(CpuV2* cpu, int argument) { doBranch(cpu, cpu->V, argument); }
+void BCC(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->C, argument); }
+void BCS(CpuV2* cpu, int argument) { doBranch(cpu, cpu->C, argument); }
+void BNE(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->Z, argument); }
+void BEQ(CpuV2* cpu, int argument) { doBranch(cpu, cpu->Z, argument); }
+
+//------------------------------------------------------------------------------
+// Interrupt Handling
+//------------------------------------------------------------------------------
+
+// Helper functions
+//-----------------
+
+void processInterrupt(CpuV2* cpu, int vector)
+{
+  pushToStack(cpu, (cpu->PC >> 8) & 0xFF);
+  pushToStack(cpu, cpu->PC & 0xFF);
+  pushToStack(cpu, cpu->getP());
+  cpu->I = true;
+  cpu->PC = vector;
+}
+
+// Opcodes
+//--------
+
+void BRK(CpuV2* cpu, int)
+{
+  int vector = cpu->memory->readByteFrom(VECTOR_BRK) + (cpu->memory->readByteFrom(VECTOR_BRK+1) << 8);
+  processInterrupt(cpu, vector);
+}
 
 //------------------------------------------------------------------------------
 // ??????????
 //------------------------------------------------------------------------------
 
-void AND(CpuV2* cpu, int argument)
+void ANC(CpuV2*, int)
 {
+  cout << "ANC unimplemented.\n";
 }
 
-void ASL(CpuV2* cpu, int argument)
+void ALR(CpuV2*, int)
 {
+  cout << "ALR unimplemented.\n";
 }
 
-void BIT(CpuV2* cpu, int argument)
+void ARR(CpuV2*, int)
 {
+  cout << "ARR unimplemented.\n";
 }
 
-void BPL(CpuV2* cpu, int argument)
+void XAA(CpuV2*, int)
 {
+  cout << "XAA unimplemented.\n";
 }
 
-void BMI(CpuV2* cpu, int argument)
+void AHX(CpuV2*, int)
 {
+  cout << "AHX unimplemented.\n";
 }
 
-void BVC(CpuV2* cpu, int argument)
+void TAS(CpuV2*, int)
 {
+  cout << "TAS unimplemented.\n";
 }
 
-void BVS(CpuV2* cpu, int argument)
+void SHY(CpuV2*, int)
 {
+  cout << "SHY unimplemented.\n";
 }
 
-void BCC(CpuV2* cpu, int argument)
+void SHX(CpuV2*, int)
 {
+  cout << "SHX unimplemented.\n";
 }
 
-void BCS(CpuV2* cpu, int argument)
+void LAS(CpuV2*, int)
 {
+  cout << "LAS unimplemented.\n";
 }
 
-void BNE(CpuV2* cpu, int argument)
+void AXS(CpuV2*, int)
 {
+  cout << "AXS unimplemented.\n";
 }
 
-void BEQ(CpuV2* cpu, int argument)
-{
-}
-
-void BRK(CpuV2* cpu, int argument)
-{
-}
-
-void EOR(CpuV2* cpu, int argument)
-{
-}
-
-void JMP(CpuV2* cpu, int argument)
-{
-}
-
-void JSR(CpuV2* cpu, int argument)
-{
-}
-
-void LSR(CpuV2* cpu, int argument)
-{
-}
-
-
-void ORA(CpuV2* cpu, int argument)
-{
-}
-
-void ROL(CpuV2* cpu, int argument)
-{
-}
-
-void ROR(CpuV2* cpu, int argument)
-{
-}
-
-void RTI(CpuV2* cpu, int argument)
-{
-}
-
-void RTS(CpuV2* cpu, int argument)
-{
-}
-
-void SLO(CpuV2* cpu, int argument)
-{
-}
-
-void ANC(CpuV2* cpu, int argument)
-{
-}
-
-void RLA(CpuV2* cpu, int argument)
-{
-}
-
-void SRE(CpuV2* cpu, int argument)
-{
-}
-
-void ALR(CpuV2* cpu, int argument)
-{
-}
-
-void ARR(CpuV2* cpu, int argument)
-{
-}
-
-void SAX(CpuV2* cpu, int argument)
-{
-}
-
-void XAA(CpuV2* cpu, int argument)
-{
-}
-
-void AHX(CpuV2* cpu, int argument)
-{
-}
-
-void TAS(CpuV2* cpu, int argument)
-{
-}
-
-void SHY(CpuV2* cpu, int argument)
-{
-}
-
-void SHX(CpuV2* cpu, int argument)
-{
-}
-
-void LAS(CpuV2* cpu, int argument)
-{
-}
-
-void AXS(CpuV2* cpu, int argument)
-{
-}
-
-void KIL(CpuV2*, int) {}
+void KIL(CpuV2*, int) { cout << "KIL called. Is that really what you want?\n"; }
 void NOP(CpuV2*, int) {}
 
 //------------------------------------------------------------------------------
@@ -393,14 +522,6 @@ void NOP(CpuV2*, int) {}
 // CAPS = returns address referred to by arguments
 // lower = returns memory pointed to by that address
 //------------------------------------------------------------------------------
-
-inline int pageBoundaryCycles(int address, int offset)
-{
-  int newAddr = address + offset;
-  if ((newAddr & 0xFF00) != (address & 0xFF00))
-    return 1;
-  return 0;
-}
 
 int imp(CpuV2* cpu, int, int) // Implied - doesn't take an argument
 {
@@ -494,6 +615,7 @@ int INY(CpuV2* cpu, int arg1, int)
 }
 int iny(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(INY(cpu,arg1,arg2));}
 
+int ACC(CpuV2*, int, int) { return -1; } // -1 is signal to use accumulator as memory address
 int acc(CpuV2* cpu, int, int)
 {
   cpu->PC += 1;
@@ -509,16 +631,16 @@ int rel(CpuV2* cpu, int arg1, int)
 }
 
 int (*addressingModes[256]) (CpuV2* cpu, int arg1, int arg2) =
-{imp, inx, imp, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, abs, abs, abs, abs,
- rel, iny, imp, iny, zpx, zpx, zpx, zpx, imp, aby, imp, aby, abx, abx, abx, abx,
- abs, inx, imp, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, abs, abs, abs, abs,
- rel, iny, imp, iny, zpx, zpx, zpx, zpx, imp, aby, imp, aby, abx, abx, abx, abx,
- imp, inx, imp, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, jab, abs, abs, abs,
- rel, iny, imp, iny, zpx, zpx, zpx, zpx, imp, aby, imp, aby, abx, abx, abx, abx,
- imp, inx, imp, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, ind, ABS, abs, abs,
- rel, iny, imp, iny, zpx, ZPX, zpx, zpx, imp, ABY, imp, aby, abx, ABX, abx, abx,
- imm, INX, imm, inx, ZP,  ZP,  ZP,  zp,  imp, imm, acc, imm, ABS, abs, ABS, abs,
- rel, INY, imp, iny, ZPX, zpx, ZPY, zpy, imp, aby, acc, aby, abx, abx, aby, aby,
+{imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
+ rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
+ abs, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
+ rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
+ imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, jab, abs, ABS, ABS,
+ rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
+ imp, inx, imp, inx, zp,  zp,  ZP,  zp,  imp, imm, ACC, imm, ind, ABS, ABS, abs,
+ rel, iny, imp, iny, zpx, ZPX, ZPX, zpx, imp, ABY, imp, aby, abx, ABX, ABX, abx,
+ imm, INX, imm, INX, ZP,  ZP,  ZP,  ZP,  imp, imm, acc, imm, ABS, abs, ABS, ABS,
+ rel, INY, imp, iny, ZPX, zpx, ZPY, ZPY, imp, aby, acc, aby, abx, abx, aby, aby,
  imm, inx, imm, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, abs, abs, abs, abs,
  rel, iny, imp, iny, zpx, zpx, zpy, zpy, imp, aby, acc, aby, abx, abx, aby, aby,
  imm, inx, imm, INX, zp,  zp,  ZP,  ZP,  imp, imm, acc, imm, abs, abs, ABS, ABS,
@@ -561,3 +683,90 @@ const int cycleMap[] =
    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7};
+
+
+void CpuV2::setP(int P)
+{
+  C = ((P & 0x01) != 0);
+  Z = ((P & 0x02) != 0);
+  I = ((P & 0x04) != 0);
+  D = ((P & 0x08) != 0);
+  V = ((P & 0x40) != 0);
+  N = ((P & 0x80) != 0);
+}
+
+int CpuV2::getP()
+{
+  int P = 0x20;
+  if (C)
+    P |= 0x01;
+  if (Z)
+    P |= 0x02;
+  if (I)
+    P |= 0x04;
+  if (B)
+    P |= 0x10;
+  if (V)
+    P |= 0x40;
+  if (N)
+    P |= 0x80;
+  if (D)
+    P |= 0x08;
+  return P;
+}
+
+void CpuV2::RunInstruction()
+{
+  int opcode = memory->readByteFrom(PC);
+  int arg1 = memory->readByteFrom(PC+1);
+  int arg2 = memory->readByteFrom(PC+2);
+
+  int argument = addressingModes[opcode](this, arg1, arg2);
+  cycles += cycleMap[opcode];
+  opcodes[opcode](this, argument);
+}
+
+void CpuV2::RunForCycles(float cycle_count, int)
+{
+  double fpart, ipart;
+  fpart = modf(cycle_count, &ipart);
+  accumulator += fpart;
+
+  while (accumulator > 1)
+    {
+      accumulator--;
+      cycle_count++;
+    }
+      
+  total_cycles += cycle_count;
+  cycles_remain += cycle_count;
+  
+  int lastCycle = cycles;
+  while (cycles_remain > 0)
+    {
+      RunInstruction();
+      int dCycles = cycles-lastCycle;
+      cycles_remain -= dCycles;
+      lastCycle = cycles;
+    }
+}
+
+void CpuV2::doRESET()
+{
+  cycles += 6;
+  I = true;
+  PC = memory->readByteFrom(VECTOR_RESET) + (memory->readByteFrom(VECTOR_RESET+1) << 8);
+}
+
+void CpuV2::doNMI()
+{
+  cycles += 7;
+  int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
+  processInterrupt(this, vector);
+}
+
+void CpuV2::doBRK()
+{
+  cycles += 7;
+  BRK(this, 0);
+}

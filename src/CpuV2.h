@@ -14,6 +14,8 @@ public:
   int PC;
 
   bool N,Z,C,I,D,V,B; // Processor status flags
+  int getP();
+  void setP(int P);
 
   long cycles;
   int total_cycles;
@@ -22,8 +24,12 @@ public:
   
   CpuV2(void);
   ~CpuV2(void);
-  bool RunInstruction();
+  void RunInstruction();
   void RunForCycles(float cycle_cout, int scanline);
+
+  void doRESET();
+  void doNMI();
+  void doBRK();
 
   char* stateData(size_t* size);
   void loadState(char* size, size_t size);
