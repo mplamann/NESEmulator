@@ -95,6 +95,7 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
+  memory->loadFileToRAM("../ROMs/nestest.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
@@ -102,7 +103,7 @@ int main(int, char**)
   //memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
-  memory->loadFileToRAM("../ROMs/Zelda.nes");
+  //memory->loadFileToRAM("../ROMs/Zelda.nes");
   //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM((char*)"../ROMs/Dragon Warrior 2.nes");
@@ -111,6 +112,7 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
   //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
   cpu->doRESET();
+  cpu->PC = 0xC000;
   cpu->S = 0xFD; //cpu->setS(0xFD);
 
   cpu->cycles -= 6; //cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.

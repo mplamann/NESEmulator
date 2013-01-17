@@ -93,7 +93,6 @@ void LDY(CpuV2* cpu, int argument)
 
 void STA(CpuV2* cpu, int argument)
 {
-  cout << "STA Writing " << cpu->A << " to address " << argument << "\n";
   cpu->memory->writeByteTo(argument, cpu->A);
 }
 
@@ -148,10 +147,12 @@ void ORA(CpuV2* cpu, int argument)
 
 void ASL(CpuV2* cpu, int argument)
 {
-  int value = argument << 1;
+  int value;
   if (argument == -1)
     value = cpu->A << 1;
-  cpu->C = (argument & 0x80);
+  else
+    value = cpu->memory->readByteFrom(argument) << 1;
+  cpu->C = (value & 0x100);
   value &= 0xFF;
   if (argument == -1)
     cpu->A = value;
@@ -162,10 +163,14 @@ void ASL(CpuV2* cpu, int argument)
 
 void LSR(CpuV2* cpu, int argument)
 {
-  int value = argument >> 1;
+  cout << "LSRing with " << argument;
+  int value;
   if (argument == -1)
-    value = cpu->A >> 1;
-  cpu->C = argument & 0x01;
+    value = cpu->A;
+  else
+    value = cpu->memory->readByteFrom(argument);
+  cpu->C = value & 0x01;
+  value = value >> 1;
   value &= 0x7F;
   if (argument == -1)
     cpu->A = value;
@@ -176,9 +181,11 @@ void LSR(CpuV2* cpu, int argument)
 
 void ROL(CpuV2* cpu, int argument)
 {
-  int value = argument << 1;
+  int value;
   if (argument == -1)
     value = cpu->A << 1;
+  else
+    value = cpu->memory->readByteFrom(argument) << 1;
   value += (int)cpu->C;
   cpu->C = (value > 0xFF);
   value &= 0xFF;
@@ -191,9 +198,11 @@ void ROL(CpuV2* cpu, int argument)
 
 void ROR(CpuV2* cpu, int argument)
 {
-  int value = argument;
+  int value;
   if (argument == -1)
     value = cpu->A;
+  else
+    value = cpu->memory->readByteFrom(argument);
   if (cpu->C)
     value |= 0x100;
   cpu->C = (value & 0x01);
@@ -227,7 +236,7 @@ void SRE(CpuV2* cpu, int argument)
 void BIT(CpuV2* cpu, int argument)
 {
   cpu->Z = ((cpu->A & argument) == 0);
-  cpu->V = (0x49 & argument);
+  cpu->V = (0x40 & argument);
   cpu->N = (0x80 & argument);
 }
 
@@ -412,8 +421,8 @@ void JMP(CpuV2* cpu, int argument)
 
 void JSR(CpuV2* cpu, int argument)
 {
-  pushToStack(cpu, ((cpu->PC+2) >> 8) & 0xFF);
-  pushToStack(cpu, (cpu->PC+2) & 0xFF);
+  pushToStack(cpu, ((cpu->PC-1) >> 8) & 0xFF);
+  pushToStack(cpu, (cpu->PC-1) & 0xFF);
   cpu->PC = argument;
 }
 
@@ -425,7 +434,9 @@ void RTI(CpuV2* cpu, int)
 
 void RTS(CpuV2* cpu, int)
 {
-  cpu->PC = popFromStack(cpu) + (popFromStack(cpu) << 8) + 1;
+  cpu->PC = popFromStack(cpu);
+  cpu->PC += (popFromStack(cpu) << 8);
+  cpu->PC++;
 }
 
 void BPL(CpuV2* cpu, int argument) { doBranch(cpu, !cpu->N, argument); }
@@ -617,7 +628,7 @@ int INY(CpuV2* cpu, int arg1, int)
 }
 int iny(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(INY(cpu,arg1,arg2));}
 
-int ACC(CpuV2*, int, int) { return -1; } // -1 is signal to use accumulator as memory address
+int ACC(CpuV2* cpu, int, int) { cpu->PC += 1; return -1; } // -1 is signal to use accumulator as memory address
 int acc(CpuV2* cpu, int, int)
 {
   cpu->PC += 1;
@@ -635,7 +646,7 @@ int rel(CpuV2* cpu, int arg1, int)
 int (*addressingModes[256]) (CpuV2* cpu, int arg1, int arg2) =
 {imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
- abs, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
+ ABS, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
  imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, jab, abs, ABS, ABS,
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
@@ -742,11 +753,13 @@ void CpuV2::RunInstruction()
   int arg2 = memory->readByteFrom(PC+2);
 
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << "\n";
+  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x078: " << memory->readByteFrom(0x078);
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
   opcodes[opcode](this, argument);
+
+  cout << "\n";
 }
 
 void CpuV2::RunForCycles(float cycle_count, int)
