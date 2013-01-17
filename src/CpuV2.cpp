@@ -650,8 +650,8 @@ int (*addressingModes[256]) (CpuV2* cpu, int arg1, int arg2) =
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
  imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, jab, abs, ABS, ABS,
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
- imp, inx, imp, inx, zp,  zp,  ZP,  zp,  imp, imm, ACC, imm, ind, ABS, ABS, abs,
- rel, iny, imp, iny, zpx, ZPX, ZPX, zpx, imp, ABY, imp, aby, abx, ABX, ABX, abx,
+ imp, inx, imp, inx, zp,  zp,  ZP,  zp,  imp, imm, ACC, imm, ind, abs, ABS, abs,
+ rel, iny, imp, iny, zpx, zpx, ZPX, zpx, imp, aby, imp, aby, abx, abx, ABX, abx,
  imm, INX, imm, INX, ZP,  ZP,  ZP,  ZP,  imp, imm, acc, imm, ABS, ABS, ABS, ABS,
  rel, INY, imp, iny, ZPX, ZPX, ZPY, ZPY, imp, ABY, acc, aby, abx, ABX, aby, aby,
  imm, inx, imm, inx, zp,  zp,  zp,  zp,  imp, imm, acc, imm, abs, abs, abs, abs,
@@ -753,7 +753,7 @@ void CpuV2::RunInstruction()
   int arg2 = memory->readByteFrom(PC+2);
 
   cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x078: " << memory->readByteFrom(0x078);
+  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x0678: " << memory->readByteFrom(0x0678);
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];

@@ -88,14 +88,14 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  //memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
+  memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
   //memory->loadFileToRAM("../ROMs/MapperTest/mapper2.nes");
   
   //memory->loadFileToRAM("../ROMs/square1/square1.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
   //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
-  memory->loadFileToRAM("../ROMs/nestest.nes");
+  //memory->loadFileToRAM("../ROMs/nestest.nes");
   //memory->loadFileToRAM("../ROMs/pong1.nes");
   //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
   //memory->loadFileToRAM("../ROMs/MegaMan.nes");
