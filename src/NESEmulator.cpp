@@ -88,7 +88,7 @@ int main(int, char**)
   //memory->loadFileToRAM("../ROMs/controller.nes");
   //memory->loadFileToRAM("../ROMs/background/background.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
+  //memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
   //memory->loadFileToRAM("../ROMs/MapperTest/mapper2.nes");
   
   //memory->loadFileToRAM("../ROMs/square1/square1.nes");
@@ -102,7 +102,7 @@ int main(int, char**)
   //memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
   //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
   //memory->loadFileToRAM("../ROMs/Metroid.nes");
-  //memory->loadFileToRAM("../ROMs/Zelda.nes");
+  memory->loadFileToRAM("../ROMs/Zelda.nes");
   //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
   //memory->loadFileToRAM("../ROMs/Galaga.nes");
   //memory->loadFileToRAM((char*)"../ROMs/Dragon Warrior 2.nes");
@@ -200,10 +200,8 @@ void renderFrame()
       if (scanline == 241 && cpu->cycles > PPU_STARTUP_TIME)
 	{
 	  memory->PPUSTATUS |= 0x80;  // Set VINT flag
-	  cout << "PPUSTATUS is " << (int)memory->PPUCTRL << "\n";
 	  if (memory->PPUCTRL & 0x80)
 	    {
-	      cout << "Sending NMI...";
 	      cpu->doNMI();
 	    }
 	}

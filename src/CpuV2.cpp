@@ -741,8 +741,8 @@ void CpuV2::RunInstruction()
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
 
-  //  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  //  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << "\n";
+  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
+  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << "\n";
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
@@ -783,7 +783,6 @@ void CpuV2::doRESET()
 
 void CpuV2::doNMI()
 {
-  cout << "NMI!\n";
   cycles += 7;
   int vector = memory->readByteFrom(VECTOR_NMI) + (memory->readByteFrom(VECTOR_NMI+1) << 8);
   processInterrupt(this, vector);
