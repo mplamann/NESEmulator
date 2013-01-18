@@ -18,6 +18,7 @@ using namespace std;
 //#define USE_AUDIO
 
 const int FRAMERATE = 60;
+const int TURBO_FRAMERATE = 600;
 
 const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
@@ -160,10 +161,14 @@ int main(int, char**)
 		{
 		  shouldLoadState = true;
 		}
+	      if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
+		al_set_timer_speed(timer, 1.0/TURBO_FRAMERATE);
 	      gamepad->keyDown(event);
 	    }
 	  if (event.type == ALLEGRO_EVENT_KEY_UP)
 	    {
+	      if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
+		al_set_timer_speed(timer, 1.0/FRAMERATE);
 	      gamepad->keyUp(event);
 	    }
 #ifdef USE_AUDIO
