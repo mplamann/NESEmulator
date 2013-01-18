@@ -163,7 +163,6 @@ void ASL(CpuV2* cpu, int argument)
 
 void LSR(CpuV2* cpu, int argument)
 {
-  cout << "LSRing with " << argument;
   int value;
   if (argument == -1)
     value = cpu->A;
@@ -752,14 +751,14 @@ void CpuV2::RunInstruction()
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
 
-  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x0678: " << memory->readByteFrom(0x0678);
+  //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
+  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x0678: " << memory->readByteFrom(0x0678);
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
   opcodes[opcode](this, argument);
 
-  cout << "\n";
+  //cout << "\n";
 }
 
 void CpuV2::RunForCycles(float cycle_count, int)

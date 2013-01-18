@@ -7,7 +7,6 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
   height = 224;
   width = 256;
-  scale = 2;
   blackColor = al_map_rgb(0,0,0);
   cout << "Initializing display...";
   display = al_create_display(width*scale, height*scale);
@@ -57,6 +56,15 @@ void PpuState::startFrame()
 {
   vScroll = memory->PPUSCROLLY;
   memory->PPUSTATUS &= 0xBF;
+
+  for (int i = 0; i < 256*scale*240; i++)
+    {
+      int scanline = i/(256*scale);
+      framePoints[i].x = i % (256*scale);
+      framePoints[i].y = (scanline)*scale;
+      framePoints[i].z = 0;
+      framePoints[i].color = blackColor;
+    }
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -80,18 +88,13 @@ inline int attributeValueFromByteXY(int byte, int x, int y)
 
 void PpuState::renderScanline(int scanline)
 {
+  if (scanline >= 232)
+    return;
   bool backgroundPoints[256];
   for (int i = 0; i < 256; i++)
       backgroundPoints[i] = false;
 
-  ALLEGRO_VERTEX scanlinePoints[256*scale];
-  for (int i = 0; i < 256*scale; i++)
-    {
-      scanlinePoints[i].x = i;
-      scanlinePoints[i].y = (scanline-8)*scale;
-      scanlinePoints[i].z = 0;
-      scanlinePoints[i].color = blackColor;
-    }
+  scanlinePoints = framePoints + (scanline)*256*scale;
   scanline += vScroll & 0x07;
   ALLEGRO_BITMAP* bitmap = al_get_backbuffer(display);
   al_set_target_bitmap(bitmap);
@@ -218,18 +221,6 @@ void PpuState::renderScanline(int scanline)
         }
     } // End if sprites enabled
 
-  // Make sure that we are not drawing to a null bitmap  
-  // Don't know why this is a problem, but it seems to be
-  if (al_get_target_bitmap())
-    {
-      for (int j = 0; j < scale; j++)
-	{
-	  al_draw_prim(scanlinePoints, NULL, 0, 0, 256*scale, ALLEGRO_PRIM_POINT_LIST);
-	  for (int point = 0; point < 256*scale; point++)
-	    scanlinePoints[point].y++;
-	}
-    }
-
 #ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);
   for (int nametable = 0; nametable < 2; nametable++)
@@ -267,6 +258,19 @@ void PpuState::renderScanline(int scanline)
 void PpuState::endFrame()
 {
   al_set_target_backbuffer(display);
+
+  // Make sure that we are not drawing to a null bitmap  
+  // Don't know why this is a problem, but it seems to be
+  if (al_get_target_bitmap())
+    {
+      for (int j = 0; j < scale; j++)
+	{
+	  al_draw_prim(framePoints, NULL, 0, 0, 256*scale*240, ALLEGRO_PRIM_POINT_LIST);
+	  for (int point = 0; point < 256*scale*240; point++)
+	    framePoints[point].y++;
+	}
+    }
+  
   al_flip_display();
 
 #ifdef PPU_DEBUG
