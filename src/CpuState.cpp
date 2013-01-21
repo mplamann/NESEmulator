@@ -430,7 +430,6 @@ void CpuState::loadState(char* buffer, size_t)
 {
   int sizeOfRegs = sizeof(int) * 5;  // A,X,Y,S,PC
   int sizeOfFlags = sizeof(int) * 7; // N,C,Z,I,D,V,B
-  //int sizeOfCycleData = sizeof(int)*2 + sizeof(long); // cycles, total_cycles, cycles_remain
   int sizeOfAccumulator = sizeof(float);
   int bufferIndex = 0;
   int regs[5];

@@ -37,4 +37,7 @@ class Mapper1 : public Mapper
   size_t stateSize();
   char* stateData();
   void loadState(char* buffer);
+
+  void saveBattery(char* filename);
+  void loadBattery(char* filename);
 };

@@ -13,9 +13,11 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+#include <signal.h>
+#include <stdlib.h>
 using namespace std;
 
-//#define USE_AUDIO
+#define USE_AUDIO
 
 const int FRAMERATE = 60;
 const int TURBO_FRAMERATE = 600;
@@ -39,8 +41,8 @@ bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
 void renderFrame();
-void saveState();
-void loadState();
+void saveState(char* filename);
+void loadState(char* filename);
 
 double fps = 0;
 int frames_done = 0;
@@ -52,8 +54,33 @@ int scanline = 241; // This is the scanline that Nintendulator starts on
 bool shouldSaveState = false;
 bool shouldLoadState = false;
 
-int main(int, char**)
+bool emulationDone = false;
+void mark_done(int) { cout << "\n"; emulationDone = true; }
+
+int main(int argc, char** argv)
 {
+  if (argc != 2)
+    {
+      cout << "Usage:\n" <<
+              "  nesemulator rom_file\n";
+      return 1;
+    }
+  char* savefile = new char[strlen(argv[1]) + 4];
+  strcpy(savefile, argv[1]);
+  strcat(savefile, ".sav");
+
+  char* batteryfile = new char[strlen(argv[1]) + 4];
+  strcpy(batteryfile, argv[1]);
+  strcat(batteryfile, ".bat");
+
+  // Trap Ctrl-C so that we can exit gracefully
+  struct sigaction sigIntHandler;
+
+  sigIntHandler.sa_handler = mark_done;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
+
   cout << hex << uppercase;
   cpu = new CpuV2();
   memory = new MemoryState();
@@ -61,7 +88,7 @@ int main(int, char**)
   gamepad = new GamepadState();
 
   ppu->setMemory(memory);
-  cpu->memory = memory;//cpu->setMemory(memory);
+  cpu->memory = memory;
   memory->setGamepad(gamepad);
   memory->setCpu(cpu);
 
@@ -86,45 +113,16 @@ int main(int, char**)
     { cleanup(); return -1; }
 #endif
 
-  //memory->loadFileToRAM("../ROMs/controller.nes");
-  //memory->loadFileToRAM("../ROMs/background/background.nes");
-  //memory->loadFileToRAM("../ROMs/Castlevania.nes");
-  //memory->loadFileToRAM((char*)"../ROMs/Super Mario Bros. (JU) [!].nes");
-  //memory->loadFileToRAM("../ROMs/MapperTest/mapper2.nes");
-  
-  //memory->loadFileToRAM("../ROMs/square1/square1.nes");
-  //memory->loadFileToRAM("../ROMs/cpu_timing_test.nes");
-  //memory->loadFileToRAM("../ROMs/cpu_timing_test/cpu_timing_test.nes");
-  //memory->loadFileToRAM("../ROMs/instr_test-v3/official_only.nes");
-  //memory->loadFileToRAM("../ROMs/nestest.nes");
-  //memory->loadFileToRAM("../ROMs/pong1.nes");
-  //memory->loadFileToRAM("../ROMs/scrolling/scrolling5.nes");
-  //memory->loadFileToRAM("../ROMs/MegaMan.nes");
-  //memory->loadFileToRAM("../ROMs/Final Fantasy.nes");
-  memory->loadFileToRAM((char*)"../ROMs/Mega Man 2.nes");
-  //memory->loadFileToRAM("../ROMs/Castlevania2.nes");
-  //memory->loadFileToRAM("../ROMs/Metroid.nes");
-  //memory->loadFileToRAM("../ROMs/Zelda.nes");
-  //memory->loadFileToRAM("../ROMs/Pac-Man.nes");
-  //memory->loadFileToRAM("../ROMs/Galaga.nes");
-  //memory->loadFileToRAM((char*)"../ROMs/Dragon Warrior 2.nes");
-  //memory->loadFileToRAM("../ROMs/Excitebike.nes");
-  //memory->loadFileToRAM("../ROMs/Galaxian.nes");
-  //memory->loadFileToRAM("../ROMs/Super Mario Bros. 3.nes");
-  //memory->loadFileToRAM("../ROMs/ppu_vbl_nmi/ppu_vbl_nmi.nes");
+  memory->loadFileToRAM(argv[1]);
+  memory->loadBattery(batteryfile);
   cpu->doRESET();
-  //cpu->PC = 0xC000;
-  cpu->S = 0xFD; //cpu->setS(0xFD);
-
-  cpu->cycles -= 6; //cpu->incrementCycles(-6); // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
+  cpu->S = 0xFD;
+  cpu->cycles = 0; // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
-  // NOTE: Execution starts at address pointed to by RESET vector
-  bool done = false;
-
   ALLEGRO_EVENT event;
   bool need_redraw = false;
   
-  while (!done)
+  while (!emulationDone)
     {
       while (al_get_next_event(event_queue, &event))
 	{
@@ -137,15 +135,15 @@ int main(int, char**)
 	      renderFrame();
 	      need_redraw = false;
 	      if (shouldSaveState)
-		saveState();
+		saveState(savefile);
 	      else if (shouldLoadState)
-		loadState();
+		loadState(savefile);
 	      shouldSaveState = shouldLoadState = false;
 	    }
 	  
 	  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 	    {
-	      done = true;
+	      emulationDone = true;
 	    }
 	  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
 	    {
@@ -181,6 +179,9 @@ int main(int, char**)
     }
 
   cout << "Cleaning up...";
+
+  memory->saveBattery(batteryfile);
+  
   if (event_queue != NULL)
     al_destroy_event_queue(event_queue);
   delete cpu;
@@ -283,7 +284,7 @@ void cleanup()
 #endif
 }
 
-void saveState()
+void saveState(char* filename)
 {
   cout << "Saving state...\n";
   
@@ -311,7 +312,7 @@ void saveState()
   cout << "CpuState    " << cpuSize * sizeof(char) << " bytes.\n";
   cout << "PpuState    " << ppuSize * sizeof(char) << " bytes.\n";
 
-  FILE* fileStream = fopen("state.sav","wb");
+  FILE* fileStream = fopen(filename,"wb");
   
   // Write header - memorySize,cpuSize,ppuSize
   size_t header[3];
@@ -336,7 +337,7 @@ void saveState()
   cout << "State saved.\n";
 }
 
-void loadState()
+void loadState(char* filename)
 {
   cout << "Loading state...\n";
 
@@ -349,7 +350,7 @@ void loadState()
   apu_snapshot_t* apuData;
 #endif
 
-  FILE* fileStream = fopen("state.sav", "rb");
+  FILE* fileStream = fopen(filename, "rb");
   fread(header, sizeof(size_t), 3, fileStream);
 
   memoryData = (char*)malloc(header[0]*sizeof(char));

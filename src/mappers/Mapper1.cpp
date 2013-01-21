@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <cstring>
+#include <cstdio>
 using namespace std;
 
 Mapper1::Mapper1(char* file) : Mapper(file)
@@ -124,6 +125,8 @@ void Mapper1::writeControl(int value)
 
 void Mapper1::writeCHR0(int value)
 {
+  if (nChrBanks == 0)
+    return;
 #ifdef MAPPER_DEBUG
   cout << "Bankswitch CHR0 to bank " << value << "\n";
 #endif
@@ -137,6 +140,8 @@ void Mapper1::writeCHR0(int value)
 
 void Mapper1::writeCHR1(int value)
 {
+  if (nChrBanks == 0)
+    return;
 #ifdef MAPPER_DEBUG
   cout << "Bankswitch CHR1 to bank " << value << "\n";
 #endif
@@ -222,4 +227,21 @@ void Mapper1::loadState(char* buffer)
   prgBank2Index = otherValues[6];
   chrBank1Index = otherValues[7];
   chrBank2Index = otherValues[8];
+}
+
+void Mapper1::saveBattery(char* filename)
+{
+  FILE* fileStream = fopen(filename, "wb");
+  fwrite(prgRam, sizeof(int), 0x2000, fileStream);
+  fclose(fileStream);
+}
+
+void Mapper1::loadBattery(char* filename)
+{
+  FILE* fileStream = fopen(filename, "rb");
+  if (fileStream != NULL)
+    {
+      fread(prgRam, sizeof(int), 0x2000, fileStream);
+      fclose(fileStream);
+    }
 }

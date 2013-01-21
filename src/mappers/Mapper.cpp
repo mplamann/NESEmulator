@@ -6,10 +6,11 @@ using namespace std;
 Mapper::Mapper(char* file)
 {
   nPrgBanks = file[4];
-  nChrBanks = file[5];
+  nChrBanks = 2*file[5];
   cout << "\n" << nPrgBanks << " PRG banks\n" << nChrBanks << " CHR banks\n";
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
   mirroring = file[6] & 0x9;
+  batteryBacked = file[6] & 0x02;
   
   // Initialize 2D arrays
   prgBanks = new char*[nPrgBanks];
@@ -17,16 +18,14 @@ Mapper::Mapper(char* file)
   for (int i = 0; i < nPrgBanks; i++)
     prgBanks[i] = new char[16*1024];
   for (int i = 0; i < (nChrBanks > 0 ? nChrBanks : 2); i++)
-    chrBanks[i] = new char[8*1024];
+    chrBanks[i] = new char[4*1024];
 
   prgBank1Index = 0;
   prgBank2Index = 0;
   chrBank1Index = 0;
-  chrBank2Index = 0;
+  chrBank2Index = 1;
   if (nPrgBanks > 1)
     prgBank2Index = 1;
-  if (nChrBanks != 1)
-    chrBank2Index = 1;
 
   int filePointer = 16;
   for (int i = 0; i < nPrgBanks; i++)
@@ -36,8 +35,8 @@ Mapper::Mapper(char* file)
     }
   for (int i = 0; i < nChrBanks; i++)
     {
-      memcpy(chrBanks[i], file+filePointer, 8*1024);
-      filePointer += 8*1024;
+      memcpy(chrBanks[i], file+filePointer, 4*1024);
+      filePointer += 4*1024;
     }
   return;
 }
@@ -84,9 +83,9 @@ void Mapper::writeByteTo(int address, int value)
 int Mapper::ppuReadByteFrom(int address)
 {
   char* bank = chrBanks[chrBank1Index];
-  if (address >= 8*1024 && nChrBanks != 1)
+  if (address >= 4*1024)
     bank = chrBanks[chrBank2Index];
-  return bank[address % (8*1024)];
+  return bank[address % (4*1024)];
 }
 
 void Mapper::ppuWriteByteTo(int address, int value)
@@ -94,9 +93,9 @@ void Mapper::ppuWriteByteTo(int address, int value)
   if (nChrBanks != 0)
     return;
   char* bank = chrBanks[chrBank1Index];
-  if (address >= 8*1024 && nChrBanks != 1)
+  if (address >= 4*1024)
     bank = chrBanks[chrBank2Index];
-  bank[address % (8*1024)] = (value & 0xFF);
+  bank[address % (4*1024)] = (value & 0xFF);
 }
 
 size_t Mapper::stateSize()
@@ -106,7 +105,6 @@ size_t Mapper::stateSize()
 
 char* Mapper::stateData()
 {
-  //return (char*)malloc(sizeof(char)*stateSize());
   return new char[stateSize()];
 }
 

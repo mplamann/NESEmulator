@@ -11,6 +11,8 @@ class Mapper
   int nChrBanks;
   int mapperNumber;
 
+  bool batteryBacked;
+
   int prgBank1Index;
   int prgBank2Index;
   int chrBank1Index;
@@ -26,6 +28,9 @@ class Mapper
   virtual size_t stateSize();
   virtual char* stateData();
   virtual void loadState(char* state);
+
+  virtual void saveBattery(char* filename) {}
+  virtual void loadBattery(char* filename) {}
 
   Mapper(char* file);
   ~Mapper(void);

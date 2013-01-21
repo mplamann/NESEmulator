@@ -37,6 +37,8 @@ public:
 
   char* stateData(size_t* size);
   void loadState(char* state, size_t size);
+  void saveBattery(char* filename);
+  void loadBattery(char* filename);
   
   int readByteFrom(int address);
   void writeByteTo(int address, int value);

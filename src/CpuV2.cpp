@@ -813,10 +813,64 @@ int CpuV2::elapsed()
 
 char* CpuV2::stateData(size_t* size)
 {
-  return 0x0;
+  int sizeOfRegs = sizeof(int) * 5;  // A,X,Y,S,PC
+  int sizeOfFlags = sizeof(int) * 7; // N,C,Z,I,D,V,B
+  int sizeOfCycleData = sizeof(int)*2 + sizeof(long); // cycles, total_cycles, cycles_remain
+  int sizeOfAccumulator = sizeof(float);
+  
+  *size = sizeOfRegs + sizeOfFlags + sizeOfCycleData + sizeOfAccumulator;
+  char* buffer = (char*)malloc(sizeof(char)*(*size));
+  int bufferIndex = 0;
+  
+  int regs[5] = {A,X,Y,S,PC};
+  int flags[7] = {N,C,Z,I,D,V,B};
+  memcpy(buffer+bufferIndex, regs, sizeOfRegs);
+  bufferIndex += sizeOfRegs;
+  memcpy(buffer+bufferIndex, flags, sizeOfFlags);
+  bufferIndex += sizeOfFlags;
+  memcpy(buffer+bufferIndex, &cycles, sizeof(long));
+  bufferIndex += sizeof(long);
+  memcpy(buffer+bufferIndex, &total_cycles, sizeof(int));
+  bufferIndex += sizeof(int);
+  memcpy(buffer+bufferIndex, &cycles_remain, sizeof(int));
+  bufferIndex += sizeof(int);
+  memcpy(buffer+bufferIndex, &accumulator, sizeOfAccumulator);
+  
+  return buffer;
 }
 
-void CpuV2::loadState(char* buffer, size_t size) {}
+void CpuV2::loadState(char* buffer, size_t size)
+{
+  int sizeOfRegs = sizeof(int) * 5;  // A,X,Y,S,PC
+  int sizeOfFlags = sizeof(int) * 7; // N,C,Z,I,D,V,B
+  int sizeOfAccumulator = sizeof(float);
+  int bufferIndex = 0;
+  int regs[5];
+  int flags[7];
+  memcpy(regs, buffer+bufferIndex, sizeOfRegs);
+  bufferIndex += sizeOfRegs;
+  memcpy(flags, buffer+bufferIndex, sizeOfFlags);
+  bufferIndex += sizeOfFlags;
+  memcpy(&cycles, buffer+bufferIndex, sizeof(long));
+  bufferIndex += sizeof(long);
+  memcpy(&total_cycles, buffer+bufferIndex, sizeof(int));
+  bufferIndex += sizeof(int);
+  memcpy(&cycles_remain, buffer+bufferIndex, sizeof(int));
+  bufferIndex += sizeof(int);
+  memcpy(&accumulator, buffer+bufferIndex, sizeOfAccumulator);
+  N = flags[0];
+  C = flags[1];
+  Z = flags[2];
+  I = flags[3];
+  D = flags[4];
+  V = flags[5];
+  B = flags[6];
+  A = regs[0];
+  X = regs[1];
+  Y = regs[2];
+  S = regs[3];
+  PC = regs[4];
+}
 
 CpuV2::CpuV2(void)
 {

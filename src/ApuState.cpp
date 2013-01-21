@@ -73,7 +73,7 @@ void ApuState::finishFrame()
 {
   apu->end_frame(cpu->elapsed());
   buf->end_frame(cpu->elapsed());
-  cpu->cycles -= cpu->elapsed(); //incrementTotalCycles(-cpu->elapsed());
+  cpu->total_cycles -= cpu->elapsed(); //incrementTotalCycles(-cpu->elapsed());
 }
 
 void ApuState::audioStreamFragment()

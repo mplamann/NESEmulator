@@ -548,3 +548,13 @@ void MemoryState::loadState(char* buffer, size_t)
   bufferIndex += sPpuRegs;
   mapper->loadState((char*)(buffer+bufferIndex));
 }
+
+void MemoryState::saveBattery(char* filename)
+{
+  mapper->saveBattery(filename);
+}
+
+void MemoryState::loadBattery(char* filename)
+{
+  mapper->loadBattery(filename);
+}
