@@ -54,7 +54,8 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
-  vScroll = memory->PPUSCROLLY;
+  memory->PPUADDR = memory->loopyT;  
+  
   memory->PPUSTATUS &= 0xBF;
 
   for (int i = 0; i < 256*scale*240; i++)
@@ -86,8 +87,42 @@ inline int attributeValueFromByteXY(int byte, int x, int y)
   return (byte & 0xC0) >> 6;
 }
 
+inline void PpuState::incrementX()
+{
+  if ((memory->PPUADDR & 0x001F) == 31)
+    {
+      memory->PPUADDR &= ~(0x001F);
+      memory->PPUADDR ^= 0x0400;
+    }
+  else
+    memory->PPUADDR += 1;
+}
+
+inline void PpuState::incrementY()
+{
+  if ((memory->PPUADDR & 0x7000) != 0x7000)
+    memory->PPUADDR += 0x1000;
+  else
+    {
+      memory->PPUADDR &= 0xFFFF;
+      int y = (memory->PPUADDR & 0x03E0) >> 5;
+      if (y == 29)
+	{
+	  y = 0;
+	  memory->PPUADDR ^= 0x0800;
+	}
+      else if (y == 31)
+	y = 0;
+      else
+	y++;
+      memory->PPUADDR = (memory->PPUADDR & ~0x03E0) | (y << 5);
+    }
+}
+
 void PpuState::renderScanline(int scanline)
 {
+  memory->PPUADDR &= ~(0x041F);
+  memory->PPUADDR |= (memory->loopyT & 0x041F);
   if (scanline >= 232)
     return;
   bool backgroundPoints[256];
@@ -100,10 +135,11 @@ void PpuState::renderScanline(int scanline)
   al_set_target_bitmap(bitmap);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
+      
       int tileY = scanline / 8;
       int lineInTile = scanline - (tileY*8);
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
-      int upperLimit = (memory->PPUSCROLLX & 0x07) ? 33 : 32;
+      /*int upperLimit = (memory->PPUSCROLLX & 0x07) ? 33 : 32;
       for (int i = 0; i < upperLimit; i++)
 	{
 	  int patternTableTile = memory->getNametableEntryForTile(i,tileY,memory->PPUSCROLLX,vScroll);
@@ -132,7 +168,38 @@ void PpuState::renderScanline(int scanline)
 		  backgroundPoints[(xOffset+x)&0xFF] = true;
 		}
 	    }
+	    }*/
+      for (int i = 0; i < 32; i++)
+	{
+	  int patternTableTile = memory->ppuReadByteFrom(memory->PPUADDR);
+	  incrementX();
+	  int patternTableIndex = patternTableTile*16;
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
+	  int xOffset = i*8 - (memory->PPUSCROLLX & 0x07); // Account for both tile width and X scrolling
+	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i+memory->PPUSCROLLX/8,tileY+vScroll/8);
+	  for (int x = 0; x < 8; x++)
+	    {
+	      if (i == 0 && x == 0)
+		x = (memory->PPUSCROLLX & 0x07);
+	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
+		continue;
+	      int andOperator = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      colorIndex = colorIndex >> (7-x);
+
+	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
+	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
+	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      for (int j = 0; j < scale; j++)
+		scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
+	      if (colorIndex != 0)
+		{
+		  backgroundPoints[(xOffset+x)&0xFF] = true;
+		}
+	    }
 	}
+      incrementY();
     } // End if background enabled
 
   if (memory->PPUMASK & 0x10) // If sprites enabled

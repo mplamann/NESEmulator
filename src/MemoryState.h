@@ -24,8 +24,7 @@ private:
   
   unsigned char OAM[256];
   unsigned char JOYSTROBE;
-  bool isPpuScrollOnX;
-  bool isPpuAddrHigh;
+  bool ppuLatch;
 
   void DMA(int address);
 public:
@@ -72,5 +71,8 @@ public:
   unsigned char PPUSCROLLY;
   unsigned char PPU_LAST_WRITE;
   int PPUADDR;
+
+  int loopyT;
+  int loopyX;
 };
 

@@ -23,6 +23,10 @@ class PpuState
 
   ALLEGRO_VERTEX framePoints[256*scale*240];
   ALLEGRO_VERTEX* scanlinePoints;
+
+  inline void incrementX();
+  inline void incrementY();
+  
  public:
   bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
   void setDisplayTitle(const char* title);

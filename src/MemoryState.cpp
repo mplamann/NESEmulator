@@ -13,8 +13,7 @@ using namespace std;
 
 MemoryState::MemoryState(void)
 {
-  isPpuScrollOnX = true;
-  isPpuAddrHigh = true;
+  ppuLatch = false;
   PPUSCROLLX = 0;
   PPUSCROLLY = 0;
   for (int i = 0; i < RAM_SIZE; i++)
@@ -64,7 +63,7 @@ int MemoryState::readByteFrom(int address)
 	{
 	case 0x2002:
 	  {
-	    isPpuAddrHigh = true;
+	    ppuLatch = false;
 	    retVal = PPUSTATUS & 0xFF;
 	    PPUSTATUS &= 0x7F;         // Reading 0x2002 resets the NMI flag
 	    retVal |= (PPU_LAST_WRITE & 0x1F);
@@ -159,14 +158,35 @@ void MemoryState::writeByteTo(int address, int value)
 	  OAMADDR++;
 	  break;
 	case 0x2005:
-	  if (isPpuScrollOnX)
-	    PPUSCROLLX = (value & 0xFF);
-	  else if ((value & 0xFF) < 240)     // http://fms.komkon.org/EMUL8/NES.html#LABG says that y scroll >240 is ignored
-	    PPUSCROLLY = (value & 0xFF);
-	  isPpuScrollOnX = !isPpuScrollOnX;
+	  if (!ppuLatch)
+	    {
+	      loopyT &= ~(0x001F);
+	      loopyT |= (value & 0xF8) >> 3;
+	      loopyX = value & 0x07;
+	    }
+	  else
+	    {
+	      loopyT &= ~(0x73E0);
+	      loopyT |= (value & 0xF8) << 2;
+	      loopyT |= (value & 0x07) << 12;
+	    }
+	  ppuLatch = !ppuLatch;
 	  break;
 	case 0x2006:
-	  if (isPpuAddrHigh)
+	  if (!ppuLatch)
+	    {
+	      loopyT &= ~(0xFF00);
+	      loopyT |= (0x3F & value) << 8;
+	    }
+	  else
+	    {
+	      loopyT &= ~(0x00FF);
+	      loopyT |= (0xFF & value);
+	      PPUADDR = loopyT;
+	    }
+	  mapper->updatePpuAddr(PPUADDR);
+	  ppuLatch = !ppuLatch;
+	  /*if (isPpuAddrHigh)
 	    PPUADDR = (value & 0xFF) << 8;
 	  else
 	    {
@@ -179,7 +199,7 @@ void MemoryState::writeByteTo(int address, int value)
 		}
 	    }
 	  mapper->updatePpuAddr(PPUADDR);
-	  isPpuAddrHigh = !isPpuAddrHigh;
+	  isPpuAddrHigh = !isPpuAddrHigh;*/
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
@@ -478,8 +498,8 @@ char* MemoryState::stateData(size_t* size)
   int sPpuDataBuffer = sizeof(int);
   int sOAM = 256*sizeof(unsigned char);
   int sJOYSTROBE = sizeof(unsigned char);
-  int sPpuToggles = 2*sizeof(int);
-  int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
+  int sPpuToggles = sizeof(int);
+  int ppuToggles[1] = {ppuLatch};
   int sPpuRegs = 8*sizeof(int);
   int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
 
@@ -522,8 +542,8 @@ void MemoryState::loadState(char* buffer, size_t)
   int sPpuDataBuffer = sizeof(int);
   int sOAM = 256*sizeof(unsigned char);
   int sJOYSTROBE = sizeof(unsigned char);
-  int sPpuToggles = 2*sizeof(int);
-  int ppuToggles[2] = {isPpuScrollOnX, isPpuAddrHigh};
+  int sPpuToggles = sizeof(int);
+  int ppuToggles[1] = {ppuLatch};
   int sPpuRegs = 8*sizeof(int);
   int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
   int bufferIndex = 0;
