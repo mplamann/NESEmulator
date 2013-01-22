@@ -317,6 +317,7 @@ int MemoryState::readFromNametable(int nametable, int address)
     {
     } // TODO: Single-Screen Mirroring - needs mapper support
   int arrayAddress = (address - 0x2000) % 0x400;
+  cout << "Nametable addr " << address << " returning " << (currentNametable ? nametable1[arrayAddress]&0xFF : nametable2[arrayAddress]&0xFF) << "\n";
   if (currentNametable == 1)
     return nametable1[arrayAddress] & 0xFF;
   else

@@ -56,7 +56,7 @@ int Mapper::readByteFrom(int address)
 {
   if (address < 0x8000)
     {
-      cout << "Mapper.c does not know what to do with address " << address << ". Returning 0\n";
+      //      cout << "Mapper.c does not know what to do with address " << address << ". Returning 0\n";
       return 0;
     }
   else if (nPrgBanks == 0)

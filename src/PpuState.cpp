@@ -135,23 +135,26 @@ void PpuState::renderScanline(int scanline)
   al_set_target_bitmap(bitmap);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
-      
+      int coarseY = (memory->PPUADDR & 0x3E0) >> 5;
+      int fineY = (memory->PPUADDR & 0x7000) >> 12;
+      int nametableAddress = (memory->PPUADDR & 0x0C00) + 0x2000;
       int tileY = scanline / 8;
       int lineInTile = scanline - (tileY*8);
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
-      /*int upperLimit = (memory->PPUSCROLLX & 0x07) ? 33 : 32;
+      int upperLimit = (memory->loopyX) ? 33 : 32;
       for (int i = 0; i < upperLimit; i++)
 	{
-	  int patternTableTile = memory->getNametableEntryForTile(i,tileY,memory->PPUSCROLLX,vScroll);
+	  int coarseX = memory->PPUADDR & 0x1F;
+	  int patternTableTile = memory->readByteFrom(nametableAddress + (memory->PPUADDR & 0x3FF));
 	  int patternTableIndex = patternTableTile*16;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
-	  int xOffset = i*8 - (memory->PPUSCROLLX & 0x07); // Account for both tile width and X scrolling
+	  int xOffset = i*8 - (memory->loopyX); // Account for both tile width and X scrolling
 	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i+memory->PPUSCROLLX/8,tileY+vScroll/8);
 	  for (int x = 0; x < 8; x++)
 	    {
 	      if (i == 0 && x == 0)
-		x = (memory->PPUSCROLLX & 0x07);
+		x = (memory->loopyX);
 	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
 		continue;
 	      int andOperator = 1<<(7-x);
@@ -168,36 +171,7 @@ void PpuState::renderScanline(int scanline)
 		  backgroundPoints[(xOffset+x)&0xFF] = true;
 		}
 	    }
-	    }*/
-      for (int i = 0; i < 32; i++)
-	{
-	  int patternTableTile = memory->ppuReadByteFrom(memory->PPUADDR);
 	  incrementX();
-	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
-	  int xOffset = i*8 - (memory->PPUSCROLLX & 0x07); // Account for both tile width and X scrolling
-	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i+memory->PPUSCROLLX/8,tileY+vScroll/8);
-	  for (int x = 0; x < 8; x++)
-	    {
-	      if (i == 0 && x == 0)
-		x = (memory->PPUSCROLLX & 0x07);
-	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
-		continue;
-	      int andOperator = 1<<(7-x);
-	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
-	      colorIndex = colorIndex >> (7-x);
-
-	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
-	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
-	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-	      for (int j = 0; j < scale; j++)
-		scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
-	      if (colorIndex != 0)
-		{
-		  backgroundPoints[(xOffset+x)&0xFF] = true;
-		}
-	    }
 	}
       incrementY();
     } // End if background enabled
