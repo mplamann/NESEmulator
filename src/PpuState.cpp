@@ -123,6 +123,7 @@ void PpuState::renderScanline(int scanline)
 {
   memory->PPUADDR &= ~(0x041F);
   memory->PPUADDR |= (memory->loopyT & 0x041F);
+  
   if (scanline >= 232)
     return;
   bool backgroundPoints[256];
@@ -145,7 +146,9 @@ void PpuState::renderScanline(int scanline)
       for (int i = 0; i < upperLimit; i++)
 	{
 	  int coarseX = memory->PPUADDR & 0x1F;
-	  int patternTableTile = memory->readByteFrom(nametableAddress + (memory->PPUADDR & 0x3FF));
+	  int patternTableTile = memory->ppuReadByteFrom(nametableAddress + (memory->PPUADDR & 0x3FF));
+	  if (scanline == 0)
+	    cout << nametableAddress+(memory->PPUADDR & 0x3FF) << "\n";
 	  int patternTableIndex = patternTableTile*16;
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
