@@ -18,6 +18,7 @@ Mapper4::~Mapper4(void)
 
 void Mapper4::writeByteTo(int address, int value)
 {
+  
 }
 
 void Mapper4::ppuWriteByteTo(int address, int value)

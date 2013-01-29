@@ -143,6 +143,8 @@ void MemoryState::writeByteTo(int address, int value)
 	{
 	case 0x2000:
 	  PPUCTRL = (value & 0xFF);
+	  loopyT &= ~0xC00;
+	  loopyT |= (value & 0x03) << 10;
 	  break;
 	case 0x2001:
 	  PPUMASK = (value & 0xFF);
@@ -302,7 +304,7 @@ unsigned char* MemoryState::mirroredNametableAtXY(int x, int y)
 
 int MemoryState::readFromNametable(int nametable, int address)
 {
-  int currentNametable = 1;
+  /*int currentNametable = 1;
   if (mapper->mirroring == 0) // Horizontal Mirroring
     {
       if (nametable > 1)
@@ -320,7 +322,9 @@ int MemoryState::readFromNametable(int nametable, int address)
   if (currentNametable == 1)
     return nametable1[arrayAddress] & 0xFF;
   else
-    return nametable2[arrayAddress] & 0xFF;
+  return nametable2[arrayAddress] & 0xFF;*/
+  unsigned char* nt = mirroredNametableAtXY(nametable&0x1, (nametable&0x2)>>1);
+  return nt[address % 0x400];
 }
 
 void MemoryState::DMA(int address)

@@ -104,7 +104,7 @@ inline void PpuState::incrementY()
     memory->PPUADDR += 0x1000;
   else
     {
-      memory->PPUADDR &= 0xFFFF;
+      memory->PPUADDR &= 0x0FFF;
       int y = (memory->PPUADDR & 0x03E0) >> 5;
       if (y == 29)
 	{
@@ -120,10 +120,7 @@ inline void PpuState::incrementY()
 }
 
 void PpuState::renderScanline(int scanline)
-{
-  memory->PPUADDR &= ~(0x041F);
-  memory->PPUADDR |= (memory->loopyT & 0x041F);
-  
+{ 
   if (scanline >= 232)
     return;
   bool backgroundPoints[256];
@@ -136,24 +133,19 @@ void PpuState::renderScanline(int scanline)
   al_set_target_bitmap(bitmap);
   if (memory->PPUMASK & 0x08) // If background enabled
     {
-      int coarseY = (memory->PPUADDR & 0x3E0) >> 5;
       int fineY = (memory->PPUADDR & 0x7000) >> 12;
-      int nametableAddress = (memory->PPUADDR & 0x0C00) + 0x2000;
-      int tileY = scanline / 8;
-      int lineInTile = scanline - (tileY*8);
       int basePatternTable = (memory->PPUCTRL & 0x10) ? 0x1000 : 0x0000;
       int upperLimit = (memory->loopyX) ? 33 : 32;
       for (int i = 0; i < upperLimit; i++)
 	{
 	  int coarseX = memory->PPUADDR & 0x1F;
-	  int patternTableTile = memory->ppuReadByteFrom(nametableAddress + (memory->PPUADDR & 0x3FF));
-	  if (scanline == 0)
-	    cout << nametableAddress+(memory->PPUADDR & 0x3FF) << "\n";
+	  int coarseY = (memory->PPUADDR & 0x03E0) >> 5;
+	  int patternTableTile = memory->ppuReadByteFrom(0x2000 | (memory->PPUADDR & 0x0FFF));
 	  int patternTableIndex = patternTableTile*16;
-	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + lineInTile);
-	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex +  lineInTile + 8);
+	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + fineY);
+	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + fineY + 8);
 	  int xOffset = i*8 - (memory->loopyX); // Account for both tile width and X scrolling
-	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,memory->PPUSCROLLX,vScroll),i+memory->PPUSCROLLX/8,tileY+vScroll/8);
+	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(0x23C0 | (memory->PPUADDR & 0x0C00) | ((memory->PPUADDR >> 4) & 0x38) | ((memory->PPUADDR >> 2) & 0x07)),i+coarseX,coarseY);
 	  for (int x = 0; x < 8; x++)
 	    {
 	      if (i == 0 && x == 0)
@@ -167,16 +159,20 @@ void PpuState::renderScanline(int scanline)
 	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
 	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      if (xOffset + x > 0xFF)
+		continue;
 	      for (int j = 0; j < scale; j++)
-		scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
+		scanlinePoints[(xOffset+x)*scale+j].color=color;
 	      if (colorIndex != 0)
 		{
-		  backgroundPoints[(xOffset+x)&0xFF] = true;
+		  backgroundPoints[(xOffset+x)] = true;
 		}
 	    }
 	  incrementX();
 	}
       incrementY();
+      memory->PPUADDR &= ~(0x041F);
+      memory->PPUADDR |= (memory->loopyT & 0x041F);
     } // End if background enabled
 
   if (memory->PPUMASK & 0x10) // If sprites enabled
@@ -248,12 +244,14 @@ void PpuState::renderScanline(int scanline)
 		  unsigned char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
 		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
-		  if (!((spriteFlags & 0x20) && backgroundPoints[(xOffset+x)&0xFF]))
+		  if (xOffset + x > 0xFF)
+		    continue;
+		  if (!((spriteFlags & 0x20) && backgroundPoints[xOffset+x]))
 		    {
 		      for (int j = 0; j < scale; j++)
-			scanlinePoints[((xOffset+x)&0xFF)*scale+j].color=color;
+			scanlinePoints[(xOffset+x)*scale+j].color=color;
 		    }
-		  if (backgroundPoints[(xOffset+x)&0xFF] && i == 0)
+		  if (backgroundPoints[xOffset+x] && i == 0)
 		    {
 		      memory->PPUSTATUS |= 0x40;
 #ifdef PPU_WRITE_LOG
