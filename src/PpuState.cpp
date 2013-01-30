@@ -54,9 +54,11 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
-  memory->PPUADDR = memory->loopyT;  
-  
-  memory->PPUSTATUS &= 0xBF;
+  if (memory->PPUMASK & 0x18)
+    {
+      memory->PPUADDR = memory->loopyT;  
+      memory->PPUSTATUS &= 0xBF;
+    }
 
   for (int i = 0; i < 256*scale*240; i++)
     {
@@ -119,16 +121,8 @@ inline void PpuState::incrementY()
     }
 }
 
-void PpuState::renderScanline(int scanline)
-{ 
-  if (scanline >= 232)
-    return;
-  bool backgroundPoints[256];
-  for (int i = 0; i < 256; i++)
-      backgroundPoints[i] = false;
-
-  scanlinePoints = framePoints + (scanline)*256*scale;
-  scanline += vScroll & 0x07;
+inline void PpuState::renderBackground(int scanline)
+{
   ALLEGRO_BITMAP* bitmap = al_get_backbuffer(display);
   al_set_target_bitmap(bitmap);
   if (memory->PPUMASK & 0x08) // If background enabled
@@ -145,7 +139,8 @@ void PpuState::renderScanline(int scanline)
 	  int patternTablePlane1 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + fineY);
 	  int patternTablePlane2 = memory->ppuReadByteFrom(basePatternTable + patternTableIndex + fineY + 8);
 	  int xOffset = i*8 - (memory->loopyX); // Account for both tile width and X scrolling
-	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(0x23C0 | (memory->PPUADDR & 0x0C00) | ((memory->PPUADDR >> 4) & 0x38) | ((memory->PPUADDR >> 2) & 0x07)),i+coarseX,coarseY);
+	  int attrAddr = 0x23C0 | (memory->PPUADDR & 0x0C00) | ((memory->PPUADDR >> 4) & 0x38) | ((memory->PPUADDR >> 2) & 0x07);
+	  int paletteIndex = attributeValueFromByteXY(memory->ppuReadByteFrom(attrAddr),coarseX,coarseY);
 	  for (int x = 0; x < 8; x++)
 	    {
 	      if (i == 0 && x == 0)
@@ -174,7 +169,10 @@ void PpuState::renderScanline(int scanline)
       memory->PPUADDR &= ~(0x041F);
       memory->PPUADDR |= (memory->loopyT & 0x041F);
     } // End if background enabled
+}
 
+inline void PpuState::renderSprites(int scanline)
+{
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
       int spritesOnScanline = 0;
@@ -225,11 +223,10 @@ void PpuState::renderScanline(int scanline)
 	  else
 	    { cout << "Error! Unknown sprite height: " << spriteHeight << "\n"; }
 	  
-	  
 	  for (int x = 0; x < 8; x++)
 	    {
 	      // Check if this is hidden by PPUMASK
-	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
+	      if (!(memory->PPUMASK & 0x02) && (xOffset+x) < 8)
 		continue;
 	      int andOperator = 1<<(7-x);      
 	      if (spriteFlags&0x40) // Check for horizontal flip
@@ -262,6 +259,25 @@ void PpuState::renderScanline(int scanline)
 	    }
         }
     } // End if sprites enabled
+}
+
+void PpuState::renderScanline(int scanline)
+{ 
+  if (scanline >= 232)
+    return;
+  for (int i = 0; i < 256; i++)
+      backgroundPoints[i] = false;
+  scanlinePoints = framePoints + (scanline)*256*scale;
+  scanline += vScroll & 0x07;
+  
+  renderBackground(scanline);
+  renderSprites(scanline);
+
+  if (memory->PPUMASK & 0x18)
+    {
+      memory->PPUADDR &= ~(0x041F);
+      memory->PPUADDR |= (memory->loopyT & 0x041F);
+    }
 
 #ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);

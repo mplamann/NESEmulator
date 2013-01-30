@@ -17,7 +17,7 @@
 #include <stdlib.h>
 using namespace std;
 
-#define USE_AUDIO
+//#define USE_AUDIO
 
 const int FRAMERATE = 60;
 const int TURBO_FRAMERATE = 600;

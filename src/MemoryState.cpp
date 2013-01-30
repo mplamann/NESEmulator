@@ -14,8 +14,6 @@ using namespace std;
 MemoryState::MemoryState(void)
 {
   ppuLatch = false;
-  PPUSCROLLX = 0;
-  PPUSCROLLY = 0;
   for (int i = 0; i < RAM_SIZE; i++)
     RAM[i] = 0;
   for (int i = 0; i < 0x20; i++)
@@ -188,20 +186,6 @@ void MemoryState::writeByteTo(int address, int value)
 	    }
 	  mapper->updatePpuAddr(PPUADDR);
 	  ppuLatch = !ppuLatch;
-	  /*if (isPpuAddrHigh)
-	    PPUADDR = (value & 0xFF) << 8;
-	  else
-	    {
-	      PPUADDR += (value & 0xFF);
-	      if (PPUADDR == 0)
-		{
-		  PPUSCROLLX = 0;
-		  PPUSCROLLY = 0;
-		  PPUCTRL &= 0xFC;
-		}
-	    }
-	  mapper->updatePpuAddr(PPUADDR);
-	  isPpuAddrHigh = !isPpuAddrHigh;*/
 	  break;
 	case 0x2007:
 	  ppuWriteByteTo(PPUADDR,value);
@@ -504,8 +488,8 @@ char* MemoryState::stateData(size_t* size)
   int sJOYSTROBE = sizeof(unsigned char);
   int sPpuToggles = sizeof(int);
   int ppuToggles[1] = {ppuLatch};
-  int sPpuRegs = 8*sizeof(int);
-  int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
+  int sPpuRegs = 6*sizeof(int);
+  int ppuRegs[6] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPU_LAST_WRITE, PPUADDR};
 
   int sMapper = mapper->stateSize();
   char* mapperData = mapper->stateData();
@@ -548,8 +532,8 @@ void MemoryState::loadState(char* buffer, size_t)
   int sJOYSTROBE = sizeof(unsigned char);
   int sPpuToggles = sizeof(int);
   int ppuToggles[1] = {ppuLatch};
-  int sPpuRegs = 8*sizeof(int);
-  int ppuRegs[8] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPUSCROLLX, PPUSCROLLY, PPU_LAST_WRITE, PPUADDR};
+  int sPpuRegs = 6*sizeof(int);
+  int ppuRegs[6] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPU_LAST_WRITE, PPUADDR};
   int bufferIndex = 0;
   
   memcpy(RAM, buffer+bufferIndex, sRam);

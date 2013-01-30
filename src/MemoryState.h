@@ -67,8 +67,6 @@ public:
   unsigned char PPUMASK;
   unsigned char PPUSTATUS;
   unsigned char OAMADDR;
-  unsigned char PPUSCROLLX;
-  unsigned char PPUSCROLLY;
   unsigned char PPU_LAST_WRITE;
   int PPUADDR;
 
