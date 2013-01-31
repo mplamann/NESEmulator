@@ -16,6 +16,7 @@ Mapper::Mapper(char* file, int _prgBankSize, int _chrBankSize)
   mirroring = file[6] & 0x9;
   batteryBacked = file[6] & 0x02;
   prgRamEnabled = false;
+  prgRamWritable = true;
   
   // Initialize 2D arrays
   prgBanks = new char*[nPrgBanks];
@@ -79,8 +80,8 @@ int Mapper::readByteFrom(int address)
       return 0;
     }
   address -= 0x8000;
-  int prgBankIndex = (address / 1024*prgBankSize);
-  int adjustedAddress = (address % 1024*prgBankSize);
+  int prgBankIndex = (address / (1024*prgBankSize));
+  int adjustedAddress = (address % (1024*prgBankSize));
   return prgBanks[prgIndexes[prgBankIndex]][adjustedAddress];
 }
 
@@ -88,7 +89,7 @@ void Mapper::writeByteTo(int address, int value)
 {
   if (address >= 0x6000 && address < 0x8000)
     {
-      if (prgRamEnabled)
+      if (prgRamEnabled && prgRamWritable)
 	{
 	  prgRam[address-0x6000] = value;
 	  return;
@@ -103,8 +104,8 @@ void Mapper::writeByteTo(int address, int value)
 
 int Mapper::ppuReadByteFrom(int address)
 {
-  int chrBankIndex = (address / 1024*chrBankSize);
-  int adjustedAddress = (address % 1024*chrBankSize);
+  int chrBankIndex = (address / (1024*chrBankSize));
+  int adjustedAddress = (address % (1024*chrBankSize));
   return chrBanks[chrIndexes[chrBankIndex]][adjustedAddress];
 }
 
@@ -112,8 +113,8 @@ void Mapper::ppuWriteByteTo(int address, int value)
 {
   if (nChrBanks != 0)
     return;
-  int chrBankIndex = (address / 1024*chrBankSize);
-  int adjustedAddress = (address % 1024*chrBankSize);
+  int chrBankIndex = (address / (1024*chrBankSize));
+  int adjustedAddress = (address % (1024*chrBankSize));
   chrBanks[chrIndexes[chrBankIndex]][adjustedAddress] = value & 0xFF;
 }
 

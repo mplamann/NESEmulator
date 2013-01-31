@@ -18,6 +18,7 @@ class Mapper
   bool batteryBacked;
   int prgRam[0x2000];
   bool prgRamEnabled;
+  bool prgRamWritable;
 
  public:
   virtual int readByteFrom(int address);

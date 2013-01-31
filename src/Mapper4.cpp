@@ -2,14 +2,17 @@
 #include <iostream>
 using namespace std;
 
-Mapper4::Mapper4(char* file) : Mapper(file, 8)
+const int CHR_2KB_FIRST = 0;
+const int CHR_2KB_LAST  = 1;
+const int PRG_SWITCH_FIRST = 0;
+const int PRG_SWITCH_MID   = 1;
+
+Mapper4::Mapper4(char* file) : Mapper(file, 8, 1)
 {
   cout << "using mapper 4...";
   lastPpuAddr = -1;
   counterValue = 1;
   
-  prgBank1Index = 0;
-  prgBank2Index = nPrgBanks-1;
 }
 
 Mapper4::~Mapper4(void)
@@ -22,22 +25,25 @@ void Mapper4::writeByteTo(int address, int value)
   switch (address)
     {
     case 0x8000:
-      command = value;
+      targetBank = value & 0x7;
+      chrMode = (value & 0x80) >> 7;
+      prgMode = (value & 0x40) >> 6;
       break;
     case 0x8001:
-      runCommand(value);
+      bankSwitch(value);
       break;
     case 0xA000:
       mirroring = value & 0x01;
       break;
     case 0xA001:
       prgRamEnabled = value & 0x80;
+      prgRamWritable = value & 0x40;
       break;
     case 0xC000:
-      irqCounter = value;
+      irqLatch = value;
       break;
     case 0xC001:
-      irqLatch = value;
+      irqCounter = irqLatch;
       break;
     case 0xE000:
       fireIRQs = false;
@@ -49,26 +55,19 @@ void Mapper4::writeByteTo(int address, int value)
     }
 }
 
-void Mapper4::runCommand(int value)
+void Mapper4::bankSwitch(int value)
 {
-  switch (command & 0x7)
+  if (targetBank < 6)
+    chrIndexes[targetBank] = value;
+  else
+    prgIndexes[targetBank-6] = value;
+}
+
+int Mapper4::readByteFrom(int address)
+{
+  if (chrMode == CHR_2KB_FIRST)
     {
-    case 0:
-      break;
-    case 1:
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    case 4:
-      break;
-    case 5:
-      break;
-    case 6:
-      break;
-    case 7:
-      break;
+      
     }
 }
 
