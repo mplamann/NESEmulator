@@ -95,8 +95,6 @@ int MemoryState::readByteFrom(int address)
 
 void MemoryState::writeByteTo(int address, int value)
 {
-  //if (cpu->getCycles() < 29658 && (address == 0x2000 || address == 0x2001 || address == 0x2005 || address == 0x2006))
-  //  return; // PPU ignores some writes shortly after startup
 #ifdef PPU_WRITE_LOG
   if (address >= 0x2000 && address < 0x2007 && address != 0x2004)
     {

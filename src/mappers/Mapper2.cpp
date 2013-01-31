@@ -7,8 +7,8 @@ using namespace std;
 Mapper2::Mapper2(char* file) : Mapper(file)
 {
   cout << "using mapper 2...";
-  prgBank1Index = 0;
-  prgBank2Index = nPrgBanks-1;
+  prgIndexes[0] = 0;
+  prgIndexes[1] = nPrgBanks-1;
 }
 
 Mapper2::~Mapper2(void)
@@ -17,35 +17,29 @@ Mapper2::~Mapper2(void)
 
 void Mapper2::writeByteTo(int, int value)
 {
-  /*if (address < 0x8000)
-    {
-      cout << "Mapper2 cannot write to addresses < 0x8000.\n";
-      return;
-      }*/
-  prgBank1Index = value;
+  prgIndexes[1] = value;
 }
 
 size_t Mapper2::stateSize()
 {
-  int sInts = sizeof(int)*4;
-  return sInts;
+  return sizeof(int)*(16/prgBankSize + 8/chrBankSize);
 }
 
 char* Mapper2::stateData()
 {
   char* buffer = (char*)malloc(sizeof(char)*stateSize());
-  int otherValues[4] = {prgBank1Index, prgBank2Index, chrBank1Index, chrBank2Index};
-  memcpy(buffer, otherValues, 4*sizeof(int));
+
+  memcpy(buffer, prgIndexes, 16/prgBankSize*sizeof(int));
+  int bufferIndex = sizeof(int)*16/prgBankSize;
+  memcpy(buffer+bufferIndex, chrIndexes, 8/chrBankSize*sizeof(int));
+
   return buffer;
 }
 
 void Mapper2::loadState(char* buffer)
 {
-  int otherValues[4];
-  memcpy(otherValues, buffer, 4*sizeof(int));
-  prgBank1Index = otherValues[0];
-  prgBank2Index = otherValues[1];
-  chrBank1Index = otherValues[2];
-  chrBank2Index = otherValues[3];
+  memcpy(prgIndexes, buffer, 16/prgBankSize*sizeof(int));
+  int bufferIndex = 16/prgBankSize*sizeof(int);
+  memcpy(chrIndexes, buffer+bufferIndex, 8/chrBankSize*sizeof(int));
 }
 

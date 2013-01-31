@@ -13,8 +13,6 @@ const int CHR_SWITCH_2x4 = 1;
 class Mapper1 : public Mapper
 {
  private:
-  int prgRam[0x2000];
-  bool prgRamEnabled;
   int prgBankIndex;
   int shiftRegister;
   int shiftIndex;
@@ -32,7 +30,6 @@ class Mapper1 : public Mapper
   Mapper1(char* file);
   ~Mapper1(void);
   void writeByteTo(int address, int value);
-  int readByteFrom(int address);
 
   size_t stateSize();
   char* stateData();

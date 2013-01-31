@@ -14,7 +14,11 @@ public:
 
 private:
   bool fireIRQs;
-  
+  int command;
+  int irqCounter;
+  int irqLatch;
+
+  void runCommand(int value);
   void scanlineCounter();
   int lastPpuAddr;
   int counterValue;

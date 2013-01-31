@@ -10,13 +10,15 @@ class Mapper
   int nPrgBanks;
   int nChrBanks;
   int mapperNumber;
+  int prgBankSize;
+  int chrBankSize;
+  int* prgIndexes;
+  int* chrIndexes;
 
   bool batteryBacked;
+  int prgRam[0x2000];
+  bool prgRamEnabled;
 
-  int prgBank1Index;
-  int prgBank2Index;
-  int chrBank1Index;
-  int chrBank2Index;
  public:
   virtual int readByteFrom(int address);
   virtual void writeByteTo(int address, int value);
@@ -32,6 +34,6 @@ class Mapper
   virtual void saveBattery(char* filename) {}
   virtual void loadBattery(char* filename) {}
 
-  Mapper(char* file);
+  Mapper(char* file, int prgBankSize = 16, int chrBankSize = 4);
   ~Mapper(void);
 };

@@ -3,40 +3,48 @@
 #include <iostream>
 using namespace std;
 
-Mapper::Mapper(char* file)
+Mapper::Mapper(char* file, int _prgBankSize, int _chrBankSize)
 {
-  nPrgBanks = file[4];
-  nChrBanks = 2*file[5];
-  cout << "\n" << nPrgBanks << " PRG banks\n" << nChrBanks << " CHR banks\n";
+  prgBankSize = _prgBankSize;
+  chrBankSize = _chrBankSize;
+  int prgBankMultiplier = 16 / prgBankSize;
+  int chrBankMultiplier = 8 / chrBankSize;
+  nPrgBanks = prgBankMultiplier*file[4];
+  nChrBanks = chrBankMultiplier*file[5];
+  cout << "\n" << nPrgBanks << " " << prgBankSize << "KB PRG banks\n" << nChrBanks << " " << chrBankSize << "KB CHR banks\n";
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
   mirroring = file[6] & 0x9;
   batteryBacked = file[6] & 0x02;
+  prgRamEnabled = false;
   
   // Initialize 2D arrays
   prgBanks = new char*[nPrgBanks];
   chrBanks = new char*[nChrBanks];
   for (int i = 0; i < nPrgBanks; i++)
-    prgBanks[i] = new char[16*1024];
+    prgBanks[i] = new char[prgBankSize*1024];
   for (int i = 0; i < (nChrBanks > 0 ? nChrBanks : 2); i++)
-    chrBanks[i] = new char[4*1024];
+    chrBanks[i] = new char[chrBankSize*1024];
 
-  prgBank1Index = 0;
-  prgBank2Index = 0;
-  chrBank1Index = 0;
-  chrBank2Index = 1;
+  prgIndexes = new int[32/prgBankSize];
+  chrIndexes = new int[8/chrBankSize];
+  for (int i = 0; i < 32/prgBankSize; i++)
+    prgIndexes[i] = 0;
+  for (int i = 0; i < 8/chrBankSize; i++)
+    chrIndexes[i] = 0;
+  chrIndexes[1] = 1;
   if (nPrgBanks > 1)
-    prgBank2Index = 1;
+    prgIndexes[1] = 1;
 
   int filePointer = 16;
   for (int i = 0; i < nPrgBanks; i++)
     {
-      memcpy(prgBanks[i], file+filePointer, 16*1024);
-      filePointer += 16*1024;
+      memcpy(prgBanks[i], file+filePointer, prgBankSize*1024);
+      filePointer += prgBankSize*1024;
     }
   for (int i = 0; i < nChrBanks; i++)
     {
-      memcpy(chrBanks[i], file+filePointer, 4*1024);
-      filePointer += 4*1024;
+      memcpy(chrBanks[i], file+filePointer, chrBankSize*1024);
+      filePointer += chrBankSize*1024;
     }
   return;
 }
@@ -54,48 +62,59 @@ Mapper::~Mapper(void)
 
 int Mapper::readByteFrom(int address)
 {
-  if (address < 0x8000)
+  if (address < 0x6000)
     {
       //      cout << "Mapper.c does not know what to do with address " << address << ". Returning 0\n";
       return 0;
+    }
+  else if (address >= 0x6000 && address < 0x8000)
+    {
+      if (prgRamEnabled)
+	return prgRam[address-0x6000];
+      else
+	return 0;
     }
   else if (nPrgBanks == 0)
     {
       return 0;
     }
-  else if (address < 0xC000)
-    {
-      int adjustedAddress = address - 0x8000;
-      return prgBanks[prgBank1Index][adjustedAddress];
-    }
-  else
-    {
-      int adjustedAddress = address - 0xC000;
-      return prgBanks[prgBank2Index][adjustedAddress];
-    }
+  address -= 0x8000;
+  int prgBankIndex = (address / 1024*prgBankSize);
+  int adjustedAddress = (address % 1024*prgBankSize);
+  return prgBanks[prgIndexes[prgBankIndex]][adjustedAddress];
 }
 
 void Mapper::writeByteTo(int address, int value)
 {
+  if (address >= 0x6000 && address < 0x8000)
+    {
+      if (prgRamEnabled)
+	{
+	  prgRam[address-0x6000] = value;
+	  return;
+	}
+      else
+	{
+	  return;
+	}
+    }
   cout << "Mapper.cpp written to, can't do anything with this!\n";
 }
 
 int Mapper::ppuReadByteFrom(int address)
 {
-  char* bank = chrBanks[chrBank1Index];
-  if (address >= 4*1024)
-    bank = chrBanks[chrBank2Index];
-  return bank[address % (4*1024)];
+  int chrBankIndex = (address / 1024*chrBankSize);
+  int adjustedAddress = (address % 1024*chrBankSize);
+  return chrBanks[chrIndexes[chrBankIndex]][adjustedAddress];
 }
 
 void Mapper::ppuWriteByteTo(int address, int value)
 {
   if (nChrBanks != 0)
     return;
-  char* bank = chrBanks[chrBank1Index];
-  if (address >= 4*1024)
-    bank = chrBanks[chrBank2Index];
-  bank[address % (4*1024)] = (value & 0xFF);
+  int chrBankIndex = (address / 1024*chrBankSize);
+  int adjustedAddress = (address % 1024*chrBankSize);
+  chrBanks[chrIndexes[chrBankIndex]][adjustedAddress] = value & 0xFF;
 }
 
 size_t Mapper::stateSize()

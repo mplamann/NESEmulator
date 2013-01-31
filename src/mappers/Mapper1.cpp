@@ -13,7 +13,6 @@ Mapper1::Mapper1(char* file) : Mapper(file)
   prgBankMode = PRG_SWITCH_FIRST_16;
   chrBankMode = CHR_SWITCH_2x4;
   prgBankIndex = 0;
-  prgRamEnabled = false;
   updatePRGIndexes();
 }
 
@@ -130,11 +129,11 @@ void Mapper1::writeCHR0(int value)
 #ifdef MAPPER_DEBUG
   cout << "Bankswitch CHR0 to bank " << value << "\n";
 #endif
-  chrBank1Index = value;
+  chrIndexes[0] = value;
   if (chrBankMode == CHR_SWITCH_8)
     {
       value &= 0x1E;
-      chrBank2Index = value+1;
+      chrIndexes[1] = value+1;
     }
 }
 
@@ -145,7 +144,7 @@ void Mapper1::writeCHR1(int value)
 #ifdef MAPPER_DEBUG
   cout << "Bankswitch CHR1 to bank " << value << "\n";
 #endif
-  chrBank2Index = value;
+  chrIndexes[1] = value;
 }
 
 void Mapper1::writePRG(int value)
@@ -162,38 +161,27 @@ void Mapper1::updatePRGIndexes()
 {
   if (prgBankMode == PRG_SWITCH_32)
     {
-      prgBank1Index = prgBankIndex & 0xE;
-      prgBank2Index = prgBank1Index+1;
+      prgIndexes[0] = prgBankIndex & 0xE;
+      prgIndexes[1] = prgIndexes[0]+1;
     }
   else if (prgBankMode == PRG_SWITCH_LAST_16)
     {
-      prgBank1Index = 0;
-      prgBank2Index = prgBankIndex;
+      prgIndexes[0] = 0;
+      prgIndexes[1] = prgBankIndex;
     }
   else if (prgBankMode == PRG_SWITCH_FIRST_16)
     {
-      prgBank1Index = prgBankIndex;
-      prgBank2Index = nPrgBanks-1;
+      prgIndexes[0] = prgBankIndex;
+      prgIndexes[1] = nPrgBanks-1;
     }
-}
-
-int Mapper1::readByteFrom(int address)
-{
-  if (address >= 0x6000 && address < 0x8000)
-    {
-      if (prgRamEnabled)
-	return prgRam[address-0x6000];
-      else
-	return 0;
-    }
-  return Mapper::readByteFrom(address);
 }
 
 size_t Mapper1::stateSize()
 {
   int sPrgRam = sizeof(int)*0x2000;
-  int sOtherInts = sizeof(int)*9;
-  return sPrgRam + sOtherInts + sizeof(bool);
+  int sIndexes = sizeof(int)*(16/prgBankSize + 8/chrBankSize);
+  int sOtherInts = sizeof(int)*5;
+  return sPrgRam + sOtherInts + sIndexes + sizeof(bool);
 }
 
 char* Mapper1::stateData()
@@ -204,8 +192,12 @@ char* Mapper1::stateData()
   bufferIndex+=sizeof(int)*0x2000;
   memcpy(buffer+bufferIndex, &prgRamEnabled, sizeof(bool));
   bufferIndex+=sizeof(bool);
-  int otherValues[9] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode, prgBank1Index, prgBank2Index, chrBank1Index, chrBank2Index};
-  memcpy(buffer+bufferIndex, otherValues, 9*sizeof(int));
+  int otherValues[5] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode};
+  memcpy(buffer+bufferIndex, otherValues, 5*sizeof(int));
+  bufferIndex+=sizeof(int)*5;
+  memcpy(buffer+bufferIndex, prgIndexes, 16/prgBankSize*sizeof(int));
+  bufferIndex += sizeof(int)*16/prgBankSize;
+  memcpy(buffer+bufferIndex, chrIndexes, 8/chrBankSize*sizeof(int));
   return buffer;
 }
 
@@ -216,17 +208,17 @@ void Mapper1::loadState(char* buffer)
   bufferIndex+=sizeof(int)*0x2000;
   memcpy(&prgRamEnabled, buffer+bufferIndex, sizeof(bool));
   bufferIndex+=sizeof(bool);
-  int otherValues[9];
-  memcpy(otherValues, buffer+bufferIndex, 9*sizeof(int));
+  int otherValues[5];
+  memcpy(otherValues, buffer+bufferIndex, 5*sizeof(int));
+  bufferIndex += 5*sizeof(int);
+  memcpy(prgIndexes, buffer+bufferIndex, 16/prgBankSize*sizeof(int));
+  bufferIndex += 16/prgBankSize*sizeof(int);
+  memcpy(chrIndexes, buffer+bufferIndex, 8/chrBankSize*sizeof(int));
   prgBankIndex = otherValues[0];
   shiftRegister = otherValues[1];
   shiftIndex = otherValues[2];
   prgBankMode = otherValues[3];
   chrBankMode = otherValues[4];
-  prgBank1Index = otherValues[5];
-  prgBank2Index = otherValues[6];
-  chrBank1Index = otherValues[7];
-  chrBank2Index = otherValues[8];
 }
 
 void Mapper1::saveBattery(char* filename)
