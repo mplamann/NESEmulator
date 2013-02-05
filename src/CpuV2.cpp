@@ -806,6 +806,13 @@ void CpuV2::doBRK()
   BRK(this, 0);
 }
 
+void CpuV2::doIRQ()
+{
+  cycles += 7;
+  I = true;
+  BRK(this, 0);
+}
+
 int CpuV2::elapsed()
 {
   return total_cycles - cycles_remain;

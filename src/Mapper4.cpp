@@ -11,8 +11,10 @@ Mapper4::Mapper4(char* file) : Mapper(file, 8, 1)
 {
   cout << "using mapper 4...";
   lastPpuAddr = -1;
-  counterValue = 1;
-  
+  irqCounter = 1;
+
+  prgIndexes[2] = nPrgBanks - 2;
+  prgIndexes[3] = nPrgBanks - 3;
 }
 
 Mapper4::~Mapper4(void)
@@ -57,28 +59,78 @@ void Mapper4::writeByteTo(int address, int value)
 
 void Mapper4::bankSwitch(int value)
 {
-  if (targetBank < 6)
-    chrIndexes[targetBank] = value;
+  if (targetBank < 2)
+    {
+      chrIndexes[2*targetBank] = value;
+      chrIndexes[2*targetBank+1] = value+1;
+    }
+  else if (targetBank < 6)
+    chrIndexes[targetBank+2] = value;
   else
     prgIndexes[targetBank-6] = value;
 }
 
-int Mapper4::readByteFrom(int address)
+////////////////////////////////////////////////////////////////////////////////
+// CHR Bank switching                                                         //
+////////////////////////////////////////////////////////////////////////////////
+
+inline int Mapper4::chrBankNumber(int address)
 {
-  if (chrMode == CHR_2KB_FIRST)
+  int bankNumber = address / 0x400;
+  if (chrMode == CHR_2KB_LAST)
     {
-      
+      bankNumber += 4;
+      bankNumber %= 8;
     }
+  return bankNumber;
+}
+
+int Mapper4::ppuReadByteFrom(int address)
+{
+  int bankAddress = address % 0x400;
+  return chrBanks[chrIndexes[chrBankNumber(address)]][bankAddress];
 }
 
 void Mapper4::ppuWriteByteTo(int address, int value)
 {
+  if (nChrBanks != 0)
+    return;
+  int bankAddress = address % 0x400;
+  chrBanks[chrIndexes[chrBankNumber(address)]][bankAddress] = value;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// PRG Bank switching                                                         //
+////////////////////////////////////////////////////////////////////////////////
+
+inline int Mapper4::prgBankNumber(int address)
+{
+  int bankNumber = (address-0x8000) / 0x2000;
+  if (prgMode == PRG_SWITCH_MID && bankNumber == 0)
+    bankNumber = 2;
+  else if (prgMode == PRG_SWITCH_MID && bankNumber == 2)
+    bankNumber = 0;
+  return bankNumber;
+}
+
+int Mapper4::readByteFrom(int address)
+{
+  int bankAddress = address % 0x2000;
+  return prgBanks[prgIndexes[prgBankNumber(address)]][bankAddress];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// IRQ Counter                                                                //
+////////////////////////////////////////////////////////////////////////////////
 
 void Mapper4::scanlineCounter()
 {
-  counterValue--;
-  
+  irqCounter--;
+  if (irqCounter == 0)
+    {
+      cpu->doIRQ();
+      irqCounter = irqLatch;
+    }
 }
 
 void Mapper4::updatePpuAddr(int address)

@@ -23,7 +23,7 @@ Mapper::Mapper(char* file, int _prgBankSize, int _chrBankSize)
   chrBanks = new char*[nChrBanks];
   for (int i = 0; i < nPrgBanks; i++)
     prgBanks[i] = new char[prgBankSize*1024];
-  for (int i = 0; i < (nChrBanks > 0 ? nChrBanks : 2); i++)
+  for (int i = 0; i < (nChrBanks > 0 ? nChrBanks : chrBankMultiplier); i++)
     chrBanks[i] = new char[chrBankSize*1024];
 
   prgIndexes = new int[32/prgBankSize];

@@ -31,6 +31,7 @@ public:
   void doRESET();
   void doNMI();
   void doBRK();
+  void doIRQ();
 
   char* stateData(size_t* size);
   void loadState(char* size, size_t size);

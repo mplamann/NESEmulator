@@ -9,6 +9,7 @@
 #include "Mapper0.h"
 #include "Mapper1.h"
 #include "Mapper2.h"
+#include "Mapper4.h"
 using namespace std;
 
 MemoryState::MemoryState(void)
@@ -466,8 +467,11 @@ void MemoryState::loadFileToRAM(char* filename)
     case 2:
       mapper = new Mapper2(file);
       break;
+    case 4:
+      mapper = new Mapper4(file);
+      break;
     default:
-      mapper = new Mapper(file);
+      cout << "Error! Unknown mapper number " << mapperNumber << ".\n";
       break;
     }
 
