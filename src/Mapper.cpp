@@ -11,7 +11,7 @@ Mapper::Mapper(char* file, int _prgBankSize, int _chrBankSize)
   int chrBankMultiplier = 8 / chrBankSize;
   nPrgBanks = prgBankMultiplier*file[4];
   nChrBanks = chrBankMultiplier*file[5];
-  cout << "\n" << nPrgBanks << " " << prgBankSize << "KB PRG banks\n" << nChrBanks << " " << chrBankSize << "KB CHR banks\n";
+  cout << "\n0x" << nPrgBanks << " " << prgBankSize << "KB PRG banks\n0x" << nChrBanks << " " << chrBankSize << "KB CHR banks\n";
   mapperNumber = ((file[6] & 0xF0) >> 4) + (file[7] & 0xF0);
   mirroring = file[6] & 0x9;
   batteryBacked = file[6] & 0x02;

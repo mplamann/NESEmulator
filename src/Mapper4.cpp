@@ -14,7 +14,7 @@ Mapper4::Mapper4(char* file) : Mapper(file, 8, 1)
   irqCounter = 1;
 
   prgIndexes[2] = nPrgBanks - 2;
-  prgIndexes[3] = nPrgBanks - 3;
+  prgIndexes[3] = nPrgBanks - 1;
 }
 
 Mapper4::~Mapper4(void)
@@ -115,8 +115,24 @@ inline int Mapper4::prgBankNumber(int address)
 
 int Mapper4::readByteFrom(int address)
 {
+  if (address < 0x6000)
+    {
+      return 0;
+    }
+  else if (address >= 0x6000 && address < 0x8000)
+    {
+      if (prgRamEnabled)
+	return prgRam[address-0x6000];
+      else
+	return 0;
+    }
+  else if (nPrgBanks == 0)
+    {
+      return 0;
+    }
   int bankAddress = address % 0x2000;
-  return prgBanks[prgIndexes[prgBankNumber(address)]][bankAddress];
+  int bank = prgBankNumber(address);
+  return prgBanks[prgIndexes[bank]][bankAddress];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,11 +141,13 @@ int Mapper4::readByteFrom(int address)
 
 void Mapper4::scanlineCounter()
 {
-  irqCounter--;
   if (irqCounter == 0)
+    irqCounter = irqLatch;
+  else
     {
-      cpu->doIRQ();
-      irqCounter = irqLatch;
+      irqCounter--;
+      if (irqCounter == 0)
+	  cpu->doIRQ();
     }
 }
 

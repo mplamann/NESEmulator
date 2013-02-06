@@ -752,7 +752,7 @@ void CpuV2::RunInstruction()
   int arg2 = memory->readByteFrom(PC+2);
 
   //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x0678: " << memory->readByteFrom(0x0678);
+  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x7955: " << memory->readByteFrom(0x7955);
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
@@ -791,6 +791,7 @@ void CpuV2::doRESET()
   cycles += 6;
   I = true;
   PC = memory->readByteFrom(VECTOR_RESET) + (memory->readByteFrom(VECTOR_RESET+1) << 8);
+  cout << "RESET! Jumping to 0x" << PC << "\n";
 }
 
 void CpuV2::doNMI()
