@@ -277,6 +277,7 @@ void PpuState::renderScanline(int scanline)
     {
       memory->PPUADDR &= ~(0x041F);
       memory->PPUADDR |= (memory->loopyT & 0x041F);
+      memory->scanlineCounter();
     }
 
 #ifdef PPU_DEBUG

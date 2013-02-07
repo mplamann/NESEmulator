@@ -14,11 +14,13 @@ public:
   void writeByteTo(int address, int value);
   void ppuWriteByteTo(int address, int value);
   void updatePpuAddr(int address);
+  void scanlineCounter();
 
   CpuV2* cpu;
 
 private:
   bool fireIRQs;
+  bool counter_latched;
   int targetBank;
   int irqCounter;
   int irqLatch;
@@ -28,7 +30,6 @@ private:
   void bankSwitch(int value);
   inline int chrBankNumber(int address);
   inline int prgBankNumber(int address);
-  void scanlineCounter();
   int lastPpuAddr;
 };
 

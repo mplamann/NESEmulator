@@ -25,7 +25,7 @@ public:
   
   CpuV2(void);
   ~CpuV2(void);
-  void RunInstruction();
+  void RunInstruction(int scanline);
   void RunForCycles(float cycle_cout, int scanline);
 
   void doRESET();

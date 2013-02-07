@@ -62,6 +62,8 @@ public:
 
   unsigned char colorForPaletteIndex(bool isSprite, int palette, int index);
 
+  void scanlineCounter();
+
   // PPU Registers
   unsigned char PPUCTRL;
   unsigned char PPUMASK;

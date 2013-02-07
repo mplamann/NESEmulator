@@ -404,6 +404,12 @@ unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex,
   return retVal;
 }
 
+void MemoryState::scanlineCounter()
+{
+  cout << "Count it!\n";
+  mapper->scanlineCounter();
+}
+
 ////////////////////////////////////////////////////////////////////////
 // File IO
 ////////////////////////////////////////////////////////////////////////
@@ -469,6 +475,7 @@ void MemoryState::loadFileToRAM(char* filename)
       break;
     case 4:
       mapper = new Mapper4(file);
+      ((Mapper4*)mapper)->cpu = cpu;
       break;
     default:
       cout << "Error! Unknown mapper number " << mapperNumber << ".\n";

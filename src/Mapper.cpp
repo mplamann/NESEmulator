@@ -131,3 +131,7 @@ char* Mapper::stateData()
 void Mapper::loadState(char* ignored)
 {
 }
+
+void Mapper::scanlineCounter()
+{
+}

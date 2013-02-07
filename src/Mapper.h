@@ -35,6 +35,8 @@ class Mapper
   virtual void saveBattery(char* filename) {}
   virtual void loadBattery(char* filename) {}
 
+  virtual void scanlineCounter();
+
   Mapper(char* file, int prgBankSize = 16, int chrBankSize = 4);
   ~Mapper(void);
 };

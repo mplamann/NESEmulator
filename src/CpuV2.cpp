@@ -745,14 +745,14 @@ int CpuV2::getP()
   return P;
 }
 
-void CpuV2::RunInstruction()
+void CpuV2::RunInstruction(int scanline)
 {
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
 
   //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " 0x7955: " << memory->readByteFrom(0x7955);
+  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " SL: " << dec << scanline << hex;
 
   int argument = addressingModes[opcode](this, arg1, arg2);
   cycles += cycleMap[opcode];
@@ -761,7 +761,7 @@ void CpuV2::RunInstruction()
   //cout << "\n";
 }
 
-void CpuV2::RunForCycles(float cycle_count, int)
+void CpuV2::RunForCycles(float cycle_count, int scanline)
 {
   double fpart, ipart;
   fpart = modf(cycle_count, &ipart);
@@ -779,7 +779,7 @@ void CpuV2::RunForCycles(float cycle_count, int)
   int lastCycle = cycles;
   while (cycles_remain > 0)
     {
-      RunInstruction();
+      RunInstruction(scanline);
       int dCycles = cycles-lastCycle;
       cycles_remain -= dCycles;
       lastCycle = cycles;

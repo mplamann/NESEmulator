@@ -23,6 +23,7 @@ Mapper4::~Mapper4(void)
 
 void Mapper4::writeByteTo(int address, int value)
 {
+  //cout << "Mapper 4: 0x" << address << " = 0x" << value << "\n";
   value &= 0xFF;
   switch (address)
     {
@@ -43,16 +44,22 @@ void Mapper4::writeByteTo(int address, int value)
       break;
     case 0xC000:
       irqLatch = value;
+      if (!counter_latched)
+	irqCounter = irqLatch;
       break;
     case 0xC001:
       irqCounter = irqLatch;
+      counter_latched = false;
       break;
     case 0xE000:
       fireIRQs = false;
-      irqCounter = irqLatch;
+      if (!counter_latched)
+	irqCounter = irqLatch;
       break;
     case 0xE001:
       fireIRQs = true;
+      if (!counter_latched)
+	irqCounter = irqLatch;
       break;
     }
 }
@@ -141,19 +148,20 @@ int Mapper4::readByteFrom(int address)
 
 void Mapper4::scanlineCounter()
 {
-  if (irqCounter == 0)
-    irqCounter = irqLatch;
-  else
+  counter_latched = true;
+  if (irqCounter--)
+    return;
+  irqCounter = irqLatch;
+  if (fireIRQs)
     {
-      irqCounter--;
-      if (irqCounter == 0)
-	  cpu->doIRQ();
+      cpu->doIRQ();
+      counter_latched = false;
     }
 }
 
 void Mapper4::updatePpuAddr(int address)
 {
-  if (lastPpuAddr != -1)
+  /*if (lastPpuAddr != -1)
     {
       if (!(lastPpuAddr & 0x0100) && (address & 0x0100))
 	{
@@ -161,5 +169,5 @@ void Mapper4::updatePpuAddr(int address)
 	  scanlineCounter();
 	}
     }
-  lastPpuAddr = address;
+    lastPpuAddr = address;*/
 }
