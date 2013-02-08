@@ -406,7 +406,6 @@ unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex,
 
 void MemoryState::scanlineCounter()
 {
-  cout << "Count it!\n";
   mapper->scanlineCounter();
 }
 

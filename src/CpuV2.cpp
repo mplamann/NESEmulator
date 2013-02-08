@@ -529,79 +529,99 @@ void AXS(CpuV2*, int)
 void KIL(CpuV2*, int) { cout << "KIL called. Is that really what you want?\n"; }
 void NOP(CpuV2*, int) {}
 
+const int pbcTable[] =
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, // 1
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, // 3
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 4
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, // 5
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 6
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, // 7
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 8
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 9
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, // B
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, // D
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E
+   0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0};// F
+
 //------------------------------------------------------------------------------
 // Addressing Modes
 // CAPS = returns address referred to by arguments
 // lower = returns memory pointed to by that address
 //------------------------------------------------------------------------------
 
-int imp(CpuV2* cpu, int, int) // Implied - doesn't take an argument
+int imp(CpuV2* cpu, int, int, int) // Implied - doesn't take an argument
 {
   cpu->PC += 1;
   return 0;
 }
 
-int imm(CpuV2* cpu, int arg1, int) // Immediate - argument is passed in as arg1
+int imm(CpuV2* cpu, int, int arg1, int) // Immediate - argument is passed in as arg1
 {
   cpu->PC += 2;
   return arg1;
 }
 
-int ZP(CpuV2* cpu, int arg1, int)
+int ZP(CpuV2* cpu, int, int arg1, int)
 {
   cpu->PC += 2;
   return arg1;
 }
-int zp(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ZP(cpu,arg1,arg2));}
+int zp(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ZP(cpu,opcode,arg1,arg2));}
 
-int ZPX(CpuV2* cpu, int arg1, int)
+int ZPX(CpuV2* cpu, int, int arg1, int)
 {
   cpu->PC += 2;
   return (arg1 + cpu->X) & 0xFF;
 }
-int zpx(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ZPX(cpu,arg1,arg2));}
+int zpx(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ZPX(cpu,opcode,arg1,arg2));}
 
-int ZPY(CpuV2* cpu, int arg1, int)
+int ZPY(CpuV2* cpu, int, int arg1, int)
 {
   cpu->PC += 2;
   return (arg1 + cpu->Y) & 0xFF;
 }
-int zpy(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ZPY(cpu,arg1,arg2));}
+int zpy(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ZPY(cpu,opcode,arg1,arg2));}
 
-int jab(CpuV2* cpu, int arg1, int arg2) // JMP_Abs uses just the abs mem addr, not the value stored there.
-{                                       // Otherwise, same as abs
+int jab(CpuV2* cpu, int, int arg1, int arg2) // JMP_Abs uses just the abs mem addr, not the value stored there.
+{                                            // Otherwise, same as abs
   int addr = arg1 + (arg2 << 8);
   cpu->PC += 3;
   return addr;
 }
 
-int ABS(CpuV2* cpu, int arg1, int arg2)
+int ABS(CpuV2* cpu, int, int arg1, int arg2)
 {
   int addr = arg1 + (arg2 << 8);
   cpu->PC += 3;
   return addr;
 }
-int abs(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ABS(cpu,arg1,arg2));}
+int abs(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ABS(cpu,opcode,arg1,arg2));}
 
-int ABX(CpuV2* cpu, int arg1, int arg2)
+int ABX(CpuV2* cpu, int opcode, int arg1, int arg2)
 {
   int addr = arg1 + (arg2 << 8);
   cpu->PC += 3;
-  cpu->cycles += pageBoundaryCycles(addr, cpu->X);
+  if (pbcTable[opcode])
+    cpu->cycles += pageBoundaryCycles(addr, cpu->X);
   return (addr + cpu->X) & 0xFFFF;
 }
-int abx(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ABX(cpu,arg1,arg2));}
+int abx(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ABX(cpu,opcode,arg1,arg2));}
 
-int ABY(CpuV2* cpu, int arg1, int arg2)
+int ABY(CpuV2* cpu, int opcode, int arg1, int arg2)
 {
   int addr = arg1 + (arg2 << 8);
   cpu->PC += 3;
-  cpu->cycles += pageBoundaryCycles(addr, cpu->Y);
+  if (pbcTable[opcode])
+    cpu->cycles += pageBoundaryCycles(addr, cpu->Y);
   return (addr + cpu->Y) & 0xFFFF;
 }
-int aby(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(ABY(cpu,arg1,arg2));}
+int aby(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(ABY(cpu,opcode,arg1,arg2));}
 
-int ind(CpuV2* cpu, int arg1, int arg2) // Used only in JMP_Ind
+int ind(CpuV2* cpu, int, int arg1, int arg2) // Used only in JMP_Ind
 {
   int addrLSB = arg1 + (arg2 << 8);
   int addrMSB = ((arg1 + 1) & 0xFF) + (arg2 << 8);
@@ -609,31 +629,32 @@ int ind(CpuV2* cpu, int arg1, int arg2) // Used only in JMP_Ind
   return cpu->memory->readByteFrom(addrLSB) + (cpu->memory->readByteFrom(addrMSB) << 8);
 }
 
-int INX(CpuV2* cpu, int arg1, int)
+int INX(CpuV2* cpu, int, int arg1, int)
 {
   int zpAddress = (arg1 + cpu->X) & 0xFF;
   int indirectAddress = cpu->memory->readByteFrom(zpAddress) + (cpu->memory->readByteFrom((zpAddress+1)%0x100)<<8);
   cpu->PC += 2;
   return indirectAddress;
 }
-int inx(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(INX(cpu,arg1,arg2));}
+int inx(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(INX(cpu,opcode,arg1,arg2));}
 
-int INY(CpuV2* cpu, int arg1, int)
+int INY(CpuV2* cpu, int opcode, int arg1, int)
 {
   int indirectAddress = cpu->memory->readByteFrom(arg1) + (cpu->memory->readByteFrom((arg1 + 1) & 0xFF) << 8);
-  cpu->cycles += pageBoundaryCycles(indirectAddress, cpu->Y);
+  if (pbcTable[opcode])
+    cpu->cycles += pageBoundaryCycles(indirectAddress, cpu->Y);
   cpu->PC += 2;
   return (indirectAddress + cpu->Y) & 0xFFFF;
 }
-int iny(CpuV2* cpu, int arg1, int arg2) {return cpu->memory->readByteFrom(INY(cpu,arg1,arg2));}
+int iny(CpuV2* cpu, int opcode, int arg1, int arg2) {return cpu->memory->readByteFrom(INY(cpu,opcode,arg1,arg2));}
 
-int ACC(CpuV2* cpu, int, int) { cpu->PC += 1; return -1; } // -1 is signal to use accumulator as memory address
-int acc(CpuV2* cpu, int, int)
+int ACC(CpuV2* cpu, int, int, int) { cpu->PC += 1; return -1; } // -1 is signal to use accumulator as memory address
+int acc(CpuV2* cpu, int, int, int)
 {
   cpu->PC += 1;
   return cpu->A;
 }
-int rel(CpuV2* cpu, int arg1, int)
+int rel(CpuV2* cpu, int, int arg1, int)
 {
   cpu->PC += 2;
   int offset = arg1;
@@ -642,7 +663,7 @@ int rel(CpuV2* cpu, int arg1, int)
   return offset;
 }
 
-int (*addressingModes[256]) (CpuV2* cpu, int arg1, int arg2) =
+int (*addressingModes[256]) (CpuV2* cpu, int opcode, int arg1, int arg2) =
 {imp, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
  rel, iny, imp, INY, zpx, zpx, ZPX, ZPX, imp, aby, imp, ABY, abx, abx, ABX, ABX,
  ABS, inx, imp, INX, zp,  zp,  ZP,  ZP,  imp, imm, ACC, imm, abs, abs, ABS, ABS,
@@ -697,7 +718,7 @@ const char* opcodeStrings[256] =
  "BEQ", "SBC", "KIL", "ISB", "NOP", "SBC", "INC", "ISB", "SED", "SBC", "NOP", "ISB", "NOP", "SBC", "INC", "ISB"};
 
 const int cycleMap[] =
-  {7, 8, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
+  {7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
    6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,
    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
@@ -754,7 +775,7 @@ void CpuV2::RunInstruction(int scanline)
   //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
   //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " SL: " << dec << scanline << hex;
 
-  int argument = addressingModes[opcode](this, arg1, arg2);
+  int argument = addressingModes[opcode](this, opcode, arg1, arg2);
   cycles += cycleMap[opcode];
   opcodes[opcode](this, argument);
 
@@ -791,7 +812,6 @@ void CpuV2::doRESET()
   cycles += 6;
   I = true;
   PC = memory->readByteFrom(VECTOR_RESET) + (memory->readByteFrom(VECTOR_RESET+1) << 8);
-  cout << "RESET! Jumping to 0x" << PC << "\n";
 }
 
 void CpuV2::doNMI()

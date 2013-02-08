@@ -10,3 +10,5 @@ Mapper0::Mapper0(char* file) : Mapper(file)
 Mapper0::~Mapper0(void)
 {
 }
+
+void Mapper0::countScanline() {}
