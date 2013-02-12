@@ -112,7 +112,7 @@ void STY(CpuV2* cpu, int argument)
 
 void CLC(CpuV2* cpu, int) { cpu->C = false; }
 void SEC(CpuV2* cpu, int) { cpu->C = true; }
-void CLI(CpuV2* cpu, int) { cpu->I = false; }
+void CLI(CpuV2* cpu, int) { cpu->oldI = false; }
 void SEI(CpuV2* cpu, int) { cpu->I = true; }
 void CLV(CpuV2* cpu, int) { cpu->V = false; }
 void CLD(CpuV2* cpu, int) { cpu->D = false; }
@@ -741,6 +741,7 @@ void CpuV2::setP(int P)
   C = ((P & 0x01) != 0);
   Z = ((P & 0x02) != 0);
   I = ((P & 0x04) != 0);
+  oldI = I;
   D = ((P & 0x08) != 0);
   V = ((P & 0x40) != 0);
   N = ((P & 0x80) != 0);
@@ -771,6 +772,7 @@ void CpuV2::RunInstruction(int scanline)
   int opcode = memory->readByteFrom(PC);
   int arg1 = memory->readByteFrom(PC+1);
   int arg2 = memory->readByteFrom(PC+2);
+  oldI = I;
 
   //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
   //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " SL: " << dec << scanline << hex;
@@ -811,6 +813,7 @@ void CpuV2::doRESET()
 {
   cycles += 6;
   I = true;
+  oldI = true;
   PC = memory->readByteFrom(VECTOR_RESET) + (memory->readByteFrom(VECTOR_RESET+1) << 8);
 }
 
@@ -829,6 +832,8 @@ void CpuV2::doBRK()
 
 void CpuV2::doIRQ()
 {
+  if (I)
+    return;
   cycles += 7;
   I = true;
   BRK(this, 0);
@@ -851,7 +856,7 @@ char* CpuV2::stateData(size_t* size)
   int bufferIndex = 0;
   
   int regs[5] = {A,X,Y,S,PC};
-  int flags[7] = {N,C,Z,I,D,V,B};
+  int flags[7] = {N,C,Z,oldI,D,V,B};
   memcpy(buffer+bufferIndex, regs, sizeOfRegs);
   bufferIndex += sizeOfRegs;
   memcpy(buffer+bufferIndex, flags, sizeOfFlags);
@@ -889,7 +894,7 @@ void CpuV2::loadState(char* buffer, size_t size)
   N = flags[0];
   C = flags[1];
   Z = flags[2];
-  I = flags[3];
+  oldI = flags[3];
   D = flags[4];
   V = flags[5];
   B = flags[6];
@@ -914,6 +919,7 @@ CpuV2::CpuV2(void)
   C = false;
   Z = false;
   I = true;
+  oldI = true;
   D = false;
   B = false;
   V = false;

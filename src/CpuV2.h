@@ -13,7 +13,7 @@ public:
   int S;
   int PC;
 
-  bool N,Z,C,I,D,V,B; // Processor status flags
+  bool N,Z,C,I,D,V,B,oldI; // Processor status flags
   int getP();
   void setP(int P);
 
