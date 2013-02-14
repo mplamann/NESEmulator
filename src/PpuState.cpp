@@ -54,11 +54,12 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
+  //cout << "\n";
   if (memory->PPUMASK & 0x18)
     {
       memory->PPUADDR = memory->loopyT;  
-      memory->PPUSTATUS &= 0xBF;
     }
+  memory->PPUSTATUS &= 0xBF;
 
   for (int i = 0; i < 256*scale*240; i++)
     {
@@ -147,8 +148,8 @@ inline void PpuState::renderBackground(int scanline)
 		x = (memory->loopyX);
 	      if (!(memory->PPUMASK & 0x02) && ((xOffset+x)&0xFF) < 8)
 		continue;
-	      int andOperator = 1<<(7-x);
-	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      int andPattern = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andPattern) + 2*(patternTablePlane2 & andPattern);
 	      colorIndex = colorIndex >> (7-x);
 
 	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
@@ -162,6 +163,7 @@ inline void PpuState::renderBackground(int scanline)
 		{
 		  backgroundPoints[(xOffset+x)] = true;
 		}
+	      //		  cout << colorIndex;//(int)backgroundPoints[xOffset+x];
 	    }
 	  incrementX();
 	}
@@ -169,6 +171,7 @@ inline void PpuState::renderBackground(int scanline)
       memory->PPUADDR &= ~(0x041F);
       memory->PPUADDR |= (memory->loopyT & 0x041F);
     } // End if background enabled
+  //    cout << "\n";
 }
 
 inline void PpuState::renderSprites(int scanline)
@@ -228,10 +231,10 @@ inline void PpuState::renderSprites(int scanline)
 	      // Check if this is hidden by PPUMASK
 	      if (!(memory->PPUMASK & 0x02) && (xOffset+x) < 8)
 		continue;
-	      int andOperator = 1<<(7-x);      
+	      int andPattern = 1<<(7-x);      
 	      if (spriteFlags&0x40) // Check for horizontal flip
-		andOperator = 1<<x;
-	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+		andPattern = 1<<x;
+	      int colorIndex = (patternTablePlane1 & andPattern) + 2*(patternTablePlane2 & andPattern);
 	      if (spriteFlags & 0x40) // Horizontal flip again
 		colorIndex = colorIndex >> x;
 	      else
@@ -249,12 +252,7 @@ inline void PpuState::renderSprites(int scanline)
 			scanlinePoints[(xOffset+x)*scale+j].color=color;
 		    }
 		  if (backgroundPoints[xOffset+x] && i == 0)
-		    {
 		      memory->PPUSTATUS |= 0x40;
-#ifdef PPU_WRITE_LOG
-		      cout << "Sprite #0 Hit!\n";
-#endif
-		    }
 		}
 	    }
         }
@@ -269,7 +267,7 @@ void PpuState::renderScanline(int scanline)
       backgroundPoints[i] = false;
   scanlinePoints = framePoints + (scanline)*256*scale;
   scanline += vScroll & 0x07;
-  
+
   renderBackground(scanline);
   renderSprites(scanline);
 
@@ -298,8 +296,8 @@ void PpuState::renderScanline(int scanline)
 	  int paletteIndex = attributeValueFromByteXY(memory->attributeEntryForXY(i,tileY,nametable*256,nametable*240),i,tileY);
 	  for (int x = 0; x < 8; x++)
 	    {
-	      int andOperator = 1<<(7-x);
-	      int colorIndex = (patternTablePlane1 & andOperator) + 2*(patternTablePlane2 & andOperator);
+	      int andPattern = 1<<(7-x);
+	      int colorIndex = (patternTablePlane1 & andPattern) + 2*(patternTablePlane2 & andPattern);
 	      colorIndex = colorIndex >> (7-x);
 	      
 	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
@@ -334,7 +332,7 @@ void PpuState::endFrame()
 
 #ifdef PPU_DEBUG
   al_set_target_backbuffer(nametableDisplay);
-  al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
+  //al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
   al_flip_display();
 
   // Draw palettes

@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   sigIntHandler.sa_handler = mark_done;
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
-  sigaction(SIGINT, &sigIntHandler, NULL);
+  //sigaction(SIGINT, &sigIntHandler, NULL);
 
   cout << hex << uppercase;
   cpu = new CpuV2();
@@ -147,6 +147,8 @@ int main(int argc, char** argv)
 	    }
 	  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
 	    {
+	      if (event.keyboard.keycode == ALLEGRO_KEY_F)
+		need_redraw = true;
 	      if (event.keyboard.keycode == ALLEGRO_KEY_B)
 		{
 		  cout << "BREAK!\n";

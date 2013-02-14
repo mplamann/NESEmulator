@@ -1,8 +1,9 @@
 #include "Mapper7.h"
 #include "Util.h"2
 
-Mapper7::Mapper7(char* file) : Mapper (file,32,8)
+Mapper7::Mapper7(char* file) : Mapper (file,32)
 {
+  prgIndexes[0] = 0;
 }
 
 void Mapper7::writeByteTo(int address, int value)

@@ -17,7 +17,7 @@ Mapper2::~Mapper2(void)
 
 void Mapper2::writeByteTo(int, int value)
 {
-  prgIndexes[1] = value;
+  prgIndexes[0] = value;
 }
 
 size_t Mapper2::stateSize()
@@ -27,6 +27,7 @@ size_t Mapper2::stateSize()
 
 char* Mapper2::stateData()
 {
+
   char* buffer = (char*)malloc(sizeof(char)*stateSize());
 
   memcpy(buffer, prgIndexes, 16/prgBankSize*sizeof(int));

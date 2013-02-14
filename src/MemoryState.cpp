@@ -154,7 +154,7 @@ void MemoryState::writeByteTo(int address, int value)
 	  OAMADDR = (value & 0xFF);
 	  break;
 	case 0x2004:
-	  OAM[(OAMADDR%256)] = (value & 0xFF);
+	  oamWriteByteTo(OAMADDR, value & 0xFF);
 	  OAMADDR++;
 	  break;
 	case 0x2005:
@@ -313,7 +313,7 @@ int MemoryState::readFromNametable(int nametable, int address)
 
 void MemoryState::DMA(int address)
 {
-  for (int i = 0; i < 0xFF; i++)
+  for (int i = 0; i <= 0xFF; i++)
     {
       int currentAddress = (address << 8) + i;
       writeByteTo(0x2004,readByteFrom(currentAddress));

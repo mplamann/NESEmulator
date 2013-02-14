@@ -774,8 +774,8 @@ void CpuV2::RunInstruction(int scanline)
   int arg2 = memory->readByteFrom(PC+2);
   oldI = I;
 
-  //cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
-  //cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " SL: " << dec << scanline << hex;
+  //  cout << setw(4) << PC << "  " << setw(2) << opcode << " " << setw(2) << arg1 << " " << setw(2) << arg2 << "  " << opcodeStrings[opcode] << "                             ";
+  //  cout << "A:" << setw(2) << A << " X:" << setw(2) << X << " Y:" << setw(2) << Y << " P:" << setw(2) << getP() << " SP:" << setw(2) << S << " SL: " << dec << scanline << hex;
 
   int argument = addressingModes[opcode](this, opcode, arg1, arg2);
   cycles += cycleMap[opcode];
