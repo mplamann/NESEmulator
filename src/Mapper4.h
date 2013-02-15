@@ -13,7 +13,6 @@ public:
   int ppuReadByteFrom(int address);
   void writeByteTo(int address, int value);
   void ppuWriteByteTo(int address, int value);
-  void updatePpuAddr(int address);
   void scanlineCounter();
 
   CpuV2* cpu;

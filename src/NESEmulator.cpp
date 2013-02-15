@@ -201,7 +201,6 @@ void renderFrame()
 {
   game_time = al_get_time();
       
-  // Render one frame
   for (; scanline < 262; scanline++)
     {
       //if (usingArduino)

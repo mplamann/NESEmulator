@@ -158,16 +158,3 @@ void Mapper4::scanlineCounter()
       counter_latched = false;
     }
 }
-
-void Mapper4::updatePpuAddr(int address)
-{
-  /*if (lastPpuAddr != -1)
-    {
-      if (!(lastPpuAddr & 0x0100) && (address & 0x0100))
-	{
-	  // Rising edge of A12
-	  scanlineCounter();
-	}
-    }
-    lastPpuAddr = address;*/
-}
