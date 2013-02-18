@@ -59,7 +59,7 @@ void PpuState::startFrame()
     {
       memory->PPUADDR = memory->loopyT;  
     }
-  memory->PPUSTATUS &= 0xBF;
+  memory->PPUSTATUS &= 0x3F;//0xBF;
 
   for (int i = 0; i < 256*scale*240; i++)
     {

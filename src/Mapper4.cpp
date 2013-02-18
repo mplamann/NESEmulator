@@ -25,6 +25,12 @@ void Mapper4::writeByteTo(int address, int value)
 {
   //cout << "Mapper 4: 0x" << address << " = 0x" << value << "\n";
   value &= 0xFF;
+  if (address >= 0x6000 && address < 0x8000)
+    {
+      if (prgRamEnabled)
+	prgRam[address-0x6000] = value;
+      return;
+    }
   switch (address)
     {
     case 0x8000:
@@ -37,6 +43,7 @@ void Mapper4::writeByteTo(int address, int value)
       break;
     case 0xA000:
       mirroring = value & 0x01;
+      mirroring = 2;
       break;
     case 0xA001:
       prgRamEnabled = value & 0x80;
