@@ -246,11 +246,13 @@ inline void PpuState::renderSprites(int scanline)
 		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 		  if (xOffset + x > 0xFF)
 		    continue;
-		  if (!((spriteFlags & 0x20) && backgroundPoints[xOffset+x]))
+		  if (!((spriteFlags & 0x20) && backgroundPoints[xOffset+x]) && !alreadyDisabled[xOffset+x])
 		    {
 		      for (int j = 0; j < scale; j++)
 			scanlinePoints[(xOffset+x)*scale+j].color=color;
 		    }
+		  else if (((spriteFlags & 0x20) && backgroundPoints[xOffset+x]))
+		    alreadyDisabled[xOffset+x] = true;
 		  if (backgroundPoints[xOffset+x] && i == 0)
 		      memory->PPUSTATUS |= 0x40;
 		}
@@ -264,7 +266,10 @@ void PpuState::renderScanline(int scanline)
   if (scanline >= 232)
     return;
   for (int i = 0; i < 256; i++)
+    {
       backgroundPoints[i] = false;
+      alreadyDisabled[i] = false;
+    }
   scanlinePoints = framePoints + (scanline)*256*scale;
   scanline += vScroll & 0x07;
 

@@ -42,8 +42,9 @@ void Mapper4::writeByteTo(int address, int value)
       bankSwitch(value);
       break;
     case 0xA000:
-      mirroring = value & 0x01;
-      mirroring = 2;
+      if (mirroring != 1-(value & 1))
+	cout << "Mirroring: " << mirroring << " -> " << 1-(value & 1) << "\n";
+      mirroring = 1-(value & 0x01);
       break;
     case 0xA001:
       prgRamEnabled = value & 0x80;

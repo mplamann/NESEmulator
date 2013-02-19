@@ -24,6 +24,7 @@ class PpuState
   ALLEGRO_VERTEX framePoints[256*scale*240];
   ALLEGRO_VERTEX* scanlinePoints;
   bool backgroundPoints[256];
+  bool alreadyDisabled[256];
 
   inline void incrementX();
   inline void incrementY();
