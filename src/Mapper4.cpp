@@ -23,7 +23,6 @@ Mapper4::~Mapper4(void)
 
 void Mapper4::writeByteTo(int address, int value)
 {
-  //cout << "Mapper 4: 0x" << address << " = 0x" << value << "\n";
   value &= 0xFF;
   if (address >= 0x6000 && address < 0x8000)
     {
@@ -42,8 +41,6 @@ void Mapper4::writeByteTo(int address, int value)
       bankSwitch(value);
       break;
     case 0xA000:
-      if (mirroring != 1-(value & 1))
-	cout << "Mirroring: " << mirroring << " -> " << 1-(value & 1) << "\n";
       mirroring = 1-(value & 0x01);
       break;
     case 0xA001:
@@ -165,4 +162,13 @@ void Mapper4::scanlineCounter()
       cpu->doIRQ();
       counter_latched = false;
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Save Data                                                                  //
+////////////////////////////////////////////////////////////////////////////////
+
+size_t Mapper4::stateSize()
+{
+  
 }
