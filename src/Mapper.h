@@ -32,8 +32,8 @@ class Mapper
   virtual char* stateData();
   virtual void loadState(char* state);
 
-  virtual void saveBattery(char* filename) {}
-  virtual void loadBattery(char* filename) {}
+  virtual void saveBattery(char*) {}
+  virtual void loadBattery(char*) {}
 
   virtual void scanlineCounter();
 

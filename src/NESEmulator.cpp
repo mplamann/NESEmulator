@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <signal.h>
 #include <stdlib.h>
+#include <fstream>
 using namespace std;
 
 #define USE_AUDIO
@@ -285,7 +286,7 @@ void cleanup()
 #endif
 }
 
-void saveState(char* filename)
+/*void saveState(char* filename)
 {
   cout << "Saving state...\n";
   
@@ -336,6 +337,15 @@ void saveState(char* filename)
   free(ppuData);
 
   cout << "State saved.\n";
+}*/
+
+void saveState(char* filename)
+{
+  ofstream savefile (filename, ios::out | ios::binary);
+  memory->saveState(savefile);
+  cpu->saveState(savefile);
+  ppu->saveState(savefile);
+  savefile.close();
 }
 
 void loadState(char* filename)

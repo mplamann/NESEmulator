@@ -534,6 +534,20 @@ char* MemoryState::stateData(size_t* size)
   return buffer;
 }
 
+#define WRITE(var, type, count) file.write((char*)var,sizeof(type)*count)
+
+void MemoryState::saveState(ofstream file)
+{
+  WRITE(RAM,unsigned char,RAM_SIZE);
+  WRITE(palette,unsigned char,0x20);
+  WRITE(nametable1,unsigned char,0x400);
+  WRITE(nametable2,unsigned char,0x400);
+  WRITE(&ppuDataBuffer,int,1);
+  WRITE(OAM,unsigned char,256);
+  WRITE(&JOYSTROBE,unsigned char,1);
+  // TODO: Finish up
+}
+
 void MemoryState::loadState(char* buffer, size_t)
 {
   int sRam = RAM_SIZE*sizeof(unsigned char);

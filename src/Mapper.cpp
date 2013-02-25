@@ -128,7 +128,7 @@ char* Mapper::stateData()
   return new char[stateSize()];
 }
 
-void Mapper::loadState(char* ignored)
+void Mapper::loadState(char*)
 {
 }
 

@@ -17,6 +17,8 @@ public:
 
   CpuV2* cpu;
 
+  size_t stateSize();
+
 private:
   bool fireIRQs;
   bool counter_latched;

@@ -3,6 +3,8 @@
 #include "Mapper.h"
 #include "GamepadState.h"
 #include "ApuState.h"
+#include <fstream>
+using namespace std;
 
 #define RAM_SIZE 0x2000
 
@@ -34,6 +36,7 @@ public:
   void setApu(ApuState* apu);
   void setCpu(CpuV2* cpu);
 
+  void saveState(ofstream file);
   char* stateData(size_t* size);
   void loadState(char* state, size_t size);
   void saveBattery(char* filename);
