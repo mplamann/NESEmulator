@@ -2,6 +2,8 @@
 
 #include "Mapper.h"
 #include "Util.h"
+#include <fstream>
+using namespace std;
 
 const int PRG_SWITCH_32 = 0;
 const int PRG_SWITCH_FIRST_16 = 3;
@@ -31,9 +33,8 @@ class Mapper1 : public Mapper
   ~Mapper1(void);
   void writeByteTo(int address, int value);
 
-  size_t stateSize();
-  char* stateData();
-  void loadState(char* buffer);
+  void saveState(ofstream& file);
+  void loadState(ifstream& file);
 
   void saveBattery(char* filename);
   void loadBattery(char* filename);

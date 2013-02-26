@@ -1,4 +1,6 @@
 #include <cstddef>
+#include <fstream>
+using namespace std;
 
 #pragma once
 
@@ -28,9 +30,8 @@ class Mapper
   virtual void updatePpuAddr(int) {}
   int mirroring;
 
-  virtual size_t stateSize();
-  virtual char* stateData();
-  virtual void loadState(char* state);
+  virtual void saveState(ofstream& file);
+  virtual void loadState(ifstream& file);
 
   virtual void saveBattery(char*) {}
   virtual void loadBattery(char*) {}

@@ -3,6 +3,8 @@
 #include <allegro5/allegro_audio.h>
 
 #include "Nes_Apu.h" // Thanks to Blargg's Audio Libraries
+#include <fstream>
+using namespace std;
 
 #define SAMPLES_PER_BUFFER 1024
 
@@ -23,6 +25,9 @@ class ApuState
   void write_register(unsigned address, int data);
   int read_status(long cycles);
   void finishFrame();
+
+  void saveState(ofstream& file);
+  void loadState(ifstream& file);
 
  private:
   Blip_Buffer* buf;

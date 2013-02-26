@@ -1,6 +1,8 @@
 #include "Mapper.h"
 #include <string.h>
 #include <iostream>
+#include <fstream>
+#include "macros.h"
 using namespace std;
 
 Mapper::Mapper(char* file, int _prgBankSize, int _chrBankSize)
@@ -118,18 +120,22 @@ void Mapper::ppuWriteByteTo(int address, int value)
   chrBanks[chrIndexes[chrBankIndex]][adjustedAddress] = value & 0xFF;
 }
 
-size_t Mapper::stateSize()
+void Mapper::saveState(ofstream& file)
 {
-  return 0;
+  WRITE(prgRam,int,0x2000);
+  WRITEB(&prgRamEnabled);
+  WRITEB(&prgRamWritable);
+  WRITE(prgIndexes, int, 16/prgBankSize);
+  WRITE(chrIndexes, int, 8/chrBankSize);
 }
 
-char* Mapper::stateData()
+void Mapper::loadState(ifstream& file)
 {
-  return new char[stateSize()];
-}
-
-void Mapper::loadState(char*)
-{
+  READ(prgRam,int,0x2000);
+  READB(&prgRamEnabled);
+  READB(&prgRamWritable);
+  READ(prgIndexes, int, 16/prgBankSize);
+  READ(chrIndexes, int, 8/chrBankSize);
 }
 
 void Mapper::scanlineCounter()

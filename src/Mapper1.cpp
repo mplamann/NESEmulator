@@ -176,49 +176,24 @@ void Mapper1::updatePRGIndexes()
     }
 }
 
-size_t Mapper1::stateSize()
+void Mapper1::saveState(ofstream& file)
 {
-  int sPrgRam = sizeof(int)*0x2000;
-  int sIndexes = sizeof(int)*(16/prgBankSize + 8/chrBankSize);
-  int sOtherInts = sizeof(int)*5;
-  return sPrgRam + sOtherInts + sIndexes + sizeof(bool);
+  Mapper::saveState(file);
+  WRITEI(&prgBankIndex);
+  WRITEI(&shiftRegister);
+  WRITEI(&shiftIndex);
+  WRITEI(&prgBankMode);
+  WRITEI(&chrBankMode);
 }
 
-char* Mapper1::stateData()
+void Mapper1::loadState(ifstream& file)
 {
-  char* buffer = (char*)malloc(sizeof(char)*stateSize());
-  int bufferIndex = 0;
-  memcpy(buffer+bufferIndex, prgRam, sizeof(int)*0x2000);
-  bufferIndex+=sizeof(int)*0x2000;
-  memcpy(buffer+bufferIndex, &prgRamEnabled, sizeof(bool));
-  bufferIndex+=sizeof(bool);
-  int otherValues[5] = {prgBankIndex, shiftRegister, shiftIndex, prgBankMode, chrBankMode};
-  memcpy(buffer+bufferIndex, otherValues, 5*sizeof(int));
-  bufferIndex+=sizeof(int)*5;
-  memcpy(buffer+bufferIndex, prgIndexes, 16/prgBankSize*sizeof(int));
-  bufferIndex += sizeof(int)*16/prgBankSize;
-  memcpy(buffer+bufferIndex, chrIndexes, 8/chrBankSize*sizeof(int));
-  return buffer;
-}
-
-void Mapper1::loadState(char* buffer)
-{
-  int bufferIndex = 0;
-  memcpy(prgRam, buffer, sizeof(int)*0x2000);
-  bufferIndex+=sizeof(int)*0x2000;
-  memcpy(&prgRamEnabled, buffer+bufferIndex, sizeof(bool));
-  bufferIndex+=sizeof(bool);
-  int otherValues[5];
-  memcpy(otherValues, buffer+bufferIndex, 5*sizeof(int));
-  bufferIndex += 5*sizeof(int);
-  memcpy(prgIndexes, buffer+bufferIndex, 16/prgBankSize*sizeof(int));
-  bufferIndex += 16/prgBankSize*sizeof(int);
-  memcpy(chrIndexes, buffer+bufferIndex, 8/chrBankSize*sizeof(int));
-  prgBankIndex = otherValues[0];
-  shiftRegister = otherValues[1];
-  shiftIndex = otherValues[2];
-  prgBankMode = otherValues[3];
-  chrBankMode = otherValues[4];
+  Mapper::loadState(file);
+  READI(&prgBankIndex);
+  READI(&shiftRegister);
+  READI(&shiftIndex);
+  READI(&prgBankMode);
+  READI(&chrBankMode);
 }
 
 void Mapper1::saveBattery(char* filename)

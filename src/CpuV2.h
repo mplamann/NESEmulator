@@ -1,6 +1,8 @@
 #pragma once
 
 #include "MemoryState.h"
+#include <fstream>
+using namespace std;
 
 class CpuV2
 {
@@ -34,6 +36,6 @@ public:
   void doBRK();
   void doIRQ();
 
-  char* stateData(size_t* size);
-  void loadState(char* size, size_t size);
+  void saveState(ofstream& file);
+  void loadState(ifstream& file);
 };

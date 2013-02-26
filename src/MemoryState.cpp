@@ -490,97 +490,42 @@ void MemoryState::loadFileToRAM(char* filename)
   return;
 }
 
-char* MemoryState::stateData(size_t* size)
+void MemoryState::saveState(ofstream& file)
 {
-  int sRam = RAM_SIZE*sizeof(unsigned char);
-  int sPalette = 0x20*sizeof(unsigned char);
-  int sNametables = 0x800*sizeof(unsigned char);
-  int sPpuDataBuffer = sizeof(int);
-  int sOAM = 256*sizeof(unsigned char);
-  int sJOYSTROBE = sizeof(unsigned char);
-  int sPpuToggles = sizeof(int);
-  int ppuToggles[1] = {ppuLatch};
-  int sPpuRegs = 6*sizeof(int);
-  int ppuRegs[6] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPU_LAST_WRITE, PPUADDR};
-
-  int sMapper = mapper->stateSize();
-  char* mapperData = mapper->stateData();
-  
-  *size = sRam + sPalette + sNametables + sPpuDataBuffer + sOAM + sJOYSTROBE + sPpuToggles + sPpuRegs + sMapper;
-  char* buffer = (char*)malloc(sizeof(char)*(*size));
-  int bufferIndex = 0;
-  
-  memcpy(buffer+bufferIndex, RAM, sRam);
-  bufferIndex += sRam;
-  memcpy(buffer+bufferIndex, palette, sPalette);
-  bufferIndex += sPalette;
-  memcpy(buffer+bufferIndex, nametable1, sNametables/2);
-  bufferIndex += sNametables/2;
-  memcpy(buffer+bufferIndex, nametable2, sNametables/2);
-  bufferIndex += sNametables/2;
-  memcpy(buffer+bufferIndex, &ppuDataBuffer, sPpuDataBuffer);
-  bufferIndex += sPpuDataBuffer;
-  memcpy(buffer+bufferIndex, OAM, sOAM);
-  bufferIndex += sOAM;
-  memcpy(buffer+bufferIndex, &JOYSTROBE, sJOYSTROBE);
-  bufferIndex += sJOYSTROBE;
-  memcpy(buffer+bufferIndex, ppuToggles, sPpuToggles);
-  bufferIndex += sPpuToggles;
-  memcpy(buffer+bufferIndex, ppuRegs, sPpuRegs);
-  bufferIndex += sPpuRegs;
-  memcpy(buffer+bufferIndex, mapperData, sMapper);
-  free (mapperData);
-  
-  return buffer;
-}
-
-#define WRITE(var, type, count) file.write((char*)var,sizeof(type)*count)
-
-void MemoryState::saveState(ofstream file)
-{
-  WRITE(RAM,unsigned char,RAM_SIZE);
-  WRITE(palette,unsigned char,0x20);
-  WRITE(nametable1,unsigned char,0x400);
-  WRITE(nametable2,unsigned char,0x400);
+  WRITEC(RAM,RAM_SIZE);
+  WRITEC(palette,0x20);
+  WRITEC(nametable1,0x400);
+  WRITEC(nametable2,0x400);
   WRITE(&ppuDataBuffer,int,1);
-  WRITE(OAM,unsigned char,256);
-  WRITE(&JOYSTROBE,unsigned char,1);
-  // TODO: Finish up
+  WRITEC(OAM,256);
+  WRITEC(&JOYSTROBE,1);
+  WRITE(&ppuLatch,bool,1);
+  WRITEC(&PPUCTRL,1);
+  WRITEC(&PPUMASK,1);
+  WRITEC(&PPUSTATUS,1);
+  WRITEC(&OAMADDR,1);
+  WRITEC(&PPU_LAST_WRITE,1);
+  WRITE(&PPUADDR,int,1);
+  mapper->saveState(file);
 }
 
-void MemoryState::loadState(char* buffer, size_t)
+void MemoryState::loadState(ifstream& file)
 {
-  int sRam = RAM_SIZE*sizeof(unsigned char);
-  int sPalette = 0x20*sizeof(unsigned char);
-  int sNametables = 0x800*sizeof(unsigned char);
-  int sPpuDataBuffer = sizeof(int);
-  int sOAM = 256*sizeof(unsigned char);
-  int sJOYSTROBE = sizeof(unsigned char);
-  int sPpuToggles = sizeof(int);
-  int ppuToggles[1] = {ppuLatch};
-  int sPpuRegs = 6*sizeof(int);
-  int ppuRegs[6] = {PPUCTRL, PPUMASK, PPUSTATUS, OAMADDR, PPU_LAST_WRITE, PPUADDR};
-  int bufferIndex = 0;
-  
-  memcpy(RAM, buffer+bufferIndex, sRam);
-  bufferIndex += sRam;
-  memcpy(palette, buffer+bufferIndex, sPalette);
-  bufferIndex += sPalette;
-  memcpy(nametable1, buffer+bufferIndex, sNametables/2);
-  bufferIndex += sNametables/2;
-  memcpy(nametable2, buffer+bufferIndex, sNametables/2);
-  bufferIndex += sNametables/2;
-  memcpy(&ppuDataBuffer, buffer+bufferIndex, sPpuDataBuffer);
-  bufferIndex += sPpuDataBuffer;
-  memcpy(OAM, buffer+bufferIndex, sOAM);
-  bufferIndex += sOAM;
-  memcpy(&JOYSTROBE, buffer+bufferIndex, sJOYSTROBE);
-  bufferIndex += sJOYSTROBE;
-  memcpy(ppuToggles, buffer+bufferIndex, sPpuToggles);
-  bufferIndex += sPpuToggles;
-  memcpy(ppuRegs, buffer+bufferIndex, sPpuRegs);
-  bufferIndex += sPpuRegs;
-  mapper->loadState((char*)(buffer+bufferIndex));
+  READC(RAM,RAM_SIZE);
+  READC(palette,0x20);
+  READC(nametable1,0x400);
+  READC(nametable2,0x400);
+  READ(&ppuDataBuffer,int,1);
+  READC(OAM,256);
+  READC(&JOYSTROBE,1);
+  READ(&ppuLatch,bool,1);
+  READC(&PPUCTRL,1);
+  READC(&PPUMASK,1);
+  READC(&PPUSTATUS,1);
+  READC(&OAMADDR,1);
+  READC(&PPU_LAST_WRITE,1);
+  READ(&PPUADDR,int,1);
+  mapper->loadState(file);
 }
 
 void MemoryState::saveBattery(char* filename)

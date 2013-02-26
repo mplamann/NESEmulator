@@ -373,15 +373,12 @@ void PpuState::setMemory(MemoryState* mem)
 int PpuState::getCycles() {return cycles;}
 MemoryState* PpuState::getMemory() {return memory;}
 
-char* PpuState::stateData(size_t* size)
+void PpuState::saveState(ofstream& file)
 {
-  *size = sizeof(int);
-  char* buffer = (char*)malloc(sizeof(char)*(*size));
-  memcpy(buffer, &cycles, *size);
-  return buffer;
+  file.write((char*)&cycles, sizeof(int));
 }
 
-void PpuState::loadState(char* buffer, size_t size)
+void PpuState::loadState(ifstream& file)
 {
-  memcpy(&cycles, buffer, size);
+  READI(&cycles);
 }

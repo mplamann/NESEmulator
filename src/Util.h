@@ -1,5 +1,7 @@
 #pragma once
 
+#include "macros.h"
+
 //#define CPU_DEBUG
 //#define PPU_DEBUG
 //#define PPU_WRITE_LOG

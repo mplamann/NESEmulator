@@ -4,6 +4,8 @@
 #include "MemoryState.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <fstream>
+using namespace std;
 
 const int scale = 3;
 
@@ -46,6 +48,6 @@ class PpuState
   MemoryState* getMemory();
   int getCycles();
 
-  char* stateData(size_t* size);
-  void loadState(char* state, size_t size);
+  void saveState(ofstream& file);
+  void loadState(ifstream& file);
 };

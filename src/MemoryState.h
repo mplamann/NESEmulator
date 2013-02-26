@@ -36,9 +36,8 @@ public:
   void setApu(ApuState* apu);
   void setCpu(CpuV2* cpu);
 
-  void saveState(ofstream file);
-  char* stateData(size_t* size);
-  void loadState(char* state, size_t size);
+  void saveState(ofstream& file);
+  void loadState(ifstream& file);
   void saveBattery(char* filename);
   void loadBattery(char* filename);
   

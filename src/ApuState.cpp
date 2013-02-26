@@ -1,6 +1,7 @@
 #include "ApuState.h"
 #include "MemoryState.h"
 #include "CpuV2.h"
+#include "apu_snapshot.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <iostream>
@@ -107,3 +108,16 @@ int ApuState::read_status(long cycles)
   return apu->read_status(cycles);
 }
 
+void ApuState::saveState(ofstream& file)
+{
+  apu_snapshot_t* data = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
+  apu->save_snapshot(data);
+  file.write((char*)data,sizeof(apu_snapshot_t));
+}
+
+void ApuState::loadState(ifstream& file)
+{
+  apu_snapshot_t* data = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
+  file.read((char*)data,sizeof(apu_snapshot_t));
+  apu->load_snapshot(*data);
+}

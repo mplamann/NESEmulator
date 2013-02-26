@@ -8,7 +8,6 @@
 #include "MemoryState.h"
 #include "GamepadState.h"
 #include "ApuState.h"
-#include "apu_snapshot.h"
 #include <time.h>
 #include <iostream>
 #include <iomanip>
@@ -345,49 +344,17 @@ void saveState(char* filename)
   memory->saveState(savefile);
   cpu->saveState(savefile);
   ppu->saveState(savefile);
+  apu->saveState(savefile);
   savefile.close();
+  cout << "State saved.\n";
 }
 
 void loadState(char* filename)
 {
-  cout << "Loading state...\n";
-
-  size_t header[3];
-  
-  char* memoryData;
-  char* cpuData;
-  char* ppuData;
-#ifdef USE_AUDIO
-  apu_snapshot_t* apuData;
-#endif
-
-  FILE* fileStream = fopen(filename, "rb");
-  fread(header, sizeof(size_t), 3, fileStream);
-
-  memoryData = (char*)malloc(header[0]*sizeof(char));
-  cpuData = (char*)malloc(header[1]*sizeof(char));
-  ppuData = (char*)malloc(header[2]*sizeof(char));
-#ifdef USE_AUDIO
-  apuData = (apu_snapshot_t*)malloc(sizeof(apu_snapshot_t));
-#endif
-  
-  fread(memoryData, sizeof(char), header[0], fileStream);
-  fread(cpuData, sizeof(char), header[1], fileStream);
-  fread(ppuData, sizeof(char), header[2], fileStream);
-#ifdef USE_AUDIO
-  fread(apuData, sizeof(apu_snapshot_t), 1, fileStream);
-#endif
-  
-  fclose(fileStream);
-
-  memory->loadState(memoryData, header[0]);
-  cpu->loadState(cpuData, header[1]);
-  ppu->loadState(ppuData, header[2]);
-#ifdef USE_AUDIO
-  apu->apu->load_snapshot(*apuData);
-#endif
-
-  free(memoryData);
-  free(cpuData);
-  free(ppuData);
+  ifstream savefile (filename, ios::in | ios::binary);
+  memory->loadState(savefile);
+  cpu->loadState(savefile);
+  ppu->loadState(savefile);
+  apu->loadState(savefile);
+  savefile.close();
 }
