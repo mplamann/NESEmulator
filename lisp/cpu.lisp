@@ -1,5 +1,6 @@
 (defpackage :com.infreefall.nes
   (:use :common-lisp))
+(in-package :com.infreefall.nes)
 
 (defclass cpu () (
 		  (x :initform 0 :accessor x)
@@ -32,28 +33,35 @@
      ,@body))
 
 (defmacro defopcode (name &body body)
-  `(defun ,name (cpu &rest args)
+  `(defun ,name (cpu args)
      (with-cpu cpu ,@body)))
-
-(defopcode lda
-  (setf a (car args)))
+(defmacro defnzopcode (name &body body)
+  `(defopcode ,name
+     (let ((result (progn ,@body)))
+       (setf n (/= 0 (boole boole-and #x80 result)))
+       (setf z (= 0 result)))))
 
 (defun mem-read (addr) addr)
+(defun mem-write (addr value) value)
 
 (defun run-instruction ()
   (with-cpu
    *cpu*
-   (run (decode (fetch-instruction)))))
+   (run (decode (fetch-instruction)) (fetch-arguments))))
 
 (defun fetch-instruction ()
   (with-cpu
    *cpu*
+   (mem-read pc)))
+
+(defun fetch-arguments ()
+  (with-cpu
+   *cpu*
    (list
-    (mem-read pc)
     (mem-read (+ pc 1))
     (mem-read (+ pc 2)))))
 
-(defun decode (opcode &rest args)
+(defun decode (opcode)
   (case opcode
     ((#x69 #x65 #x75 #x6D #x7D #x79 #x61 #x71) 'adc)
     ((#x0A #x06 #x16 #x0E #x1E) 'asl)
@@ -111,6 +119,27 @@
     ((#x84 #x94 #x8C) 'sty)
     (t 'nop)))
 
-(defun run (instr)
-  (case instr
-      (nop (format t "NOP!"))))
+(defun run (instr arguments)
+  (funcall (symbol-function instr) *cpu* arguments))
+
+
+(defnzopcode lax
+  (setf x (car args))
+  (setf a (car args)))
+(defnzopcode lda
+  (setf a (car args)))
+(defnzopcode ldx
+  (setf x (car args)))
+(defnzopcode ldy
+  (setf y (car args)))
+(defopcode sta
+  (mem-write (car args) a))
+(defopcode stx
+  (mem-write (car args) x))
+(defopcode sty
+  (mem-write (car args) y))
+
+(defopcode nop
+  '())
+
+
