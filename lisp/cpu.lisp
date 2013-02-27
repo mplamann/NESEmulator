@@ -6,11 +6,13 @@
 		  (x :initform 0 :accessor x)
 		  (y :initform 0 :accessor y)
 		  (a :initform 0 :accessor a)
+		  (s :initform 0 :accessor s)
 		  (pc :initform 0 :accessor pc)
 		  (n :initform nil :accessor n)
 		  (z :initform nil :accessor z)
 		  (c :initform nil :accessor c)
 		  (i :initform nil :accessor i)
+		  (cli-delay :initform -1 :accessor cli-delay)
 		  (d :initform nil :accessor d)
 		  (v :initform nil :accessor v)
 		  (b :initform nil :accessor b)))
@@ -21,11 +23,13 @@
   `(with-accessors ((x x)
 		    (y y)
 		    (a a)
+		    (s s)
 		    (pc pc)
 		    (n n)
 		    (z z)
 		    (c c)
 		    (i i)
+		    (cli-delay cli-delay)
 		    (d d)
 		    (v v)
 		    (b b))
@@ -47,6 +51,9 @@
 (defun run-instruction ()
   (with-cpu
    *cpu*
+   (when (> cli-delay 0)
+     (when (= (decf cli-delay) 0)
+       (setf i nil)))
    (run (decode (fetch-instruction)) (fetch-arguments))))
 
 (defun fetch-instruction ()
@@ -122,7 +129,19 @@
 (defun run (instr arguments)
   (funcall (symbol-function instr) *cpu* arguments))
 
-
+;; Load / Store Operations
+(defnzopcode tax
+  (setf x a))
+(defnzopcode tay
+  (setf y a))
+(defnzopcode tsx
+  (setf x s))
+(defopcode txs
+  (setf s x))
+(defnzopcode txa
+  (setf a x))
+(defnzopcode tya
+  (setf a y))
 (defnzopcode lax
   (setf x (car args))
   (setf a (car args)))
@@ -138,6 +157,39 @@
   (mem-write (car args) x))
 (defopcode sty
   (mem-write (car args) y))
+
+;; Flag operations
+(defopcode clc
+  (setf c nil))
+(defopcode sec
+  (setf c t))
+(defopcode cli
+  (setf cli-delay 1))
+(defopcode sei
+  (setf i t))
+(defopcode clv
+  (setf v nil))
+(defopcode cld
+  (setf d nil))
+(defopcode sed
+  (setf d t))
+
+;; Boolean Operations
+(defnzopcode 6502-and
+  (setf a (boole boole-and a (car args))))
+(defnzopcode eor
+  (setf a (boole boole-xor a (car args))))
+(defnzopcode ora
+  (setf a (boole boole-ior a (car args))))
+(defnzopcode asl
+  (let ((value (lsh ())))
+   (if (= (car args) -1)
+       (setf a value)
+     (mem-write (car args) value))))
+(defopcode bit
+  (setf z (= 0 (boole boole-and a (car args))))
+  (setf v (/= 0 (boole boole-and #x40 (car args))))
+  (setf n (/= 0 (boole boole-and #x80 (car args)))))
 
 (defopcode nop
   '())
