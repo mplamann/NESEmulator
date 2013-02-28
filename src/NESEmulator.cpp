@@ -17,7 +17,7 @@
 #include <fstream>
 using namespace std;
 
-#define USE_AUDIO
+//#define USE_AUDIO
 
 const int FRAMERATE = 60;
 const int TURBO_FRAMERATE = 600;
@@ -344,7 +344,9 @@ void saveState(char* filename)
   memory->saveState(savefile);
   cpu->saveState(savefile);
   ppu->saveState(savefile);
+#ifdef USE_AUDIO
   apu->saveState(savefile);
+#endif
   savefile.close();
   cout << "State saved.\n";
 }
@@ -355,6 +357,8 @@ void loadState(char* filename)
   memory->loadState(savefile);
   cpu->loadState(savefile);
   ppu->loadState(savefile);
+#ifdef USE_AUDIO
   apu->loadState(savefile);
+#endif
   savefile.close();
 }
