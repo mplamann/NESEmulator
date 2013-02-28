@@ -37,7 +37,7 @@
      ,@body))
 
 (defmacro defopcode (name &body body)
-  `(defun ,name (cpu args)
+  `(defun ,name (cpu arg)
      (with-cpu cpu ,@body)))
 (defmacro defnzopcode (name &body body)
   `(defopcode ,name
@@ -45,8 +45,19 @@
        (setf n (/= 0 (boole boole-and #x80 result)))
        (setf z (= 0 result)))))
 
+(defmacro with-acc-mem (varname &body body)
+  `(let* ((,varname (if (= arg -1)
+		       a
+		     (mem-read arg)))
+	  (result (progn ,@body)))
+     (if (= arg -1)
+	 (setf a result)
+       (mem-write arg result))))
+(defun andFF (value)
+  (boole boole-and value #xFF))
+
 (defun mem-read (addr) addr)
-(defun mem-write (addr value) value)
+(defun mem-write (addr value) (+ addr  value))
 
 (defun run-instruction ()
   (with-cpu
@@ -72,7 +83,7 @@
   (case opcode
     ((#x69 #x65 #x75 #x6D #x7D #x79 #x61 #x71) 'adc)
     ((#x0A #x06 #x16 #x0E #x1E) 'asl)
-    ((#x24 #x2C) 'bit)
+    ((#x24 #x2C) '6502-bit)
     (#x10 'bpl)
     (#x30 'bmi)
     (#x50 'bvc)
@@ -143,20 +154,20 @@
 (defnzopcode tya
   (setf a y))
 (defnzopcode lax
-  (setf x (car args))
-  (setf a (car args)))
+  (setf x arg)
+  (setf a arg))
 (defnzopcode lda
-  (setf a (car args)))
+  (setf a arg))
 (defnzopcode ldx
-  (setf x (car args)))
+  (setf x arg))
 (defnzopcode ldy
-  (setf y (car args)))
+  (setf y arg))
 (defopcode sta
-  (mem-write (car args) a))
+  (mem-write arg a))
 (defopcode stx
-  (mem-write (car args) x))
+  (mem-write arg x))
 (defopcode sty
-  (mem-write (car args) y))
+  (mem-write arg y))
 
 ;; Flag operations
 (defopcode clc
@@ -176,20 +187,20 @@
 
 ;; Boolean Operations
 (defnzopcode 6502-and
-  (setf a (boole boole-and a (car args))))
+  (setf a (boole boole-and a arg)))
 (defnzopcode eor
-  (setf a (boole boole-xor a (car args))))
+  (setf a (boole boole-xor a arg)))
 (defnzopcode ora
-  (setf a (boole boole-ior a (car args))))
+  (setf a (boole boole-ior a arg)))
 (defnzopcode asl
-  (let ((value (lsh ())))
-   (if (= (car args) -1)
-       (setf a value)
-     (mem-write (car args) value))))
-(defopcode bit
-  (setf z (= 0 (boole boole-and a (car args))))
-  (setf v (/= 0 (boole boole-and #x40 (car args))))
-  (setf n (/= 0 (boole boole-and #x80 (car args)))))
+  (with-acc-mem value
+		(setf value (andFF (* value 2)))
+		(setf c (/= 0 (boole boole-and #x100 value)))
+		value))
+(defopcode 6502-bit
+  (setf z (= 0 (boole boole-and a arg)))
+  (setf v (/= 0 (boole boole-and #x40 arg)))
+  (setf n (/= 0 (boole boole-and #x80 arg))))
 
 (defopcode nop
   '())
