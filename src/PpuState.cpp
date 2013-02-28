@@ -54,21 +54,13 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
-  //cout << "\n";
   if (memory->PPUMASK & 0x18)
     {
       memory->PPUADDR = memory->loopyT;  
     }
-  memory->PPUSTATUS &= 0x3F;//0xBF;
+  memory->PPUSTATUS &= 0x3F;
 
-  for (int i = 0; i < 256*scale*240; i++)
-    {
-      int scanline = i/(256*scale);
-      framePoints[i].x = i % (256*scale);
-      framePoints[i].y = (scanline)*scale;
-      framePoints[i].z = 0;
-      framePoints[i].color = blackColor;
-    }
+  memcpy(framePoints,blankFrame,sizeof(ALLEGRO_VERTEX)*256*240*scale);
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -357,6 +349,14 @@ void PpuState::endFrame()
 PpuState::PpuState()
 {
   display = NULL;
+  for (int i = 0; i < 256*scale*240; i++)
+    {
+      int scanline = i/(256*scale);
+      blankFrame[i].x = i % (256*scale);
+      blankFrame[i].y = (scanline)*scale;
+      blankFrame[i].z = 0;
+      blankFrame[i].color = blackColor;
+    }
 }
 
 PpuState::~PpuState()
