@@ -7,7 +7,7 @@
 #include <fstream>
 using namespace std;
 
-const int scale = 3;
+const int scale = 1;
 
 class PpuState
 {
@@ -15,6 +15,7 @@ class PpuState
   int width, height;
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
+  ALLEGRO_BITMAP* backbuffer;
   ALLEGRO_DISPLAY* nametableDisplay;
   ALLEGRO_DISPLAY* paletteDisplay;
   ALLEGRO_COLOR blackColor;
@@ -25,12 +26,11 @@ class PpuState
 
   ALLEGRO_VERTEX blankFrame[256*scale*240];
   ALLEGRO_VERTEX framePoints[256*scale*240];
-  ALLEGRO_VERTEX nametableTiles[30*32][64];
   ALLEGRO_VERTEX* scanlinePoints;
   bool backgroundPoints[256];
   bool alreadyDisabled[256];
 
-  //void recalculateTiles();
+  void recalculateTiles();
   
   inline void incrementX();
   inline void incrementY();
@@ -38,7 +38,7 @@ class PpuState
   inline void renderSprites(int scanline);
   
  public:
-  //bool needsRecalc;
+  bool needsRecalc;
   bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
   void setDisplayTitle(const char* title);
 

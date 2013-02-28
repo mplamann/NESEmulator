@@ -9,7 +9,8 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
   width = 256;
   blackColor = al_map_rgb(0,0,0);
   cout << "Initializing display...";
-  display = al_create_display(width*scale, height*scale);
+  display = al_create_display(width*scale*3, height*scale*3);
+  backbuffer = al_create_bitmap(width*scale, height*scale);
   if (!display)
     {
       cout << "Error! Failed to initialize display.\n";
@@ -311,7 +312,8 @@ void PpuState::renderScanline(int scanline)
 
 void PpuState::endFrame()
 {
-  al_set_target_backbuffer(display);
+  //al_set_target_backbuffer(display);
+  al_set_target_bitmap(backbuffer);
 
   // Make sure that we are not drawing to a null bitmap  
   // Don't know why this is a problem, but it seems to be
@@ -324,6 +326,8 @@ void PpuState::endFrame()
 	    framePoints[point].y++;
 	}
     }
+  al_set_target_backbuffer(display);
+  al_draw_scaled_bitmap(backbuffer,0,0,width*scale,height*scale,0,0,3*width*scale,3*height*scale,0);
   
   al_flip_display();
 
