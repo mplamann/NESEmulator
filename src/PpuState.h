@@ -7,7 +7,7 @@
 #include <fstream>
 using namespace std;
 
-const int scale = 1;
+const int scale = 3;
 
 class PpuState
 {
@@ -24,8 +24,8 @@ class PpuState
   int vScroll; // Vertical scroll is preserved during the entire frame.
                // Keep a local copy so that changes to PPUSCROLLY doesn't affect mid-frame.
 
-  ALLEGRO_VERTEX blankFrame[256*scale*240];
-  ALLEGRO_VERTEX framePoints[256*scale*240];
+  ALLEGRO_VERTEX blankFrame[256*240];
+  ALLEGRO_VERTEX framePoints[256*240];
   ALLEGRO_VERTEX* scanlinePoints;
   bool backgroundPoints[256];
   bool alreadyDisabled[256];
