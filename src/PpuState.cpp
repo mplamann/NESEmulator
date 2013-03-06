@@ -15,6 +15,14 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error! Failed to initialize display.\n";
       return false;
     }
+  backbuffer = al_create_bitmap(width, height);
+  if (!backbuffer)
+    {
+      cout << "Error! Failed to initialize backbuffer bitmap.\n";
+      return false;
+    }
+  al_set_target_bitmap(backbuffer);
+  al_clear_to_color(al_map_rgb(255,255,255));
   al_register_event_source(event_queue, al_get_display_event_source(display));
 
 #ifdef PPU_DEBUG
@@ -54,21 +62,13 @@ void PpuState::setDisplayTitle(const char* title)
 
 void PpuState::startFrame()
 {
-  //cout << "\n";
   if (memory->PPUMASK & 0x18)
     {
       memory->PPUADDR = memory->loopyT;  
     }
-  memory->PPUSTATUS &= 0x3F;//0xBF;
+  memory->PPUSTATUS &= 0x3F;
 
-  for (int i = 0; i < 256*scale*240; i++)
-    {
-      int scanline = i/(256*scale);
-      framePoints[i].x = i % (256*scale);
-      framePoints[i].y = (scanline)*scale;
-      framePoints[i].z = 0;
-      framePoints[i].color = blackColor;
-    }
+  memcpy(framePoints,blankFrame,sizeof(ALLEGRO_VERTEX)*256*240);
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -157,8 +157,7 @@ inline void PpuState::renderBackground(int scanline)
 	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
 	      if (xOffset + x > 0xFF)
 		continue;
-	      for (int j = 0; j < scale; j++)
-		scanlinePoints[(xOffset+x)*scale+j].color=color;
+	      scanlinePoints[xOffset+x].color=color;
 	      if (colorIndex != 0)
 		{
 		  backgroundPoints[(xOffset+x)] = true;
@@ -248,8 +247,7 @@ inline void PpuState::renderSprites(int scanline)
 		    continue;
 		  if (!((spriteFlags & 0x20) && backgroundPoints[xOffset+x]) && !alreadyDisabled[xOffset+x])
 		    {
-		      for (int j = 0; j < scale; j++)
-			scanlinePoints[(xOffset+x)*scale+j].color=color;
+		      scanlinePoints[xOffset+x].color=color;
 		    }
 		  else if (((spriteFlags & 0x20) && backgroundPoints[xOffset+x]))
 		    alreadyDisabled[xOffset+x] = true;
@@ -270,7 +268,7 @@ void PpuState::renderScanline(int scanline)
       backgroundPoints[i] = false;
       alreadyDisabled[i] = false;
     }
-  scanlinePoints = framePoints + (scanline)*256*scale;
+  scanlinePoints = framePoints + (scanline)*256;
   scanline += vScroll & 0x07;
 
   renderBackground(scanline);
@@ -319,19 +317,18 @@ void PpuState::renderScanline(int scanline)
 
 void PpuState::endFrame()
 {
-  al_set_target_backbuffer(display);
-
-  // Make sure that we are not drawing to a null bitmap  
-  // Don't know why this is a problem, but it seems to be
-  if (al_get_target_bitmap())
+  for (int i = 0; i < 256*240; i++)
     {
-      for (int j = 0; j < scale; j++)
-	{
-	  al_draw_prim(framePoints, NULL, 0, 0, 256*scale*240, ALLEGRO_PRIM_POINT_LIST);
-	  for (int point = 0; point < 256*scale*240; point++)
-	    framePoints[point].y++;
-	}
+      if (framePoints[i].x > 256)
+	cout << "framePoints[" << i << "].x = " << framePoints[i].x << "\n";
+      if (framePoints[i].y > 240)
+	cout << "framePoints[" << i << "].y = " << framePoints[i].y << "\n";
     }
+  //al_set_target_backbuffer(display);
+  al_set_target_bitmap(backbuffer);
+  al_draw_prim(framePoints, NULL, 0, 0, 256*240, ALLEGRO_PRIM_POINT_LIST);
+  al_set_target_backbuffer(display);
+  al_draw_scaled_bitmap(backbuffer,0,0,width,height,0,0,width*scale,height*scale,0);
   
   al_flip_display();
 
@@ -356,13 +353,27 @@ void PpuState::endFrame()
 
 PpuState::PpuState()
 {
+  cout << "Initializing PPU...";
   display = NULL;
+  for (int x = 0; x < 256; x++)
+    {
+      for (int y = 0; y < 240; y++)
+	{
+	  int i = 256*y+x;
+	  blankFrame[i].x = x;
+	  blankFrame[i].y = y;
+	  blankFrame[i].z = 0;
+	  blankFrame[i].color = blackColor;
+	}
+    }
+  cout << "Done.\n";
 }
 
 PpuState::~PpuState()
 {
   if (display != NULL)
     al_destroy_display(display);
+  al_destroy_bitmap(backbuffer);
 }
 
 void PpuState::setMemory(MemoryState* mem)

@@ -54,7 +54,7 @@ int MemoryState::readByteFrom(int address)
 {
   if (address < 0x2000)
     {
-      return (RAM[address % 0x800]) & 0xFF;
+      return (RAM[address & 0x7FF]) & 0xFF;
     }
   else if (address < 0x5000)
     {
@@ -391,7 +391,7 @@ unsigned char MemoryState::colorForPaletteIndex(bool isSprite, int paletteIndex,
 {
   unsigned char retVal = 0;
   if (index == 0)
-    retVal =  palette[0];
+    retVal = palette[0];
   else
     {
       int baseAddress = 0;

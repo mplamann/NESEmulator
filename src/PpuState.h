@@ -15,6 +15,7 @@ class PpuState
   int width, height;
   MemoryState* memory;
   ALLEGRO_DISPLAY* display;
+  ALLEGRO_BITMAP* backbuffer;
   ALLEGRO_DISPLAY* nametableDisplay;
   ALLEGRO_DISPLAY* paletteDisplay;
   ALLEGRO_COLOR blackColor;
@@ -23,17 +24,21 @@ class PpuState
   int vScroll; // Vertical scroll is preserved during the entire frame.
                // Keep a local copy so that changes to PPUSCROLLY doesn't affect mid-frame.
 
-  ALLEGRO_VERTEX framePoints[256*scale*240];
+  ALLEGRO_VERTEX blankFrame[256*240];
+  ALLEGRO_VERTEX framePoints[256*240];
   ALLEGRO_VERTEX* scanlinePoints;
   bool backgroundPoints[256];
   bool alreadyDisabled[256];
 
+  void recalculateTiles();
+  
   inline void incrementX();
   inline void incrementY();
   inline void renderBackground(int scanline);
   inline void renderSprites(int scanline);
   
  public:
+  bool needsRecalc;
   bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
   void setDisplayTitle(const char* title);
 

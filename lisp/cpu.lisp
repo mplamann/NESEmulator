@@ -82,6 +82,7 @@
 (defun decode (opcode)
   (case opcode
     ((#x69 #x65 #x75 #x6D #x7D #x79 #x61 #x71) 'adc)
+    ((#x29 #x25 #x35 #x2D #x3 #x39 #x21 #x31) '6502-and)
     ((#x0A #x06 #x16 #x0E #x1E) 'asl)
     ((#x24 #x2C) '6502-bit)
     (#x10 'bpl)
