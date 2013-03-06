@@ -485,6 +485,7 @@ void MemoryState::loadFileToRAM(char* filename)
       break;
     }
 
+  free(file);
   cout << "Done.\n";
   
   return;

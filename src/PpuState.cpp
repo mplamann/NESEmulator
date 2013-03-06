@@ -15,6 +15,12 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
       cout << "Error! Failed to initialize display.\n";
       return false;
     }
+
+  ALLEGRO_TRANSFORM trans;
+  al_identity_transform(&trans);
+  al_scale_transform(&trans,scale,scale);
+  //al_use_transform(&trans);
+  
   backbuffer = al_create_bitmap(width, height);
   if (!backbuffer)
     {
@@ -324,10 +330,11 @@ void PpuState::endFrame()
       if (framePoints[i].y > 240)
 	cout << "framePoints[" << i << "].y = " << framePoints[i].y << "\n";
     }
-  //al_set_target_backbuffer(display);
   al_set_target_bitmap(backbuffer);
+  //al_set_target_backbuffer(display);
   al_draw_prim(framePoints, NULL, 0, 0, 256*240, ALLEGRO_PRIM_POINT_LIST);
   al_set_target_backbuffer(display);
+
   al_draw_scaled_bitmap(backbuffer,0,0,width,height,0,0,width*scale,height*scale,0);
   
   al_flip_display();

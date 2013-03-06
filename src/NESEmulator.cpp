@@ -35,6 +35,9 @@ GamepadState* gamepad;
 ApuState* apu;
 #endif
 
+char* savefile;
+char* batteryfile;
+
 bool usingArduino;
 
 bool setupAllegroEvents();
@@ -65,11 +68,11 @@ int main(int argc, char** argv)
               "  nesemulator rom_file\n";
       return 1;
     }
-  char* savefile = new char[strlen(argv[1]) + 4];
+  savefile = new char[strlen(argv[1]) + 4];
   strcpy(savefile, argv[1]);
   strcat(savefile, ".sav");
 
-  char* batteryfile = new char[strlen(argv[1]) + 4];
+  batteryfile = new char[strlen(argv[1]) + 4];
   strcpy(batteryfile, argv[1]);
   strcat(batteryfile, ".bat");
 
@@ -186,13 +189,7 @@ int main(int argc, char** argv)
   
   if (event_queue != NULL)
     al_destroy_event_queue(event_queue);
-  delete cpu;
-  delete memory;
-  delete ppu;
-  delete gamepad;
-#ifdef USE_AUDIO
-  delete apu;
-#endif
+  cleanup();
   cout << "Goodbye.\n";
   return 0;
 }
@@ -274,6 +271,8 @@ bool setupAllegroEvents()
 
 void cleanup()
 {
+  delete savefile;
+  delete batteryfile;
   delete cpu;
   delete memory;
   delete ppu;

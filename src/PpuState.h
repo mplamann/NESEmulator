@@ -20,7 +20,6 @@ class PpuState
   ALLEGRO_DISPLAY* paletteDisplay;
   ALLEGRO_COLOR blackColor;
   int cycles;
-  ALLEGRO_VERTEX pointList[256*224];
   int vScroll; // Vertical scroll is preserved during the entire frame.
                // Keep a local copy so that changes to PPUSCROLLY doesn't affect mid-frame.
 
