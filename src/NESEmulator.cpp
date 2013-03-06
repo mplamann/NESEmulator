@@ -1,8 +1,5 @@
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-
-
 //#include "CpuState.h"
+#include "SDL/SDL.h"
 #include "CpuV2.h"
 #include "PpuState.h"
 #include "MemoryState.h"
@@ -25,8 +22,8 @@ const int TURBO_FRAMERATE = 600;
 const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
 
-ALLEGRO_EVENT_QUEUE* event_queue;
-ALLEGRO_TIMER* timer;
+//ALLEGRO_EVENT_QUEUE* event_queue;
+//ALLEGRO_TIMER* timer;
 CpuV2* cpu;
 MemoryState* memory;
 PpuState* ppu;
@@ -34,6 +31,9 @@ GamepadState* gamepad;
 #ifdef USE_AUDIO
 ApuState* apu;
 #endif
+
+char* savefile;
+char* batteryfile;
 
 bool usingArduino;
 
@@ -65,11 +65,11 @@ int main(int argc, char** argv)
               "  nesemulator rom_file\n";
       return 1;
     }
-  char* savefile = new char[strlen(argv[1]) + 4];
+  savefile = new char[strlen(argv[1]) + 4];
   strcpy(savefile, argv[1]);
   strcat(savefile, ".sav");
 
-  char* batteryfile = new char[strlen(argv[1]) + 4];
+  batteryfile = new char[strlen(argv[1]) + 4];
   strcpy(batteryfile, argv[1]);
   strcat(batteryfile, ".bat");
 
@@ -119,12 +119,12 @@ int main(int argc, char** argv)
   cpu->S = 0xFD;
   cpu->cycles = 0; // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
-  ALLEGRO_EVENT event;
+  SDL_EVENT event;
   bool need_redraw = false;
   
   while (!emulationDone)
     {
-      while (al_get_next_event(event_queue, &event))
+      while (SDL_PollEvent(&event))
 	{
 	  if (event.type == ALLEGRO_EVENT_TIMER)
 	    {
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 	      shouldSaveState = shouldLoadState = false;
 	    }
 	  
-	  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	  if (event.type == SDL_QUIT)
 	    {
 	      emulationDone = true;
 	    }
@@ -186,13 +186,7 @@ int main(int argc, char** argv)
   
   if (event_queue != NULL)
     al_destroy_event_queue(event_queue);
-  delete cpu;
-  delete memory;
-  delete ppu;
-  delete gamepad;
-#ifdef USE_AUDIO
-  delete apu;
-#endif
+  cleanup();
   cout << "Goodbye.\n";
   return 0;
 }
@@ -274,6 +268,8 @@ bool setupAllegroEvents()
 
 void cleanup()
 {
+  delete savefile;
+  delete batteryfile;
   delete cpu;
   delete memory;
   delete ppu;
