@@ -1,8 +1,5 @@
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
-
-
 //#include "CpuState.h"
+#include "SDL/SDL.h"
 #include "CpuV2.h"
 #include "PpuState.h"
 #include "MemoryState.h"
@@ -25,8 +22,8 @@ const int TURBO_FRAMERATE = 600;
 const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
 
-ALLEGRO_EVENT_QUEUE* event_queue;
-ALLEGRO_TIMER* timer;
+//ALLEGRO_EVENT_QUEUE* event_queue;
+//ALLEGRO_TIMER* timer;
 CpuV2* cpu;
 MemoryState* memory;
 PpuState* ppu;
@@ -122,12 +119,12 @@ int main(int argc, char** argv)
   cpu->S = 0xFD;
   cpu->cycles = 0; // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
-  ALLEGRO_EVENT event;
+  SDL_EVENT event;
   bool need_redraw = false;
   
   while (!emulationDone)
     {
-      while (al_get_next_event(event_queue, &event))
+      while (SDL_PollEvent(&event))
 	{
 	  if (event.type == ALLEGRO_EVENT_TIMER)
 	    {
@@ -144,7 +141,7 @@ int main(int argc, char** argv)
 	      shouldSaveState = shouldLoadState = false;
 	    }
 	  
-	  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+	  if (event.type == SDL_QUIT)
 	    {
 	      emulationDone = true;
 	    }

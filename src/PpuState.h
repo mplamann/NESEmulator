@@ -2,30 +2,24 @@
 
 #include "Util.h"
 #include "MemoryState.h"
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
+#include "SDL/SDL.h"
 #include <fstream>
 using namespace std;
 
 const int scale = 3;
+const int bpp = 32;
 
 class PpuState
 {
  private:
   int width, height;
   MemoryState* memory;
-  ALLEGRO_DISPLAY* display;
-  ALLEGRO_BITMAP* backbuffer;
-  ALLEGRO_DISPLAY* nametableDisplay;
-  ALLEGRO_DISPLAY* paletteDisplay;
-  ALLEGRO_COLOR blackColor;
+  SDL_Surface* display;
+  SDL_Surface* backbuffer;
   int cycles;
   int vScroll; // Vertical scroll is preserved during the entire frame.
                // Keep a local copy so that changes to PPUSCROLLY doesn't affect mid-frame.
 
-  ALLEGRO_VERTEX blankFrame[256*240];
-  ALLEGRO_VERTEX framePoints[256*240];
-  ALLEGRO_VERTEX* scanlinePoints;
   bool backgroundPoints[256];
   bool alreadyDisabled[256];
 

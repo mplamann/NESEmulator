@@ -7,55 +7,21 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 {
   height = 224;
   width = 256;
-  blackColor = al_map_rgb(0,0,0);
   cout << "Initializing display...";
-  display = al_create_display(width*scale, height*scale);
+
+  if (SDL_Init(SDL_INIT_EVERYTHING) == -1)
+    {
+      cout << "Error initializing SDL.\n";
+      return false;
+    }
+
+  display = SDL_SetVideoMode(width*scale, height*scale, bpp, SDL_SWSURFACE);
   if (!display)
     {
-      cout << "Error! Failed to initialize display.\n";
+      cout << "Error creating display.\n";
       return false;
     }
-
-  ALLEGRO_TRANSFORM trans;
-  al_identity_transform(&trans);
-  al_scale_transform(&trans,scale,scale);
-  //al_use_transform(&trans);
-  
-  backbuffer = al_create_bitmap(width, height);
-  if (!backbuffer)
-    {
-      cout << "Error! Failed to initialize backbuffer bitmap.\n";
-      return false;
-    }
-  al_set_target_bitmap(backbuffer);
-  al_clear_to_color(al_map_rgb(255,255,255));
-  al_register_event_source(event_queue, al_get_display_event_source(display));
-
-#ifdef PPU_DEBUG
-  al_set_new_window_position(513,0);
-  nametableDisplay = al_create_display(2*width, height);
-  if (!nametableDisplay)
-    {
-      cout << "Error! Failed to initialize ppu debug display.\n";
-      return false;
-      }
-  al_set_window_title(nametableDisplay, "Nametables");
-    
-  al_set_new_window_position(0,0);
-  paletteDisplay = al_create_display(512,64);
-  if (!paletteDisplay)
-    {
-      cout << "Error! Failed to initialize palette display.\n";
-      return false;
-    }
-  al_set_window_title(paletteDisplay, "Palettes");
-#endif
-
-  if (!al_init_primitives_addon())
-    {
-      cout << "Error! Failed to initialize primitives\n";
-      return false;
-    }
+  setPixelFormat(display->format);
   
   cout << "Done.\n";
   return true;
@@ -63,7 +29,7 @@ bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
 
 void PpuState::setDisplayTitle(const char* title)
 {
-  al_set_window_title(display, title);
+  SDL_WM_SetCaption(title, NULL);
 }
 
 void PpuState::startFrame()
@@ -74,7 +40,7 @@ void PpuState::startFrame()
     }
   memory->PPUSTATUS &= 0x3F;
 
-  memcpy(framePoints,blankFrame,sizeof(ALLEGRO_VERTEX)*256*240);
+  //memcpy(framePoints,blankFrame,sizeof(ALLEGRO_VERTEX)*256*240);
 }
 
 inline int attributeOffsetForTile(int x, int y)
@@ -130,8 +96,7 @@ inline void PpuState::incrementY()
 
 inline void PpuState::renderBackground(int scanline)
 {
-  ALLEGRO_BITMAP* bitmap = al_get_backbuffer(display);
-  al_set_target_bitmap(bitmap);
+  Uint32* pixels = (Uint32*)backbuffer->pixels;
   if (memory->PPUMASK & 0x08) // If background enabled
     {
       int fineY = (memory->PPUADDR & 0x7000) >> 12;
@@ -159,16 +124,15 @@ inline void PpuState::renderBackground(int scanline)
 	      colorIndex = colorIndex >> (7-x);
 
 	      unsigned char paletteColorIndex = memory->colorForPaletteIndex(false, paletteIndex, colorIndex);
-	      ALLEGRO_COLOR* paletteColors = getPaletteColors();
-	      ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+	      Uint32* paletteColors = getPaletteColors();
+	      Uint32 color = paletteColors[paletteColorIndex];
 	      if (xOffset + x > 0xFF)
 		continue;
-	      scanlinePoints[xOffset+x].color=color;
+	      pixels[xOffset+x+scanline*width] = color;
 	      if (colorIndex != 0)
 		{
 		  backgroundPoints[(xOffset+x)] = true;
 		}
-	      //		  cout << colorIndex;//(int)backgroundPoints[xOffset+x];
 	    }
 	  incrementX();
 	}
@@ -181,6 +145,7 @@ inline void PpuState::renderBackground(int scanline)
 
 inline void PpuState::renderSprites(int scanline)
 {
+  Uint32* pixels = (Uint32*)backbuffer->pixels;
   if (memory->PPUMASK & 0x10) // If sprites enabled
     {
       int spritesOnScanline = 0;
@@ -247,13 +212,13 @@ inline void PpuState::renderSprites(int scanline)
 	      if (colorIndex != 0)
 		{
 		  unsigned char paletteColorIndex = memory->colorForPaletteIndex(true, paletteIndex, colorIndex);
-		  ALLEGRO_COLOR* paletteColors = getPaletteColors();
-		  ALLEGRO_COLOR color = paletteColors[paletteColorIndex];
+		  Uint32* paletteColors = getPaletteColors();
+		  Uint32 color = paletteColors[paletteColorIndex];
 		  if (xOffset + x > 0xFF)
 		    continue;
 		  if (!((spriteFlags & 0x20) && backgroundPoints[xOffset+x]) && !alreadyDisabled[xOffset+x])
 		    {
-		      scanlinePoints[xOffset+x].color=color;
+		      pixels[xOffset+x+scanline*width] = color;
 		    }
 		  else if (((spriteFlags & 0x20) && backgroundPoints[xOffset+x]))
 		    alreadyDisabled[xOffset+x] = true;
@@ -274,7 +239,6 @@ void PpuState::renderScanline(int scanline)
       backgroundPoints[i] = false;
       alreadyDisabled[i] = false;
     }
-  scanlinePoints = framePoints + (scanline)*256;
   scanline += vScroll & 0x07;
 
   renderBackground(scanline);
@@ -323,64 +287,30 @@ void PpuState::renderScanline(int scanline)
 
 void PpuState::endFrame()
 {
-  for (int i = 0; i < 256*240; i++)
-    {
-      if (framePoints[i].x > 256)
-	cout << "framePoints[" << i << "].x = " << framePoints[i].x << "\n";
-      if (framePoints[i].y > 240)
-	cout << "framePoints[" << i << "].y = " << framePoints[i].y << "\n";
-    }
-  al_set_target_bitmap(backbuffer);
-  //al_set_target_backbuffer(display);
-  al_draw_prim(framePoints, NULL, 0, 0, 256*240, ALLEGRO_PRIM_POINT_LIST);
-  al_set_target_backbuffer(display);
-
-  al_draw_scaled_bitmap(backbuffer,0,0,width,height,0,0,width*scale,height*scale,0);
+  Uint32* displayPixels = (Uint32*)display->pixels;
+  Uint32* backbufferPixels = (Uint32*)backbuffer->pixels;
+  SDL_LockSurface(display);
+  for (int x = 0; x < width; x++)
+    for (int y = 0; y < height; y++)
+      for (int rX = 0; rX < scale; rX++)
+	for (int rY = 0; rY < scale; rY++)
+	  displayPixels[display->w*y*scale + rY + x*scale + rX] = backbufferPixels[y*width+x];
+  SDL_UnlockSurface(display);
   
-  al_flip_display();
-
-#ifdef PPU_DEBUG
-  al_set_target_backbuffer(nametableDisplay);
-  //al_draw_line(memory->PPUSCROLLX,0,memory->PPUSCROLLX,256,al_map_rgb(255,0,0),3);
-  al_flip_display();
-
-  // Draw palettes
-  al_set_target_backbuffer(paletteDisplay);
-  for (int y = 0; y < 2; y++)
-    {
-      for (int x = 0; x < 16; x++)
-	{
-	  ALLEGRO_COLOR color = getPaletteColors()[memory->colorForPaletteIndex(y,x>>2,x&0x3)];
-	  al_draw_filled_rectangle(x*32,y*32,x*32+32,y*32+32,color);
-	}
-    }
-    al_flip_display();
-#endif
+  SDL_Flip(display);
 }
 
 PpuState::PpuState()
 {
   cout << "Initializing PPU...";
   display = NULL;
-  for (int x = 0; x < 256; x++)
-    {
-      for (int y = 0; y < 240; y++)
-	{
-	  int i = 256*y+x;
-	  blankFrame[i].x = x;
-	  blankFrame[i].y = y;
-	  blankFrame[i].z = 0;
-	  blankFrame[i].color = blackColor;
-	}
-    }
   cout << "Done.\n";
 }
 
 PpuState::~PpuState()
 {
-  if (display != NULL)
-    al_destroy_display(display);
-  al_destroy_bitmap(backbuffer);
+  SDL_FreeSurface(backbuffer);
+  SDL_FreeSurface(display);
 }
 
 void PpuState::setMemory(MemoryState* mem)
