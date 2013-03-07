@@ -31,7 +31,8 @@ bool PpuState::initializeDisplay()
 
 void PpuState::setDisplayTitle(const char* title)
 {
-  SDL_WM_SetCaption(title, NULL);
+  //  SDL_WM_SetCaption(title, NULL);
+  cout << title  << "\n";
 }
 
 void PpuState::startFrame()
@@ -243,8 +244,10 @@ void PpuState::renderScanline(int scanline)
     }
   scanline += vScroll & 0x07;
 
+  SDL_LockSurface(backbuffer);
   renderBackground(scanline);
   renderSprites(scanline);
+  SDL_UnlockSurface(backbuffer);
 
   if (memory->PPUMASK & 0x18)
     {

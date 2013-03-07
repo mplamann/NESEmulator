@@ -149,6 +149,8 @@ int main(int argc, char** argv)
 		}
 	      if (event.key.keysym.sym == SDLK_SPACE)
 		fps_limit = TURBO_FRAMERATE;
+	      if (event.key.keysym.sym == SDLK_q)
+		emulationDone = true;
 	      gamepad->keyDown(event.key);
 	    }
 	  if (event.type == SDL_KEYUP)
