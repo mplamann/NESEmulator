@@ -22,6 +22,8 @@ bool PpuState::initializeDisplay()
       return false;
     }
   setPixelFormat(display->format);
+
+  backbuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bpp, display->format->Rmask, display->format->Gmask, display->format->Bmask, display->format->Amask);
   
   cout << "Done.\n";
   return true;
