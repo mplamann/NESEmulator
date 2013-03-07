@@ -1,6 +1,4 @@
 #pragma once
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
 
 #include "Nes_Apu.h" // Thanks to Blargg's Audio Libraries
 #include <fstream>
@@ -17,7 +15,7 @@ class ApuState
   Nes_Apu* apu;
   ApuState(void);
   ~ApuState(void);
-  bool initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue);
+  bool initializeAudio();
   void audioStreamFragment();
   void setMemory(MemoryState* memory);
   void setCpu(CpuV2* cpu);
@@ -37,5 +35,5 @@ class ApuState
   void output_samples(const blip_sample_t*, size_t count);
   blip_sample_t out_buf[SAMPLES_PER_BUFFER];
 
-  ALLEGRO_AUDIO_STREAM* stream;
+  //ALLEGRO_AUDIO_STREAM* stream;
 };

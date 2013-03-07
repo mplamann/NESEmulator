@@ -1,5 +1,5 @@
 //#include "CpuState.h"
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include "CpuV2.h"
 #include "PpuState.h"
 #include "MemoryState.h"
@@ -18,6 +18,7 @@ using namespace std;
 
 const int FRAMERATE = 60;
 const int TURBO_FRAMERATE = 600;
+int fps_limit = FRAMERATE;
 
 const int PPU_STARTUP_TIME = 27384;
 const float CPU_CYCLES_PER_SCANLINE = 113.66666667;
@@ -37,7 +38,6 @@ char* batteryfile;
 
 bool usingArduino;
 
-bool setupAllegroEvents();
 bool processEvents();
 void cleanup();
 void renderFrame();
@@ -73,14 +73,6 @@ int main(int argc, char** argv)
   strcpy(batteryfile, argv[1]);
   strcat(batteryfile, ".bat");
 
-  // Trap Ctrl-C so that we can exit gracefully
-  struct sigaction sigIntHandler;
-
-  sigIntHandler.sa_handler = mark_done;
-  sigemptyset(&sigIntHandler.sa_mask);
-  sigIntHandler.sa_flags = 0;
-  //sigaction(SIGINT, &sigIntHandler, NULL);
-
   cout << hex << uppercase;
   cpu = new CpuV2();
   memory = new MemoryState();
@@ -99,17 +91,15 @@ int main(int argc, char** argv)
   apu->setCpu(cpu);
 #endif
 
-  if (!setupAllegroEvents())
+  if (!ppu->initializeDisplay())
     { cleanup(); return -1; }
-  if (!ppu->initializeDisplay(event_queue))
-    { cleanup(); return -1; }
-  if (!gamepad->initializeKeyboard(event_queue))
+  if (!gamepad->initializeKeyboard())
     { cleanup(); return -1; }
   if (!(usingArduino = gamepad->initializeArduino()))
     { cout << "No arduino.\n"; } // Then we don't use the arduino. Live with it.
 
 #ifdef USE_AUDIO
-  if (!apu->initializeAudio(event_queue))
+  if (!apu->initializeAudio())
     { cleanup(); return -1; }
 #endif
 
@@ -119,57 +109,53 @@ int main(int argc, char** argv)
   cpu->S = 0xFD;
   cpu->cycles = 0; // Compensate for initial doRESET. This is just to make cycles line up with Nintendulator.
   
-  SDL_EVENT event;
+  SDL_Event event;
   bool need_redraw = false;
+  Uint32 lastTicks = 0;
   
   while (!emulationDone)
     {
+      if ((SDL_GetTicks() - lastTicks) > (1000.0 / fps_limit))
+	{
+	  renderFrame();
+	  if (shouldSaveState)
+	    saveState(savefile);
+	  else if (shouldLoadState)
+	    loadState(savefile);
+	  shouldSaveState = shouldLoadState = false;
+	  lastTicks = SDL_GetTicks();
+	}
       while (SDL_PollEvent(&event))
 	{
-	  if (event.type == ALLEGRO_EVENT_TIMER)
-	    {
-	      need_redraw = true;
-	    }
-	  if (need_redraw && al_event_queue_is_empty(event_queue))
-	    {
-	      renderFrame();
-	      need_redraw = false;
-	      if (shouldSaveState)
-		saveState(savefile);
-	      else if (shouldLoadState)
-		loadState(savefile);
-	      shouldSaveState = shouldLoadState = false;
-	    }
-	  
 	  if (event.type == SDL_QUIT)
 	    {
 	      emulationDone = true;
 	    }
-	  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+	  if (event.type == SDL_KEYDOWN)
 	    {
-	      if (event.keyboard.keycode == ALLEGRO_KEY_F)
+	      if (event.key.keysym.sym == SDLK_f)
 		need_redraw = true;
-	      if (event.keyboard.keycode == ALLEGRO_KEY_B)
+	      if (event.key.keysym.sym == SDLK_b)
 		{
 		  cout << "BREAK!\n";
 		}
-	      if (event.keyboard.keycode == ALLEGRO_KEY_T)
+	      if (event.key.keysym.sym == SDLK_t)
 		{
 		  shouldSaveState = true;
 		}
-	      if (event.keyboard.keycode == ALLEGRO_KEY_Y)
+	      if (event.key.keysym.sym == SDLK_y)
 		{
 		  shouldLoadState = true;
 		}
-	      if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
-		al_set_timer_speed(timer, 1.0/TURBO_FRAMERATE);
-	      gamepad->keyDown(event);
+	      if (event.key.keysym.sym == SDLK_SPACE)
+		fps_limit = TURBO_FRAMERATE;
+	      gamepad->keyDown(event.key);
 	    }
-	  if (event.type == ALLEGRO_EVENT_KEY_UP)
+	  if (event.type == SDL_KEYUP)
 	    {
-	      if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
-		al_set_timer_speed(timer, 1.0/FRAMERATE);
-	      gamepad->keyUp(event);
+	      if (event.key.keysym.sym == SDLK_SPACE)
+		fps_limit = FRAMERATE;
+	      gamepad->keyUp(event.key);
 	    }
 #ifdef USE_AUDIO
 	  if (event.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
@@ -184,8 +170,6 @@ int main(int argc, char** argv)
 
   memory->saveBattery(batteryfile);
   
-  if (event_queue != NULL)
-    al_destroy_event_queue(event_queue);
   cleanup();
   cout << "Goodbye.\n";
   return 0;
@@ -193,7 +177,7 @@ int main(int argc, char** argv)
 
 void renderFrame()
 {
-  game_time = al_get_time();
+  game_time = SDL_GetTicks();
       
   for (; scanline < 262; scanline++)
     {
@@ -237,35 +221,6 @@ void renderFrame()
 #endif
 }
 
-bool setupAllegroEvents()
-{
-  cout << "Initializing Allegro...";
-  if (!al_init())
-    {
-      cout << "Error! Failed to initialize Allegro.\n";
-      return false;
-    }
-  cout << "Done.\n";
-  cout << "Initializing event queue...";
-  event_queue = al_create_event_queue();
-  if (!event_queue)
-    {
-      cout << "Error! Failed to create event queue.\n";
-      return false;
-    }
-  cout << "Done.\n";
-  cout << "Initializing FPS timer...";
-  timer = al_create_timer(1.0 / FRAMERATE);
-  if (!timer)
-    {
-      cout << "Error!\n";
-      return false;
-    }
-  al_register_event_source(event_queue, al_get_timer_event_source(timer));
-  al_start_timer(timer);
-  return true;
-}
-
 void cleanup()
 {
   delete savefile;
@@ -274,7 +229,6 @@ void cleanup()
   delete memory;
   delete ppu;
   delete gamepad;
-  al_destroy_timer(timer);
 
 #ifdef USE_AUDIO
   delete apu;

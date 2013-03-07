@@ -2,7 +2,7 @@
 
 #include "Util.h"
 #include "MemoryState.h"
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include <fstream>
 using namespace std;
 
@@ -32,7 +32,7 @@ class PpuState
   
  public:
   bool needsRecalc;
-  bool initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue);
+  bool initializeDisplay();
   void setDisplayTitle(const char* title);
 
   void startFrame();

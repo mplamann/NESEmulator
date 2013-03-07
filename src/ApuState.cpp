@@ -2,8 +2,6 @@
 #include "MemoryState.h"
 #include "CpuV2.h"
 #include "apu_snapshot.h"
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_audio.h>
 #include <iostream>
 #include <math.h>
 using namespace std;
@@ -35,15 +33,12 @@ void ApuState::setCpu(CpuV2* _cpu)
 
 ApuState::~ApuState(void)
 {
-  al_drain_audio_stream(stream);
-  al_destroy_audio_stream(stream);
-  al_uninstall_audio();
 }
 
-bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
+bool ApuState::initializeAudio()
 {
   cout << "Initializing audio...";
-  if (!al_install_audio())
+  /*if (!al_install_audio())
     {
       cout << "Error! Failed to initialize audio.\n";
       return false;
@@ -65,7 +60,7 @@ bool ApuState::initializeAudio(ALLEGRO_EVENT_QUEUE* event_queue)
       return false;
     }
 
-  al_register_event_source(event_queue, al_get_audio_stream_event_source(stream));
+    al_register_event_source(event_queue, al_get_audio_stream_event_source(stream));*/
   cout << "Done.\n";
   return true;
 }
@@ -79,7 +74,7 @@ void ApuState::finishFrame()
 
 void ApuState::audioStreamFragment()
 {
-  blip_sample_t* fragment = (blip_sample_t*)al_get_audio_stream_fragment(stream);
+  /*blip_sample_t* fragment = (blip_sample_t*)al_get_audio_stream_fragment(stream);
   if (!fragment)
     return;
 
@@ -90,12 +85,12 @@ void ApuState::audioStreamFragment()
   
   for (int i = 0; i < SAMPLES_PER_BUFFER; i++) {
     //cout << dec << "fragment[" << i << "] = " << fragment[i] << "\n";
-  }
+    }*/
   
-  if (!al_set_audio_stream_fragment(stream, fragment))
+  /*if (!al_set_audio_stream_fragment(stream, fragment))
     {
       cout << "Error setting stream fragment.\n";
-    }
+      }*/
 }
 
 void ApuState::write_register(unsigned address, int data)

@@ -1,5 +1,5 @@
 #include "GamepadState.h"
-#include <allegro5/allegro.h>
+#include "SDL.h"
 #include <iostream>
 #include "serial.h"
 using namespace std;
@@ -28,16 +28,16 @@ GamepadState::~GamepadState(void)
 {
 }
 
-bool GamepadState::initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue)
+bool GamepadState::initializeKeyboard()
 {
   cout << "Initializing gamepad...";
-  if (!al_install_keyboard())
+  /*if (!al_install_keyboard())
     {
       cout << "Error! Failed to initialize keyboard.\n";
       return false;
     }
   al_register_event_source(event_queue, al_get_keyboard_event_source());
-  cout << "Done.\n";
+  cout << "Done.\n";*/
   return true;
 }
 
@@ -54,45 +54,47 @@ bool GamepadState::initializeArduino()
   return true;
 }
 
-void GamepadState::keyDown(ALLEGRO_EVENT event)
+void GamepadState::keyDown(SDL_KeyboardEvent event)
 {
   setValueForKey(event, true);
 }
 
-void GamepadState::keyUp(ALLEGRO_EVENT event)
+void GamepadState::keyUp(SDL_KeyboardEvent event)
 {
   setValueForKey(event, false);
 }
 
-void GamepadState::setValueForKey(ALLEGRO_EVENT event, bool value)
+void GamepadState::setValueForKey(SDL_KeyboardEvent event, bool value)
 {
-  switch (event.keyboard.keycode)
+  switch (event.keysym.sym)
     {
-    case ALLEGRO_KEY_X:
-    case ALLEGRO_KEY_A:
+    case SDLK_x:
+    case SDLK_a:
       player1.A = value;
       break;
-    case ALLEGRO_KEY_Z:
-    case ALLEGRO_KEY_D:
+    case SDLK_z:
+    case SDLK_d:
       player1.B = value;
       break;
-    case ALLEGRO_KEY_UP:
+    case SDLK_UP:
       player1.U = value;
       break;
-    case ALLEGRO_KEY_DOWN:
+    case SDLK_DOWN:
       player1.D = value;
       break;
-    case ALLEGRO_KEY_LEFT:
+    case SDLK_LEFT:
       player1.L = value;
       break;
-    case ALLEGRO_KEY_RIGHT:
+    case SDLK_RIGHT:
       player1.R = value;
       break;
-    case ALLEGRO_KEY_ENTER:
+    case SDLK_RETURN:
       player1.ST = value;
       break;
-    case ALLEGRO_KEY_BACKSLASH:
+    case SDLK_BACKSLASH:
       player1.SEL = value;
+      break;
+    default:
       break;
     }
 }

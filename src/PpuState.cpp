@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-bool PpuState::initializeDisplay(ALLEGRO_EVENT_QUEUE* event_queue)
+bool PpuState::initializeDisplay()
 {
   height = 224;
   width = 256;

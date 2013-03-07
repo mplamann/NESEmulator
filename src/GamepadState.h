@@ -1,5 +1,5 @@
 #pragma once
-#include <allegro5/allegro.h>
+#include "SDL.h"
 #include "serial.h"
 
 struct gamepad {
@@ -18,11 +18,11 @@ class GamepadState
  public:
   GamepadState(void);
   ~GamepadState(void);
-  bool initializeKeyboard(ALLEGRO_EVENT_QUEUE* event_queue);
+  bool initializeKeyboard();
   bool initializeArduino();
 
-  void keyDown(ALLEGRO_EVENT event);
-  void keyUp(ALLEGRO_EVENT event);
+  void keyDown(SDL_KeyboardEvent event);
+  void keyUp(SDL_KeyboardEvent event);
 
   void strobe();
   bool readPlayer1();
@@ -36,7 +36,7 @@ class GamepadState
   gamepad latchedP2;
   int p1Index;
   int p2Index;
-  void setValueForKey(ALLEGRO_EVENT event, bool value);
+  void setValueForKey(SDL_KeyboardEvent event, bool value);
   bool gamepadValueForIndex(gamepad pad, int index);
   void setStateArduino(int arduinoState);
   Serial* serial;
