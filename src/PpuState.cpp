@@ -324,7 +324,7 @@ void PpuState::endFrame()
 	    framePoints[point].y++;
 	}
     }
-  
+
   al_flip_display();
 
 #ifdef PPU_DEBUG

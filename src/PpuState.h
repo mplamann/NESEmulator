@@ -7,7 +7,7 @@
 #include <fstream>
 using namespace std;
 
-const int scale = 3;
+const int scale = 4;
 
 class PpuState
 {
