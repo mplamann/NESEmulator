@@ -12,3 +12,4 @@ Currently Working:
 
 Not Working:
 - Most other mappers
+- Audio when fast-forwarding
